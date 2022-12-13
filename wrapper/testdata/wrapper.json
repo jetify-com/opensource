@@ -1,0 +1,11 @@
+{
+  "path": "/usr/bin/env",
+  "environment": {
+    "VAR1": "value1",
+    "VAR2": "value2",
+    "VAR3": [
+      "value3",
+      "value4"
+    ]
+  }
+}
