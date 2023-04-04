@@ -9,7 +9,7 @@ in [
   {
     name = "lib.intersect: intersect one set";
     actual = lib.intersect [{ a = 1; }];
-    expected = { a = 2; };
+    expected = { a = 1; };
   }
   {
     name = "lib.intersect: intersect with an empty set";
