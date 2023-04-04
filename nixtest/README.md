@@ -79,5 +79,8 @@ If all tests pass, you will see an output like this:
 
 If any tests fail, you will see an output like this:
 ```
-[FAIL] 2/7 tests failed
+error: 1/7 tests failed
+       [FAIL] Test function add
+         Got: 2
+         Expected: 3
 ```

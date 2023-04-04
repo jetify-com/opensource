@@ -7,7 +7,7 @@
     #  nixtest.url = "github:jetpack-io/nixtest";
     # 
     # Inside the nixtest repo, we instead use the local path:
-    nixtest.url = "../../.";
+    nixtest.url = "../.";
   };
   outputs = { self, nixtest }: {
     tests = nixtest.run ./.;
