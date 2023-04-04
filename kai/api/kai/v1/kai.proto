@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package api.kai.v1;
+
+option go_package = "go.jetpack.io/kai/gen/api/kai/v1;kai_v1";
+
+message GetShellCommandRequest {
+  string prompt = 1;
+}
+
+message GetShellCommandResponse {
+  repeated string choices = 1;
+}
+
+service KaiService {
+  rpc GetShellCommand(GetShellCommandRequest) returns (GetShellCommandResponse) {}
+}
+
