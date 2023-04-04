@@ -3,12 +3,12 @@
     "nixtest": {
       "locked": {
         "lastModified": 1,
-        "narHash": "sha256-r5X7Uee9LEJpPM0J1BtRUf6ADEp3BAYSQvsIBrtxN+E=",
-        "path": "/nix/store/bzim2sjv4xyzgmysqwl7wwnmhyh4yvyw-source/nixtest",
+        "narHash": "sha256-rhkwxEcBG5YzQX/e2xAW6tLyB2XUgwjQuf5QbJAQrWw=",
+        "path": "/nix/store/d4hvj0z2sgcr7igia91p9nsf3czljklr-source/nixtest",
         "type": "path"
       },
       "original": {
-        "path": "/nix/store/bzim2sjv4xyzgmysqwl7wwnmhyh4yvyw-source/nixtest",
+        "path": "/nix/store/d4hvj0z2sgcr7igia91p9nsf3czljklr-source/nixtest",
         "type": "path"
       }
     },
