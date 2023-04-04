@@ -1,5 +1,5 @@
 # NixTest
-### Simple unit testing for Nix
+### A tiny unit testing framework written in pure Nix
 ![License: Apache 2.0](https://img.shields.io/github/license/jetpack-io/nixtest)
 
 ## What is it?
