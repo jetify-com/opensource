@@ -1,0 +1,18 @@
+name: "Publish Code"
+description: |
+  A Github action that makes it easy to publish code from one git repository to another
+  while preserving history. The primary use case is to mirror code from a directory
+  in a monorepo, and publish it as a standalone repository."
+author: "jetpack.io"
+inputs:
+  origin:
+    description: "Monorepo from which to publish code"
+    required: true
+  dirs:
+    description: "Directories to publish. Target repo must already exist."
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - run: ${{ github.action_path }}/publish-code.sh ${{ inputs.origin }} ${{ inputs.dirs }}
+      shell: bash
