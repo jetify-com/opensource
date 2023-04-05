@@ -1,0 +1,27 @@
+# Publish subdirectories of this monorepo to standalone repositories
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  move-code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: olivr/copybara-action@v1.2.3
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+          sot_repo: jetpack-io/opensource
+          destination_repo: jetpack-io/nixtest
+          push_include: "nixtest/**"
+          pr_move: |
+            ||nixtest/
