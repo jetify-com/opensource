@@ -14,5 +14,5 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: publish-code.sh ${{ inputs.origin }} ${{ inputs.dirs }}
+    - run: ${{ github.action_path }}/publish-code.sh ${{ inputs.origin }} ${{ inputs.dirs }}
       shell: bash
