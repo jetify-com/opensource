@@ -2,7 +2,7 @@ orig = "ssh://git@github.com/jetpack-io/opensource.git"
 dest = "ssh://git@github.com/jetpack-io/nixtest.git"
 
 core.workflow(
-    name = "push",
+    name = "default",
     origin = git.origin(
         url = orig,
         ref = "main",
