@@ -6,19 +6,26 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 
 jobs:
-  move-code:
+  publish-repos:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
+      # This extension is using Node.js 12.x, but that's deprecated in Github Actions.
+      # We might want to fork it and upgrade.
       - uses: olivr/copybara-action@v1.2.3
         with:
+          # This extension uses a private ssh key to write to the target repo instead
+          # of relying on the personal access token.
+          # TODO: consider switching to a personal access token.
+          ssh_key: ${{ secrets.CODEBOT_SSH_KEY }}
+          # The token here is used for PRs and to fetch code.
           access_token: ${{ secrets.GITHUB_TOKEN }}
           sot_repo: jetpack-io/opensource
           destination_repo: jetpack-io/nixtest
