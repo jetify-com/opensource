@@ -52,9 +52,6 @@ for dir in "$@"; do
 	fi
 done
 
-exit 0
-
-
 for repo in "$@"; do
 	echo "Publishing '${repo}' ..."
 
