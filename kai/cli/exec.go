@@ -11,7 +11,7 @@ import (
 func ExecCmd() *cobra.Command {
 	command := &cobra.Command{
 		Use:           "exec",
-		Short:         "Use AI to execute a shell command written in english",
+		Short:         "Use AI to execute a shell command written in English",
 		Args:          cobra.NoArgs,
 		RunE:          execCmd,
 		SilenceErrors: true,
