@@ -32,12 +32,12 @@ func execCmd(cmd *cobra.Command, args []string) error {
 		Message: "What command would you like to run?",
 		Suggest: func(toComplete string) []string {
 			return []string{
-				"list all files in the current directory",
+				"remove duplicates lines from file 'input.txt'",
 				"show me the contents of the file named 'input.txt'",
 				"create a new directory named 'dir'",
 				"delete the file named 'output.txt'",
 				"make all files in current directory read only",
-				"start nginx using docker, forward 443 and 80 port",
+				"run ubuntu using docker and start an interactive shell",
 			}
 		},
 	}
