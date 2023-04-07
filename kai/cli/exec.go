@@ -24,8 +24,8 @@ func ExecCmd() *cobra.Command {
 }
 
 func execCmd(cmd *cobra.Command, args []string) error {
-	fmt.Println("I'm Kai, the AI assistant for your terminal\n")
-	fmt.Println("I can translate English into shell commands\n")
+	fmt.Printf("I'm Kai, the AI assistant for your terminal\n\n")
+	fmt.Printf("I can translate English into shell commands\n\n")
 
 	input := ""
 	q1 := &survey.Input{
