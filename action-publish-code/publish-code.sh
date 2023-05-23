@@ -7,13 +7,13 @@ set -o errexit
 set -o nounset
 
 if [ "$#" = 0 ]; then
-	echo "usage: $0 <org>/<repo> <dir1> [<dirN>]..." 1>&2
+	echo "usage: $0 <org>/<repo> <dir1>[:<repo1>] [<dirN>[:<repoN>]]..." 1>&2
 	exit 1
 fi
 
 if [[ "$1" != *"/"* ]]; then
 	echo "error: first argument must be in the form <owner>/<repo>" 1>&2
-	echo "usage: $0 <org>/<repo> <dir1> [<dirN>]..." 1>&2
+	echo "usage: $0 <org>/<repo> <dir1>[:<repo1>] [<dirN>[:<repoN>]]..." 1>&2
 	exit 1
 fi
 
@@ -37,10 +37,16 @@ git clone -b main --single-branch "git@github.com:${org}/${origin_repo}.git" "${
 # Check that the directories we want to publish exist:
 echo -e "\n"
 cd "${TMPDIR}/${origin_repo}"
-for dir in "$@"; do
-	echo "Validating $dir"
+for arg in "$@"; do
+	dir="${arg%:*}"
+	repo="${dir##*/}"
+	if [[ "$arg" != *":"* ]]; then
+		repo="${arg##*:}"
+	fi
+
+	echo "Validating $arg"
 	# Just to be extra safe, make sure we're not trying to publish to origin repo itself
-	if [ "${dir}" = "${origin_repo}" ]; then
+	if [ "${repo}" = "${origin_repo}" ]; then
 		echo "Error: Cannot publish to the source repo: '${origin_repo}'" 1>&2
 		exit 1
 	fi
@@ -55,13 +61,18 @@ done
 exit 0
 
 
-for repo in "$@"; do
+for arg in "$@"; do
+	dir="${arg%:*}"
+	repo="${dir##*/}"
+	if [[ "$arg" != *":"* ]]; then
+		repo="${arg##*:}"
+	fi
 	echo "Publishing '${repo}' ..."
 
 	# Remove everything we don't want from the source repo:
 	# TODO: Rewrite using https://github.com/newren/git-filter-repo since filter-branch is no longer
 	# recommended by git.
-	FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --tag-name-filter "grep '^${repo}/' | cut -f 2- -d '/'" --subdirectory-filter "${repo}" -- -- all
+	FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --tag-name-filter "grep '^${repo}/' | cut -f 2- -d '/'" --subdirectory-filter "${dir}" -- -- all
 
 	git clone "git@github.com:${org}/${repo}.git" "${TMPDIR}/${repo}"
 	pushd "${TMPDIR}/${repo}"

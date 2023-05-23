@@ -21,4 +21,11 @@ jobs:
       - uses: ./action-publish-code
         with:
           origin: ${{ github.repository }}
-          dirs: nixtest
+          # TODO: consider changing this action so that instead of listing the targets, it
+          # automatically scans all subdirectories and looks for a config file stating where
+          # that subdirectory should be published. If the config file lives in the subdir,
+          # the monorepo can be refactored and publishing still works. As things are today,
+          # if you relocate a subdirectory within the monorepo, you need to update this
+          # yaml for things to continue to work.
+          targets: >
+            nixtest
