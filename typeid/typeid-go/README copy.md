@@ -5,7 +5,7 @@
 ![License: Apache 2.0](https://img.shields.io/github/license/jetpack-io/typeid)
 
 ## What is it?
-TypeIDs are a modern, type-safe extension to UUIDv7 designed for use at scale on the web.
+TypeIDs are a modern, type-safe extension of UUIDv7.
 
 TypeIDs are canonically encoded as lowercase strings consisting of three parts:
 1. A type prefix
