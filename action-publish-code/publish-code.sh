@@ -58,16 +58,13 @@ for arg in "$@"; do
 	fi
 done
 
-exit 0
-
-
 for arg in "$@"; do
 	dir="${arg%:*}"
 	repo="${dir##*/}"
-	if [[ "$arg" != *":"* ]]; then
+	if [[ "$arg" = *":"* ]]; then
 		repo="${arg##*:}"
 	fi
-	echo "Publishing '${repo}' ..."
+	echo "Publishing dir '${dir}' to repo '${repo}' ..."
 
 	# Remove everything we don't want from the source repo:
 	# TODO: Rewrite using https://github.com/newren/git-filter-repo since filter-branch is no longer
@@ -101,6 +98,6 @@ for arg in "$@"; do
 	git for-each-ref --format="delete %(refname) %(objectname)" refs/original/ | git update-ref --stdin
 	git reset --hard HEAD
 
-	echo "[DONE] Published '${repo}' ..."
+	echo "[DONE] Published dir '${dir}' to repo '${repo}' ..."
 	echo -e "\n"
 done
