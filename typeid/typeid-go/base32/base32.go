@@ -83,8 +83,7 @@ func Decode(s string) ([]byte, error) {
 	}
 
 	v := []byte(s)
-	// Check if all the characters in a base32 encoded ULID are part of the
-	// expected base32 character set.
+	// Check if all the characters are part of the expected base32 character set.
 	if dec[v[0]] == 0xFF ||
 		dec[v[1]] == 0xFF ||
 		dec[v[2]] == 0xFF ||
