@@ -29,3 +29,6 @@ jobs:
           # yaml for things to continue to work.
           targets: >
             nixtest
+            typeid/typeid
+            typeid/typeid-go
+            typeid/typeid-sql
