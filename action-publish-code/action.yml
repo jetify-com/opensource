@@ -8,11 +8,14 @@ inputs:
   origin:
     description: "Monorepo from which to publish code"
     required: true
-  dirs:
-    description: "Directories to publish. Target repo must already exist."
+  targets:
+    description: |
+      Repos to publish. Target repos must already exist.
+      Format is either <dir> or <dir>:<repo>. If <repo> is omitted, it is assumed to be the 
+      last subdirectory in <dir>.
     required: true
 runs:
   using: "composite"
   steps:
-    - run: ${{ github.action_path }}/publish-code.sh ${{ inputs.origin }} ${{ inputs.dirs }}
+    - run: ${{ github.action_path }}/publish-code.sh ${{ inputs.origin }} ${{ inputs.targets }}
       shell: bash
