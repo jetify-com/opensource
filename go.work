@@ -1,6 +1,7 @@
 go 1.20
 
 use (
+	./tyson
 	./typeid/typeid
 	./typeid/typeid-go
 )
