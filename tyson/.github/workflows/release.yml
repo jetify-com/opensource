@@ -1,5 +1,4 @@
 name: release
-# Releases the Devbox CLI
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
