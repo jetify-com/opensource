@@ -1,11 +1,14 @@
 # TySON 🥊
-### TypeScript as a Config Language
+### TypeScript as a Configuration Language
 
 # What is it?
 TySON (TypeScript Object Notation) is a subset of TypeScript, chosen to be useful as an embeddable configuration
 language that generates JSON.
 You can think of TySON as **JSON + comments + types + basic logic** using
 TypeScript syntax. TySON files use the `.tson` extension.
+
+The goal is to make it possible for all major programming languages to read
+configuration written in TypeScript using native libraries.
 
 Here's a simple example.tson:
 
@@ -14,12 +17,34 @@ Here's a simple example.tson:
 export default {
   // Comments
   string_field: 'string',
+  multi_line_string_field: `line 1
+    line 2
+    line 3`,
   number_field: 123,
   boolean_field: true,
   array_field: [1, 2, 3], // Add more comments.
   object_field: {
     nested_field: "nested",
   }
+}
+```
+
+The above evaluates to the following JSON:
+
+```
+{
+  "array_field": [
+    1,
+    2,
+    3
+  ],
+  "boolean_field": true,
+  "multi_line_string_field": "line 1\n    line 2\n    line 3",
+  "number_field": 123,
+  "object_field": {
+    "nested_field": "nested"
+  },
+  "string_field": "string"
 }
 ```
 
@@ -51,9 +76,6 @@ export default {
   /*
    * Add multi-line comments
    */
-  multi_line_str: `line 1
-  line 2
-  line 3`,
   interpolated_str: `${str_1} example`,
   count: countFn(),
 }
