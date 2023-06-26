@@ -138,10 +138,10 @@ At the moment we offer:
 1. A `golang` library that can parse TySON files and evaluate them to JSON.
    It is built on top of the widely adopted, and rock-solid `esbuild` with `es6`
    syntax support.
-3. A command line tool, compiled as a single binary, that can parse and
+1. A command line tool, compiled as a single binary, that can parse and
    evaluate TySON files to JSON.
 
 Based on feedback from the community, we plan to add:
 1. A formal spec for TySON (once we feel confident that the feature set is stable).
-2. Implementations for other languages including `rust`.
+1. Implementations for other languages including `rust`.
 
