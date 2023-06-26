@@ -90,12 +90,8 @@ Simply configure your editor to treat `.tson` files as TypeScript files.
 
 
 # Why?
-As we are developing [Devbox](https://github.com/jetpack-io/devbox), many users ask 
-for ways to add comments, specify multi-line scripts, generate configurations for 
-different use cases — features that can improve the JSON configuration experience. 
-
-Since almost all developer tools require some form of configuration, we'd like to share
-what we think an ideal configuration language should be:
+Almost all developer tools require some form of configuration. In our opinion,
+an ideal configuration language should be:
 + **Easy to read and write by humans**
 + **Easy to parse and generate by machines**
 + **Type safe** - so that it's easy to validate the output
