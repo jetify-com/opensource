@@ -12,7 +12,7 @@ configuration written in TypeScript using native libraries.
 
 Here's a simple example.tson:
 
-```
+```typescript
 // example.tson
 export default {
   // Comments
@@ -31,7 +31,7 @@ export default {
 
 The above evaluates to the following JSON:
 
-```
+```json
 {
   "array_field": [
     1,
@@ -54,7 +54,7 @@ The above evaluates to the following JSON:
 **Programmable**: You can generate configuration programmatically. 
 For example, you can import and override values like this:
   
-```
+```typescript
 import otherConfig from './your_other_config.tson'
 
 export default {
@@ -68,7 +68,7 @@ and multi-line strings, in addition to types and functions. Unlike languages
 `dhall`, `cue`, `jsonnet`, or `nickel`, you don't have to learn a new language 
 if you're already familiar with TypeScript:
 
-```
+```typescript
 const str_1 = 'test';
 const countFn = () => 2 + 2;
 
