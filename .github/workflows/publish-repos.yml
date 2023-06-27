@@ -1,15 +1,30 @@
 # Publish subdirectories of this monorepo to standalone repositories
 
+name: publish-repos
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 on:
+  workflow_dispatch: # We can trigger the workflow manually
+
   push:
     branches:
-      - main
+      - main # When we merge to main
+    tags:
+      - "**" # If we added a tag (used for releases)
 
 permissions:
   contents: read
 
 jobs:
+  go-tests:
+    uses: ./.github/workflows/monorepo-go.yaml
   publish-repos:
+    # Only publish if tests pass. Right now all tests for all repos need to pass, but as the monorepo
+    # gets larger, we might want to change this so that we treat each subrepo independently.
+    needs: go-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
