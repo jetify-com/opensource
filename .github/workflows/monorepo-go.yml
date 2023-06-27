@@ -1,17 +1,9 @@
 name: monorepo-go
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
-  cancel-in-progress: true
-
 on:
+  # We don't have it running on main automatically, because it's already called
+  # as a step of the publish-repos workflow.
   pull_request:
-  push:
-    branches:
-      - main
-  merge_group:
-    branches:
-      - main
   workflow_call:
   workflow_dispatch:
 
