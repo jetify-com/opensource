@@ -66,6 +66,8 @@ for arg in "$@"; do
 	fi
 	echo "Publishing dir '${dir}' to repo '${repo}' ..."
 
+	set -o xtrace # Print commands as they are executed
+
 	# Remove everything we don't want from the source repo:
 	# TODO: Rewrite using https://github.com/newren/git-filter-repo since filter-branch is no longer
 	# recommended by git.
@@ -92,6 +94,7 @@ for arg in "$@"; do
 	git push origin main --follow-tags
 
 	popd # Back to origin repo
+	set +o xtrace # Turn off tracing
 
 	# Undo the filtering so we can re-use the source repo for another rewrite.
 	git for-each-ref --format="update %(refname:lstrip=2) %(objectname)" refs/original/ | git update-ref --stdin
