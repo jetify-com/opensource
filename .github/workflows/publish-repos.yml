@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   go-tests:
-    uses: ./.github/workflows/monorepo-go.yaml
+    uses: ./.github/workflows/monorepo-go.yml
   publish-repos:
     # Only publish if tests pass. Right now all tests for all repos need to pass, but as the monorepo
     # gets larger, we might want to change this so that we treat each subrepo independently.
