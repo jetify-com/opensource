@@ -1,6 +1,6 @@
 # TySON 🥊
 
-**Use TypeScript as a configuration language.**
+### Use TypeScript as a Configuration Language
 
 [![Open In Devbox.sh](https://jetpack.io/img/devbox/open-in-devbox.svg)](https://devbox.sh/github.com/jetpack-io/tyson)
 
@@ -52,15 +52,15 @@ The above evaluates to the following JSON:
 }
 ```
 
-TySON was originally developed by [jetpack.io](https://www.jetpack.io). We are exploring 
+TySON was originally developed by [jetpack.io](https://www.jetpack.io). We are exploring
 using it as a configuration language for [Devbox](https://github.com/jetpack-io/devbox).
 
 ## Benefits of using TySON
-**Type safety**: Use TypeScript's type system to ensure that your configuration is valid. 
+**Type safety**: Use TypeScript's type system to ensure that your configuration is valid.
 
-**Programmable**: You can generate configuration programmatically. 
+**Programmable**: You can generate configuration programmatically.
 For example, you can import and override values like this:
-  
+
 ```typescript
 import otherConfig from './your_other_config.tson'
 
@@ -70,9 +70,9 @@ export default {
 }
 ```
 
-**Nicer Syntax**: Unlike JSON, TypeScript supports comments, trailing commas, 
-and multi-line strings, in addition to types and functions. Unlike languages 
-`dhall`, `cue`, `jsonnet`, or `nickel`, you don't have to learn a new language 
+**Nicer Syntax**: Unlike JSON, TypeScript supports comments, trailing commas,
+and multi-line strings, in addition to types and functions. Unlike languages
+`dhall`, `cue`, `jsonnet`, or `nickel`, you don't have to learn a new language
 if you're already familiar with TypeScript:
 
 ```typescript
@@ -88,8 +88,8 @@ export default {
 }
 ```
 
-**Editor Support**: Because TySON is a subset of TypeScript, your editor already 
-supports syntax highlighting, formatting and auto-completion for it. 
+**Editor Support**: Because TySON is a subset of TypeScript, your editor already
+supports syntax highlighting, formatting and auto-completion for it.
 Simply configure your editor to treat `.tson` files as TypeScript files.
 
 
