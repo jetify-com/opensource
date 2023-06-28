@@ -8,7 +8,7 @@
       "export \"GOROOT=$(go env GOROOT)\""
     ],
     "scripts": {
-      "build_cli": "go build -o dist/typeid",
+      "build": "go build -o dist/typeid",
       "lint": "golangci-lint run",
       "test": "go test -race -cover ./..."
     }
