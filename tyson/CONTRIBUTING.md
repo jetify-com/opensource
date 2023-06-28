@@ -4,6 +4,11 @@ When contributing to this repository, please describe the change you wish to mak
 
 Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
+## Opening a Pull Request
+This project is published as a standalone repo from our [opensource monorepo](https://github.com/jetpack-io/opensource).
+Pull requests should be sent to the monorepo instead, and they will automatically be published
+to this repo when merged.
+
 ## Developer Certificate of Origin
 
 By contributing to this project you agree to the [Developer Certificate of Origin](https://developercertificate.org/) (DCO) which was created by the Linux Foundation and is a simple statement that you, as a contributor, have the legal right to make the contribution. See the DCO description for details below:
