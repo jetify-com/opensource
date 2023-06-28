@@ -1,28 +1,95 @@
 # TySON 🥊
-### Use TypeScript as a configuration language
+### TypeScript as a Configuration Language
 
-# What is it?
+## What is it?
 TySON (TypeScript Object Notation) is a subset of TypeScript, chosen to be useful as an embeddable configuration
-language that generates JSON. You can think of it as JSON + types + functions using
+language that generates JSON.
+You can think of TySON as **JSON + comments + types + basic logic** using
 TypeScript syntax. TySON files use the `.tson` extension.
 
 The goal is to make it possible for all major programming languages to read
 configuration written in TypeScript using native libraries.
 
-The benefits of using TySON include:
-- **Type safety**: use TypeScript's type system to ensure that your configuration
-  is valid.
-- **Programmable**: you can define functions and modules that generate configuration
-  programmatically.
-- **Nicer Syntax**: unlike JSON, TypeScript supports comments, trailing commas,
-  and multi-line strings, in addition to types and functions. Unlike languages
-  `dhall`, `cue`, `jsonnet`, or `nickel`, you don't have to learn a new language
-  if you're already familiar with TypeScript.
-- **Editor Support**: because TySON is a subset of TypeScript, your editor already
-  supports syntax highlighting, formatting and auto-completion for it. Simply
-  configure your editor to treat `.tson` files as TypeScript files.
+Here's a simple example.tson:
 
-# Why?
+```typescript
+// example.tson
+export default {
+  // Comments
+  string_field: 'string',
+  multi_line_string_field: `line 1
+    line 2
+    line 3`,
+  number_field: 123,
+  boolean_field: true,
+  array_field: [1, 2, 3], // Add more comments.
+  object_field: {
+    nested_field: "nested",
+  }
+}
+```
+
+The above evaluates to the following JSON:
+
+```json
+{
+  "array_field": [
+    1,
+    2,
+    3
+  ],
+  "boolean_field": true,
+  "multi_line_string_field": "line 1\n    line 2\n    line 3",
+  "number_field": 123,
+  "object_field": {
+    "nested_field": "nested"
+  },
+  "string_field": "string"
+}
+```
+
+TySON was originally developed by [jetpack.io](https://www.jetpack.io). We are exploring 
+using it as a configuration language for [Devbox](https://github.com/jetpack-io/devbox).
+
+## Benefits of using TySON
+**Type safety**: Use TypeScript's type system to ensure that your configuration is valid. 
+
+**Programmable**: You can generate configuration programmatically. 
+For example, you can import and override values like this:
+  
+```typescript
+import otherConfig from './your_other_config.tson'
+
+export default {
+  ...otherConfig,
+  valuesToOverride: 'values1',
+}
+```
+
+**Nicer Syntax**: Unlike JSON, TypeScript supports comments, trailing commas, 
+and multi-line strings, in addition to types and functions. Unlike languages 
+`dhall`, `cue`, `jsonnet`, or `nickel`, you don't have to learn a new language 
+if you're already familiar with TypeScript:
+
+```typescript
+const str_1 = 'test';
+const countFn = () => 2 + 2;
+
+export default {
+  /*
+   * Add multi-line comments
+   */
+  interpolated_str: `${str_1} example`,
+  count: countFn(),
+}
+```
+
+**Editor Support**: Because TySON is a subset of TypeScript, your editor already 
+supports syntax highlighting, formatting and auto-completion for it. 
+Simply configure your editor to treat `.tson` files as TypeScript files.
+
+
+## Why?
 Almost all developer tools require some form of configuration. In our opinion,
 an ideal configuration language should be:
 + **Easy to read and write by humans**
@@ -59,16 +126,34 @@ for configuration. But when writting tools in other languages like `go`, what he
 us back was the lack of native libraries for evaluating TypeScript-based
 configs. We decided to build TySON to address this issue.
 
-# Status
+## Command Line Tool
+TySON comes with a command line tool that can be used to convert TySON files to
+JSON. To install it, run:
+
+```bash
+curl -fsSL https://get.jetpack.io/tyson | bash
+```
+
+To convert the file `input.tson` into JSON, run:
+
+```bash
+tyson eval input.tson
+```
+
+The resulting JSON will be printed to stdout.
+
+## Next Steps
 We're sharing TySON as an early developer preview, to get feedback from the
 community before we solidify the spec.
 
 At the moment we offer:
-1. A golang library that can parse TySON files and evaluate them to JSON.
-   It is built on top of the widely adopted, and rock-solid `esbuild`.
-2. A command line tool, compiled as a single binary, that can parse and
+1. A `golang` library that can parse TySON files and evaluate them to JSON.
+   It is built on top of the widely adopted, and rock-solid `esbuild` with `es6`
+   syntax support.
+1. A command line tool, compiled as a single binary, that can parse and
    evaluate TySON files to JSON.
 
 Based on feedback from the community, we plan to add:
 1. A formal spec for TySON (once we feel confident that the feature set is stable).
-2. Implementations for other languages including `rust`.
+1. Implementations for other languages including `rust`.
+

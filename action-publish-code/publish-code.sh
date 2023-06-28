@@ -66,10 +66,17 @@ for arg in "$@"; do
 	fi
 	echo "Publishing dir '${dir}' to repo '${repo}' ..."
 
+	set -o xtrace # Print commands as they are executed
+
 	# Remove everything we don't want from the source repo:
+ 
+	# Only keep the tags belonging to the repo we care about
+	git tag -d $(git tag -l | grep -v "${repo}/*")
 	# TODO: Rewrite using https://github.com/newren/git-filter-repo since filter-branch is no longer
 	# recommended by git.
-	FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --tag-name-filter "grep '^${repo}/' | cut -f 2- -d '/'" --subdirectory-filter "${dir}" -- -- all
+	FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch \
+		--tag-name-filter "grep '^${repo}/' | cut -f 2- -d '/'" \
+		--subdirectory-filter "${dir}" --prune-empty -- --all
 
 	git clone "git@github.com:${org}/${repo}.git" "${TMPDIR}/${repo}"
 	pushd "${TMPDIR}/${repo}"
@@ -92,10 +99,12 @@ for arg in "$@"; do
 	git push origin main --follow-tags
 
 	popd # Back to origin repo
+	set +o xtrace # Turn off tracing
 
 	# Undo the filtering so we can re-use the source repo for another rewrite.
 	git for-each-ref --format="update %(refname:lstrip=2) %(objectname)" refs/original/ | git update-ref --stdin
 	git for-each-ref --format="delete %(refname) %(objectname)" refs/original/ | git update-ref --stdin
+	git fetch --tags --force  # Restore all tags
 	git reset --hard HEAD
 
 	echo "[DONE] Published dir '${dir}' to repo '${repo}' ..."
