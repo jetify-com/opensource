@@ -55,7 +55,7 @@ func TestInvalidSuffix(t *testing.T) {
 		{"long", "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"},
 		{"caps", "00041061050R3GG28A1C60T3GF"}, // Would be valid in lowercase
 		{"hyphens", "00041061050-3gg28a1-60t3gf"},
-		{"crockford_ambiguous", "ooo41o61o5or3gg28a1c6ot3gi"}, // Would be valid if we followed Crocksford's rules
+		{"crockford_ambiguous", "ooo41o61o5or3gg28a1c6ot3gi"}, // Would be valid if we followed Crocksford's substitution rules
 		{"symbols", "00041061050.3gg28a1_60t3gf"},
 		{"wrong_alphabet", "ooooooiiiiiiuuuuuuulllllll"},
 	}
@@ -104,6 +104,10 @@ func TestSpecialValues(t *testing.T) {
 		uuid string
 	}{
 		{"nil", "00000000000000000000000000", "00000000-0000-0000-0000-000000000000"},
+		{"one", "00000000000000000000000001", "00000000-0000-0000-0000-000000000001"},
+		{"ten", "0000000000000000000000000a", "00000000-0000-0000-0000-00000000000a"},
+		{"sixteen", "0000000000000000000000000g", "00000000-0000-0000-0000-000000000010"},
+		{"thirty-two", "00000000000000000000000010", "00000000-0000-0000-0000-000000000020"},
 	}
 	for _, td := range testdata {
 		t.Run(td.name, func(t *testing.T) {
