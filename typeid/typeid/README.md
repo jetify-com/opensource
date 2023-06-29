@@ -11,7 +11,7 @@ in Stripe's APIs.
 TypeIDs are canonically encoded as lowercase strings consisting of three parts:
 1. A type prefix (at most 63 characters in all lowercase ASCII [a-z])
 2. An underscore '_' separator
-3. A 128-bit UUIDv7 encoded as a 26-character string in base32.
+3. A 128-bit UUIDv7 encoded as a 26-character string using a modified base32 encoding.
 
 Here's an example of a TypeID of type `user`:
 
