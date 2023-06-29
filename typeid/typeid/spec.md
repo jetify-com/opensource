@@ -1,6 +1,6 @@
 # TypeID Specification (Version 0.1.0)
 
-# Overview
+## Overview
 TypeIDs are a type-safe extension of UUIDv7, they encode UUIDs in base32 and add a type suffix.
 
 Here's an example of a TypeID of type `user`:
@@ -13,7 +13,7 @@ Here's an example of a TypeID of type `user`:
 
 This document formalizes the specification for TypeIDs.
 
-# Specification
+## Specification
 
 A typeid consists of three parts:
 1. A **type prefix**: a string denoting the type of the ID. The prefix should be
@@ -21,7 +21,7 @@ A typeid consists of three parts:
 1. A **separator**: an underscore '_' character.
 1. A **UUID suffix**: a 128-bit UUIDv7 encoded as a 26-character string in base32.
 
-## Type Prefix
+### Type Prefix
 A type prefix is a string denoting the type of the ID. The prefix should be at most
 63 characters in all lowercase ASCII [a-z]. Valid prefixes should match the following
 regex: `[a-z]{0,63}`.
@@ -33,15 +33,15 @@ applications should use a prefix that is at least 3 characters long.
 > Note: [There's a proposal](https://github.com/jetpack-io/typeid/issues/7) to add `_` as
 > an allowed separator within type prefixes.
 
-## Separator
+### Separator
 The separator is a single underscore character `_`. If the prefix is empty, the separator
 is omitted.
 
-## UUID Suffix
+### UUID Suffix
 The UUID suffix encodes exactly 128-bits of data in 26 characters. It uses the base32
 encoding described below.
 
-### Base32 Encoding
+#### Base32 Encoding
 Bytes from the UUID are encoded byte-by-byte from left to right. No padding is used.
 Note that this is different from the standard base32 encoding which encodes in
 groups of 5 bytes and uses padding.
@@ -64,14 +64,14 @@ This is the same alphabet used by Crockford's base32 encoding, but in our case t
 alphabet encoding is strict: always in lowercase, no hypens allowed, and we never decode
 multiple ambiguous characters to the same value.
 
-### Compatibility with UUID
+#### Compatibility with UUID
 When genarating a new TypeID, the generated UUID suffix MUST decode to a valid UUIDv7.
 
 Implementations MAY allow encoding/decoding of other UUID variants when the
 bits are provided by end users. This makes it possible for applications to encode
 other UUID variants like UUIDv1 or UUIDv4 at their discretion.
 
-# Versioning
+## Versioning
 This spec uses semantic versioning: `MAJOR.MINOR.PATCH`. The version is incremented
 when the spec changes in a way that is not backwards compatible.
 
