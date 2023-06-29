@@ -60,9 +60,9 @@ indicted by the following table:
 | 6     | 6      | 14    | e      | 22    | p      | 30    | y      |
 | 7     | 7      | 15    | f      | 23    | q      | 31    | z      |
 
-This is the same alphabet used by Crockford's base32 encoding, but in our case the
-alphabet encoding is strict: always in lowercase, no hypens allowed, and we never decode
-multiple ambiguous characters to the same value.
+This is the same alphabet used by [Crockford's base32 encoding](https://www.crockford.com/base32.html),
+but in our case the alphabet encoding is strict: always in lowercase, no hypens allowed,
+and we never decode multiple ambiguous characters to the same value.
 
 #### Compatibility with UUID
 When genarating a new TypeID, the generated UUID suffix MUST decode to a valid UUIDv7.
