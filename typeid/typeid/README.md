@@ -21,6 +21,8 @@ Here's an example of a TypeID of type `user`:
   type    uuid suffix (base32)
 ```
 
+A more formal specification can be found [here](./spec.md).
+
 ## Benefits
 + **Type-safe:** you can't accidentally use a `user` ID where a `post` ID is expected. When debugging, you can
   immediately understand what type of entity a TypeID refers to thanks to the type prefix.
@@ -31,6 +33,7 @@ Here's an example of a TypeID of type `user`:
   selected for copy-pasting by double-clicking, and is a more compact encoding than the traditional hex encoding used by UUIDs (26 characters vs 36 characters).
 
 ## Implementations
+Implementations should adhere to the formal [specification](./spec.md).
 
 ### Official Implementations by `jetpack.io`
 | Language | Status |
