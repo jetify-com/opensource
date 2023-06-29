@@ -40,7 +40,6 @@ Implementations should adhere to the formal [specification](./spec.md).
 | -------- | ------ |
 | [Go](https://github.com/jetpack-io/typeid-go) | ✓ Implemented |
 | Python | ... Coming Soon |
-| Rust | ... Coming Soon |
 | [SQL](https://github.com/jetpack-io/typeid-sql) | ✓ Implemented |
 | [TypeScript](https://github.com/jetpack-io/typeid-ts) | ✓ Implemented |
 
