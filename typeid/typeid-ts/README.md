@@ -1,4 +1,4 @@
-# TypeID JS
+# TypeID TS
 ### A JavaScript implementation of [TypeIDs](https://github.com/jetpack-io/typeid) using TypeScript.
 
 TypeIDs are a modern, **type-safe**, globally unique identifier based on the upcoming
