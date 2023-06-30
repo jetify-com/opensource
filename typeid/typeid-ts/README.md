@@ -14,7 +14,7 @@ any JavaScript or TypeScript project.
 To create a random TypeID of a given type, use the `typeid()` function:
 
 ```typescript
-import { typeid } from 'typeid-ts';
+import { typeid } from 'typeid-js';
 const tid = typeid("prefix");
 ```
 
@@ -22,7 +22,7 @@ The prefix is optional, so if you need to create an id with a type prefix, you
 can do that too:
 
 ```typescript
-import { typeid } from 'typeid-ts';
+import { typeid } from 'typeid-js';
 const tid = typeid();
 ```
 
@@ -31,14 +31,14 @@ be used to encode/decode from other formats.
 
 For example, to parse an existing typeid from a string:
 ```typescript
-import { TypeID } from 'typeid-ts';
+import { TypeID } from 'typeid-js';
 
 const tid = TypeID.fromString("prefix_00041061050r3gg28a1c60t3gf);
 ```
 
 To encode an existing UUID as a TypeID:
 ```typescript
-import { TypeID } from 'typeid-ts';
+import { TypeID } from 'typeid-js';
 
 const tid = TypeID.fromUUID("prefix", "00000000-0000-0000-0000-000000000000");
 ```
