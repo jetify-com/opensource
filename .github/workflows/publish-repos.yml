@@ -48,5 +48,5 @@ jobs:
             typeid/typeid
             typeid/typeid-go
             typeid/typeid-sql
-            typeid/typeid-ts
+            typeid/typeid-js
             tyson
