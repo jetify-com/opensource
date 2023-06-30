@@ -42,12 +42,20 @@ The UUID suffix encodes exactly 128-bits of data in 26 characters. It uses the b
 encoding described below.
 
 #### Base32 Encoding
-Bytes from the UUID are encoded byte-by-byte from left to right. No padding is used.
+Bytes from the UUID are encoded from left to right. Two zeroed bits are pre-pended
+to the 128-bits of the UUID, resulting in 130-bits of data. The 130-bits are then
+split into 5-bit chunks, and each chunk is encoded as a single character in the
+base32 alphabet, resulting in a total of 26 characters.
+
+In practice this is most often done by using bit-shifting and a lookup table. See
+the [reference implementation encoding](https://github.com/jetpack-io/typeid-go/blob/main/base32/base32.go)
+for an example.
+
 Note that this is different from the standard base32 encoding which encodes in
-groups of 5 bytes and uses padding.
+groups of 5 bytes (40 bits) and appends any padding at the end of the data.
 
 The encoding uses the following alphabet `0123456789abcdefghjkmnpqrstvwxyz` as
-indicted by the following table:
+specified by the following table:
 
 | Value | Symbol | Value | Symbol | Value | Symbol | Value | Symbol |
 |-------|--------|-------|--------|-------|--------|-------|--------|
@@ -61,7 +69,7 @@ indicted by the following table:
 | 7     | 7      | 15    | f      | 23    | q      | 31    | z      |
 
 This is the same alphabet used by [Crockford's base32 encoding](https://www.crockford.com/base32.html),
-but in our case the alphabet encoding is strict: always in lowercase, no hypens allowed,
+but in our case the alphabet encoding is strict: always in lowercase, no hyphens allowed,
 and we never decode multiple ambiguous characters to the same value.
 
 #### Compatibility with UUID
@@ -78,3 +86,12 @@ when the spec changes in a way that is not backwards compatible.
 Libraries that implement this spec should also use semantic versioning, and their
 MAJOR and MINOR versions should match the version of the spec they implement.
 The PATCH version is up to the discretion of the library author.
+
+## Validating Implementations
+To assist library authors in validating their implementations, we provide:
++ A reference implementation in [Go](https://github.com/jetpack-io/typeid-go)
+  with extensive testing.
++ A [valid.toml](valid.toml) file containing a list of valid typeids along 
+  with their corresponding decoded UUIDs.
++ An [invalid.toml](invalid.toml) file containing a list of strings that are
+  invalid typeids and should fail to parse/decode.
