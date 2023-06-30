@@ -6,7 +6,7 @@
     "typeid",
     "uuid",
     "uuidv7",
-    "gid"
+    "guid"
   ],
   "homepage": "https://github.com/jetpack-io/typeid-js",
   "bugs": "https://github.com/jetpack-io/typeid-js/issues",
