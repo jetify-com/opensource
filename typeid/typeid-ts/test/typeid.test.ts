@@ -121,16 +121,38 @@ describe('TypeID', () => {
     });
   });
 
+  describe('encode <-> decode', () => {
+    it('should be invariant on random ids with a prefix', () => {
+      for (let i = 0; i < 1000; i += 1) {
+        const prefix = "test";
+        const tid = typeid(prefix);
+        const decoded = TypeID.fromString(tid.toString());
+
+        expect(decoded).toEqual(tid);
+      }
+    });
+
+    it('should be invariant on random ids without a prefix', () => {
+      for (let i = 0; i < 1000; i += 1) {
+        const tid = typeid();
+        const decoded = TypeID.fromString(tid.toString());
+
+        expect(decoded).toEqual(tid);
+      }
+    });
+  });
+
+
   describe('spec', () => {
     validJson.forEach((testcase: { name: string, prefix: string, typeid: string, uuid: string }) => {
-      it(`should parse spec string: ${testcase.name}`, () => {
+      it(`parses string from valid case: ${testcase.name}`, () => {
         const tid = TypeID.fromString(testcase.typeid);
         expect(tid.getType()).toBe(testcase.prefix);
         expect(tid.toString()).toBe(testcase.typeid);
         expect(tid.asUUID()).toBe(testcase.uuid);
       });
 
-      it(`should encode spec uuid: ${testcase.name}`, () => {
+      it(`encodes uuid from valid case: ${testcase.name}`, () => {
         const tid = TypeID.fromUUID(testcase.prefix, testcase.uuid);
         expect(tid.getType()).toBe(testcase.prefix);
         expect(tid.toString()).toBe(testcase.typeid);
@@ -139,7 +161,7 @@ describe('TypeID', () => {
     });
 
     invalidJson.forEach((testcase: { name: string, typeid: string }) => {
-      it(`should throw an error for invalid spec test: ${testcase.name}`, () => {
+      it(`errors on invalid case: ${testcase.name}`, () => {
         expect(() => {
           TypeID.fromString(testcase.typeid);
         }).toThrowError();
