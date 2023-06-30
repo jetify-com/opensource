@@ -1,6 +1,8 @@
-import {describe, expect, it} from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 
 import { typeid, TypeID } from "../src/typeid";
+import validJson from "./valid";
+import invalidJson from "./invalid";
 
 describe('TypeID', () => {
   describe('constructor', () => {
@@ -26,13 +28,13 @@ describe('TypeID', () => {
     it('should throw an error if prefix is not lowercase', () => {
       expect(() => {
         typeid("TEST", "00041061050r3gg28a1c60t3gf");
-      }).toThrowError("Invalid prefix. Must be lowercase ascii letters [a-z].");
-  
+      }).toThrowError("Invalid prefix. Must be at most 63 ascii letters [a-z]");
+
       expect(() => {
         typeid("  ", "00041061050r3gg28a1c60t3gf");
-      }).toThrowError("Invalid prefix. Must be lowercase ascii letters [a-z].");
+      }).toThrowError("Invalid prefix. Must be at most 63 ascii letters [a-z]");
     });
-  
+
     it('should throw an error if suffix length is not 26', () => {
       expect(() => {
         typeid("test", "abc");
@@ -61,7 +63,7 @@ describe('TypeID', () => {
     it('should construct TypeID from a string without prefix', () => {
       const str = '00041061050r3gg28a1c60t3gf';
       const tid = TypeID.fromString(str);
-      
+
       expect(tid.getSuffix()).toBe(str);
       expect(tid.getType()).toBe('');
     });
@@ -69,14 +71,14 @@ describe('TypeID', () => {
     it('should construct TypeID from a string with prefix', () => {
       const str = 'prefix_00041061050r3gg28a1c60t3gf';
       const tid = TypeID.fromString(str);
-      
+
       expect(tid.getSuffix()).toBe('00041061050r3gg28a1c60t3gf');
       expect(tid.getType()).toBe('prefix');
     });
 
     it('should throw an error for invalid TypeID string', () => {
       const invalidStr = 'invalid_string_with_underscore';
-      
+
       expect(() => {
         TypeID.fromString(invalidStr);
       }).toThrowError(new Error(`Invalid TypeID string: ${invalidStr}`));
@@ -116,6 +118,32 @@ describe('TypeID', () => {
 
       expect(tid.getSuffix()).toBe('01h2e8kqvbfwea724h75qc655w');
       expect(tid.getType()).toBe('prefix');
+    });
+  });
+
+  describe('spec', () => {
+    validJson.forEach((testcase: { name: string, prefix: string, typeid: string, uuid: string }) => {
+      it(`should parse spec string: ${testcase.name}`, () => {
+        const tid = TypeID.fromString(testcase.typeid);
+        expect(tid.getType()).toBe(testcase.prefix);
+        expect(tid.toString()).toBe(testcase.typeid);
+        expect(tid.asUUID()).toBe(testcase.uuid);
+      });
+
+      it(`should encode spec uuid: ${testcase.name}`, () => {
+        const tid = TypeID.fromUUID(testcase.prefix, testcase.uuid);
+        expect(tid.getType()).toBe(testcase.prefix);
+        expect(tid.toString()).toBe(testcase.typeid);
+        expect(tid.asUUID()).toBe(testcase.uuid);
+      });
+    });
+
+    invalidJson.forEach((testcase: { name: string, typeid: string }) => {
+      it(`should throw an error for invalid spec test: ${testcase.name}`, () => {
+        expect(() => {
+          TypeID.fromString(testcase.typeid);
+        }).toThrowError();
+      });
     });
   });
 
