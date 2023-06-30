@@ -1,6 +1,7 @@
 package typeid
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -84,6 +85,9 @@ func FromString(s string) (TypeID, error) {
 	case 1:
 		return From("", parts[0])
 	case 2:
+		if parts[0] == "" {
+			return Nil, errors.New("prefix cannot be empty when there's a separator")
+		}
 		return From(parts[0], parts[1])
 	default:
 		return Nil, fmt.Errorf("invalid typeid: %s", s)
