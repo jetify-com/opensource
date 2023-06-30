@@ -10,7 +10,24 @@ This is the official JavaScript / TypeScript implementation of TypeID by the
 [jetpack.io](https://jetpack.io) team. It provides an npm package that can be used by
 any JavaScript or TypeScript project.
 
-# Library Usage
+# Installation
+
+Using npm:
+```bash
+npm install typeid-js
+```
+
+Using yarn:
+```bash
+yarn add typeid-js
+```
+
+Using pnpm:
+```bash
+pnpm add typeid-js
+```
+
+# Usage
 To create a random TypeID of a given type, use the `typeid()` function:
 
 ```typescript
