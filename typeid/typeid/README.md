@@ -39,7 +39,7 @@ Implementations should adhere to the formal [specification](./spec).
 | Language | Status |
 | -------- | ------ |
 | [Go](https://github.com/jetpack-io/typeid-go) | ✓ Implemented |
-| [Python](https://github.com/akhundMurad/typeid-python) | ✓ Implemented |
+| Python | ... Coming Soon |
 | [SQL](https://github.com/jetpack-io/typeid-sql) | ✓ Implemented |
 | [TypeScript](https://github.com/jetpack-io/typeid-ts) | ✓ Implemented |
 
