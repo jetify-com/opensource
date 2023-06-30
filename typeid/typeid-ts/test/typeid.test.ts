@@ -149,14 +149,14 @@ describe('TypeID', () => {
         const tid = TypeID.fromString(testcase.typeid);
         expect(tid.getType()).toBe(testcase.prefix);
         expect(tid.toString()).toBe(testcase.typeid);
-        expect(tid.asUUID()).toBe(testcase.uuid);
+        expect(tid.toUUID()).toBe(testcase.uuid);
       });
 
       it(`encodes uuid from valid case: ${testcase.name}`, () => {
         const tid = TypeID.fromUUID(testcase.prefix, testcase.uuid);
         expect(tid.getType()).toBe(testcase.prefix);
         expect(tid.toString()).toBe(testcase.typeid);
-        expect(tid.asUUID()).toBe(testcase.uuid);
+        expect(tid.toUUID()).toBe(testcase.uuid);
       });
     });
 

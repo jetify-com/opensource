@@ -64,8 +64,8 @@ The full list of methods includes:
 + `getType()`: Returns the type of the type prefix
 + `getSuffix()`: Returns uuid suffix in its base32 representation
 + `toString()`: Encodes the object as a string, using the canonical format
-+ `asUUID()`: Decodes the TypeID into a UUID string in hex format. The type prefix is ignored
-+ `asUUIDBytes()`: Decodes the TypeID into a UUID byte array. The type prefix is ignored
++ `toUUID()`: Decodes the TypeID into a UUID string in hex format. The type prefix is ignored
++ `toUUIDBytes()`: Decodes the TypeID into a UUID byte array. The type prefix is ignored
 + `fromString(str)`: Parses a TypeID from a string
 + `fromUUID(prefix, uuid)`: Creates a TypeID from a prefix and a UUID in hex format
 + `fromUUIDBytes(prefix, bytes)`: Creates a TypeID from a prefix and a UUID in byte array format

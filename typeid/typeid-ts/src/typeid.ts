@@ -49,12 +49,12 @@ export class TypeID {
     return this.suffix;
   }
 
-  public asUUIDBytes(): Uint8Array {
+  public toUUIDBytes(): Uint8Array {
     return decode(this.suffix);
   }
 
-  public asUUID(): string {
-    const uuid = new UUID(this.asUUIDBytes());
+  public toUUID(): string {
+    const uuid = new UUID(this.toUUIDBytes());
     return uuid.toString();
   }
 
