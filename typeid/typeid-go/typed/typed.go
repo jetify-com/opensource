@@ -6,21 +6,24 @@ import (
 	untyped "go.jetpack.io/typeid"
 )
 
-// IDType is an interface used to represent a statically checked ID type.
+// TypePrefix is an interface used to represent a statically checked type prefix.
 // Example:
-// type UserIDType struct{}
-// func (UserIDType) Type() string { return "user" }
-type IDType interface {
+// type userPrefix struct{}
+// func (userPrefix) Type() string { return "user" }
+//
+//	type UserID struct {
+//		typeid.TypeID[userPrefix]
+//	}
+type TypePrefix interface {
 	Type() string
 }
 
 // TypeID is a unique identifier with a given type as defined by the TypeID spec
-type TypeID[T IDType] untyped.TypeID
+type TypeID[T TypePrefix] untyped.TypeID
 
 // New returns a new TypeID with a random suffix and the given type.
-func New[T IDType]() (TypeID[T], error) {
-	var prefix T
-	tid, err := untyped.New(prefix.Type())
+func New[T TypePrefix]() (TypeID[T], error) {
+	tid, err := untyped.New(Type[T]())
 	if err != nil {
 		// Clients should ignore the id value when an error is present, but just
 		// in case, construct a "nil" id of the given type.
@@ -29,15 +32,20 @@ func New[T IDType]() (TypeID[T], error) {
 	return (TypeID[T])(tid), nil
 }
 
-// Nil returns the null typeid of the given type.
-func Nil[T IDType]() TypeID[T] {
+func Type[T TypePrefix]() string {
 	var prefix T
-	return TypeID[T](untyped.Must(untyped.From(prefix.Type(), "00000000000000000000000000")))
+	return prefix.Type()
+}
+
+// Nil returns the null typeid of the given type.
+func Nil[T TypePrefix]() TypeID[T] {
+	return TypeID[T](untyped.Must(untyped.From(Type[T](), "00000000000000000000000000")))
 }
 
 // Type returns the type prefix of the TypeID
 func (tid TypeID[T]) Type() string {
-	return untyped.TypeID(tid).Type()
+	var prefix T
+	return prefix.Type()
 }
 
 // Suffix returns the suffix of the TypeID in it's canonical base32 representation.
@@ -62,9 +70,8 @@ func (tid TypeID[T]) UUID() string {
 }
 
 // From returns a new TypeID of the given type using the provided suffix
-func From[T IDType](suffix string) (TypeID[T], error) {
-	var prefix T
-	tid, err := untyped.From(prefix.Type(), suffix)
+func From[T TypePrefix](suffix string) (TypeID[T], error) {
+	tid, err := untyped.From(Type[T](), suffix)
 	if err != nil {
 		return Nil[T](), err
 	}
@@ -74,22 +81,20 @@ func From[T IDType](suffix string) (TypeID[T], error) {
 // FromString parses a TypeID from the given string. Returns an error if the
 // string is not a valid TypeID, OR if the type prefix does not match the
 // expected type.
-func FromString[T IDType](s string) (TypeID[T], error) {
-	var prefix T
+func FromString[T TypePrefix](s string) (TypeID[T], error) {
 	tid, err := untyped.FromString(s)
 	if err != nil {
 		return Nil[T](), err
 	}
-	if tid.Type() != prefix.Type() {
-		return Nil[T](), fmt.Errorf("invalid type, expected %s but got %s", prefix.Type(), tid.Type())
+	if tid.Type() != Type[T]() {
+		return Nil[T](), fmt.Errorf("invalid type, expected %s but got %s", Type[T](), tid.Type())
 	}
 	return (TypeID[T])(tid), nil
 }
 
 // FromUUID returns a new TypeID of the given type using the provided UUID
-func FromUUID[T IDType](uuid string) (TypeID[T], error) {
-	var prefix T
-	tid, err := untyped.FromUUID(prefix.Type(), uuid)
+func FromUUID[T TypePrefix](uuid string) (TypeID[T], error) {
+	tid, err := untyped.FromUUID(Type[T](), uuid)
 	if err != nil {
 		return Nil[T](), err
 	}
@@ -97,9 +102,8 @@ func FromUUID[T IDType](uuid string) (TypeID[T], error) {
 }
 
 // FromUUIDBytes returns a new TypeID of the given type using the provided UUID bytes
-func FromUUIDBytes[T IDType](uuid []byte) (TypeID[T], error) {
-	var prefix T
-	tid, err := untyped.FromUUIDBytes(prefix.Type(), uuid)
+func FromUUIDBytes[T TypePrefix](uuid []byte) (TypeID[T], error) {
+	tid, err := untyped.FromUUIDBytes(Type[T](), uuid)
 	if err != nil {
 		return Nil[T](), err
 	}
@@ -107,7 +111,7 @@ func FromUUIDBytes[T IDType](uuid []byte) (TypeID[T], error) {
 }
 
 // Must panics if the given error is non-nil, otherwise it returns the given TypeID
-func Must[T IDType](tid TypeID[T], err error) TypeID[T] {
+func Must[T TypePrefix](tid TypeID[T], err error) TypeID[T] {
 	if err != nil {
 		panic(err)
 	}

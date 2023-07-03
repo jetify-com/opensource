@@ -30,8 +30,9 @@ import (
   typeid "go.jetpack.io/typeid/typed"
 )
 
-type UserIDType struct{}
-func (UserIDType) Type() string { return "user" }
+type userPrefix struct{}
+func (userPrefix) Type() string { return "user" }
+type UserID struct { typeid.TypeID[userPrefix] }
 ```
 
 And now use those types to generate TypeIDs:

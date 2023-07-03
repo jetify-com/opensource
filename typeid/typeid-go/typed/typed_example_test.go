@@ -6,17 +6,21 @@ import (
 	typeid "go.jetpack.io/typeid/typed"
 )
 
-type UserIDType struct{}
+type userPrefix struct{}
 
-func (UserIDType) Type() string { return "user" }
+func (userPrefix) Type() string { return "user" }
 
-type AccountIDType struct{}
+type UserID struct{ typeid.TypeID[userPrefix] }
 
-func (AccountIDType) Type() string { return "account" }
+type accountPrefix struct{}
+
+func (accountPrefix) Type() string { return "account" }
+
+type AccountID struct{ typeid.TypeID[accountPrefix] }
 
 func Example() {
-	user_id, _ := typeid.New[UserIDType]()
-	account_id, _ := typeid.New[AccountIDType]()
+	user_id, _ := typeid.New[UserID]()
+	account_id, _ := typeid.New[AccountID]()
 	// Each ID should have the correct type prefix:
 	fmt.Printf("User ID prefix: %s\n", user_id.Type())
 	fmt.Printf("Account ID prefix: %s\n", account_id.Type())
@@ -26,5 +30,5 @@ func Example() {
 	// Output:
 	// User ID prefix: user
 	// Account ID prefix: account
-	// typed.TypeID[go.jetpack.io/typeid/typed_test.UserIDType] != typed.TypeID[go.jetpack.io/typeid/typed_test.AccountIDType]
+	// typed.TypeID[go.jetpack.io/typeid/typed_test.UserID] != typed.TypeID[go.jetpack.io/typeid/typed_test.AccountID]
 }
