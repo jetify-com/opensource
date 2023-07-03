@@ -43,7 +43,7 @@ import (
 )
 
 func example() {
-  tid := typeid.New[UserIDType]()
+  tid := typeid.New[UserID]()
   fmt.Println(tid)
 }
 ```
