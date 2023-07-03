@@ -11,7 +11,10 @@
 // And now you can use your IDTypes via generics. For example, to create a
 // new ID of type user:
 //
-//		import (typeid "go.jetpack.io/typeid/typed")
+//	  import (
+//		   typeid "go.jetpack.io/typeid/typed"
+//		 )
+//
 //	  user_id, _ := typeid.New[UserIDType]()
 //
 // Because this implementation uses generics, the go compiler itself will

@@ -34,7 +34,7 @@ type UserIDType struct{}
 func (UserIDType) Type() string { return "user" }
 ```
 
-And now uses those types to generate TypeIDs:
+And now use those types to generate TypeIDs:
 
 ```go
 import (
