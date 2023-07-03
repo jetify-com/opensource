@@ -20,8 +20,8 @@ go get go.jetpack.io/typeid
 ## Usage
 This library provides both a statically typed and a dynamically typed version of TypeIDs.
 
-The statically typed version that lives under the `typed` package is the recommended version,
-because it makes it possible for the go compiler itself to enforce type safety.
+The statically typed version that lives under the `typed` package, it makes it possible for
+the go compiler itself to enforce type safety.
 
 To use it, first define your TypeID types:
 
