@@ -9,7 +9,7 @@ import (
 // IDType is an interface used to represent a statically checked ID type.
 // Example:
 // type UserIDType struct{}
-// func (UserIDType) Prefix() string { return "user" }
+// func (UserIDType) Type() string { return "user" }
 type IDType interface {
 	Type() string
 }
