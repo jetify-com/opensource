@@ -9,13 +9,12 @@
 // This transformation is important, because it makes it possible to read standard
 // .json files as valid .tson files.
 
-// In this example, the following object literal
+// In this example, the following object literal is interpreted as the default export:
 {
   foo: 'bar',
 }
 
-// Is interpreted as the default export. In other words, it's the same as if we
-// had written:
+// In other words, it's the same as if we had written:
 // export default {
 //  foo: 'bar',
 // }
