@@ -1,5 +1,4 @@
-// Data copied from the invalid.yml spec file
-export default [
+[
   {
     "name": "prefix-uppercase",
     "typeid": "PREFIX_00000000000000000000000000",
