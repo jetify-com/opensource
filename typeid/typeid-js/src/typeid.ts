@@ -18,6 +18,10 @@ function isValidPrefix(str: string): boolean {
   return true;
 };
 
+export interface NarrowTypeID<T extends string> extends TypeID {
+  getType(): T;
+}
+
 export class TypeID {
   constructor(private prefix: string = "", private suffix: string = "") {
     if (!isValidPrefix(prefix)) {
@@ -67,6 +71,14 @@ export class TypeID {
       return this.suffix;
     }
     return `${this.prefix}_${this.suffix}`;
+  }
+
+  public asType<T extends string>(prefix: T): NarrowTypeID<T> {
+    const self = this as NarrowTypeID<string>;
+    if (self.prefix !== prefix) {
+      throw new Error("Prefix mismatch");
+    }
+    return self as NarrowTypeID<T>;
   }
 
   static fromString(str: string): TypeID {

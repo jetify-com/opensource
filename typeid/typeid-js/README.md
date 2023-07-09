@@ -35,6 +35,19 @@ import { typeid } from 'typeid-js';
 const tid = typeid("prefix");
 ```
 
+The TypeID can also be narrowed to a specific prefix.
+When calling asType, the TypeID's prefix will be compared
+and an error will be thrown if there's a mismatch.
+```typescript
+import { typeid } from 'typeid-js';
+
+const prefix = 'prefix' as const;
+const tid = typeid(prefix);
+
+tid.asType(prefix); // NarrowTypeID<'prefix'>
+tid.asType('suffix'); // throws
+```
+
 The prefix is optional, so if you need to create an id without a type prefix, you
 can do that too:
 

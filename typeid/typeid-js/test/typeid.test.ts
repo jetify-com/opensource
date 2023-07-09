@@ -121,6 +121,20 @@ describe('TypeID', () => {
     });
   });
 
+  describe('asType', () => {
+    it('should return the same TypeID by reference', () => {
+      const prefix = 'prefix' as const;
+      const id = typeid(prefix);
+      const narrowed = id.asType(prefix);
+      expect(id).toEqual(narrowed);
+    });
+
+    it('should throw an error on prefix mismatch', () => {
+      const id = typeid('foo');
+      expect(() => id.asType('bar')).toThrow('Prefix mismatch');
+    });
+  });
+
   describe('encode <-> decode', () => {
     it('should be invariant on random ids with a prefix', () => {
       for (let i = 0; i < 1000; i += 1) {
