@@ -157,7 +157,7 @@ named so after the [Turing Tarpit](https://en.wikipedia.org/wiki/Turing_tarpit) 
 > "Every configuration language that supports logic, eventually evolves into an ad-hoc,
 > informally-specified, bug-ridden, and slow implementation of a Turing complete language."
 
-This is meant to be tongue-in-cheek: many of the above languages are well-specified, and not buggy ... but still, while trying to adopt them,
+This is meant to be tongue-in-cheek: many of the above languages are well-specified, and not buggy, some are not even Turing Complete ... but still, while trying to adopt them,
 we found ourselves frustrated, wishing that instead of learning a new syntax, we could just
 use an existing, widely adopted language like TypeScript instead.
 
