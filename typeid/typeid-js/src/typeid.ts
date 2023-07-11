@@ -19,8 +19,7 @@ function isValidPrefix(str: string): boolean {
 };
 
 export class TypeID<const T extends string> {
-
-  constructor(private prefix: T | "" = "", private suffix: string = "") {
+  constructor(private prefix: T = "" as T, private suffix: string = "") {
     if (!isValidPrefix(prefix)) {
       throw new Error("Invalid prefix. Must be at most 63 ascii letters [a-z]");
     }
@@ -73,13 +72,13 @@ export class TypeID<const T extends string> {
   static fromString<const T extends string>(str: string): TypeID<T> {
     const parts = str.split("_");
     if (parts.length === 1) {
-      return new TypeID<T>("", parts[0]);
+      return new TypeID<T>("" as T, parts[0]);
     }
     if (parts.length === 2) {
       if (parts[0] === "") {
         throw new Error(`Invalid TypeID. Prefix cannot be empty when there's a separator: ${str}`);
       }
-      return new TypeID<T>(parts[0], parts[1]);
+      return new TypeID<T>(parts[0] as T, parts[1]);
     }
     throw new Error(`Invalid TypeID string: ${str}`);
   }
@@ -95,8 +94,5 @@ export class TypeID<const T extends string> {
   }
 }
 
-export const typeid = <const T extends string>(prefix: T | "" = "", suffix: string = "") => new TypeID(prefix, suffix) as TypeID<T>;
-
-
-var myval = typeid("foo");
-myval = typeid();
+export const typeid = <const T extends string>(prefix: T = "" as T, suffix: string = "") =>
+  new TypeID(prefix, suffix) as TypeID<T>;
