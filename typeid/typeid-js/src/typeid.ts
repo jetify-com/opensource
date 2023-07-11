@@ -19,7 +19,7 @@ function isValidPrefix(str: string): boolean {
 };
 
 export class TypeID<const T extends string> {
-  constructor(private prefix: T = "" as T, private suffix: string = "") {
+  constructor(private prefix: T, private suffix: string = "") {
     if (!isValidPrefix(prefix)) {
       throw new Error("Invalid prefix. Must be at most 63 ascii letters [a-z]");
     }
@@ -51,6 +51,14 @@ export class TypeID<const T extends string> {
 
   public getSuffix(): string {
     return this.suffix;
+  }
+
+  public asType<const U extends string>(prefix: U): TypeID<U> {
+    const self = this as unknown as TypeID<U>;
+    if (self.prefix !== prefix) {
+      throw new Error(`Cannot convert TypeID of type ${self.prefix} to type ${prefix}`);
+    }
+    return self;
   }
 
   public toUUIDBytes(): Uint8Array {
@@ -94,5 +102,9 @@ export class TypeID<const T extends string> {
   }
 }
 
-export const typeid = <const T extends string>(prefix: T = "" as T, suffix: string = "") =>
-  new TypeID(prefix, suffix) as TypeID<T>;
+export function typeid<T extends string>(): TypeID<''>;
+export function typeid<T extends string>(prefix: T): TypeID<T>;
+export function typeid<T extends string>(prefix: T, suffix: string): TypeID<T>;
+export function typeid<T extends string>(prefix: T = "" as T, suffix: string = ""): TypeID<T> {
+  return new TypeID(prefix, suffix);
+}
