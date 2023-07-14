@@ -1,6 +1,7 @@
 go 1.20
 
 use (
+	./sandbox/ghet
 	./typeid/typeid
 	./typeid/typeid-go
 	./tyson
