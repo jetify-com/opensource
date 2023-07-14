@@ -1,7 +1,6 @@
 go 1.20
 
 use (
-	./kai
 	./typeid/typeid
 	./typeid/typeid-go
 	./tyson
