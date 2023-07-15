@@ -12,12 +12,12 @@ import (
 func RootCmd() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "ghet",
-		Short: "Install GitHub releases",
+		Short: "Install packages from Github releases",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return cmd.Help()
 			}
-			return ghet.Download(args[0])
+			return ghet.Download(args...)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,
