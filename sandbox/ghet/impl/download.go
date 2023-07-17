@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/google/go-github/v53/github"
+	"go.jetpack.io/ghet/impl/fetch"
 	"go.jetpack.io/ghet/impl/pkgref"
 )
 
@@ -31,7 +32,7 @@ func Download(pkgs ...string) error {
 
 func download(ref pkgref.PkgRef) error {
 	fmt.Printf("Downloading %s...\n", ref)
-	gh := github.NewClient(nil)
+	gh := github.NewClient(fetch.HTTPClient())
 	// Figure out latest release:
 	release, _, err := gh.Repositories.GetLatestRelease(context.Background(), ref.Owner, ref.Repo)
 	if err != nil {
