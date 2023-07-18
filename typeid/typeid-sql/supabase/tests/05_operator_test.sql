@@ -1,6 +1,6 @@
 -- Start transaction and plan the tests.
 BEGIN;
-SELECT plan(30);
+SELECT plan(2);  -- number of tests to run
 
 create domain test_id AS typeid check (typeid_check(value, 'test'));
 
