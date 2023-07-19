@@ -5,8 +5,11 @@
 package fileutil
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
+
+	"github.com/rogpeppe/go-internal/renameio"
 )
 
 type Path string
@@ -21,8 +24,8 @@ func (p Path) Subpath(elements ...string) Path {
 }
 
 func IsDir(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
+	info := FileInfo(path)
+	if info == nil {
 		return false
 	}
 	return info.IsDir()
@@ -33,8 +36,8 @@ func (p Path) IsDir() bool {
 }
 
 func IsFile(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
+	info := FileInfo(path)
+	if info == nil {
 		return false
 	}
 	return info.Mode().IsRegular()
@@ -45,8 +48,7 @@ func (p Path) IsFile() bool {
 }
 
 func Exists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
+	return FileInfo(path) != nil
 }
 
 func (p Path) Exists() bool {
@@ -62,4 +64,27 @@ func EnsureDir(path string) error {
 
 func (p Path) EnsureDir() error {
 	return EnsureDir(p.String())
+}
+
+func FileInfo(path string) fs.FileInfo {
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil
+	}
+	return info
+}
+
+func (p Path) FileInfo() fs.FileInfo {
+	return FileInfo(p.String())
+}
+
+func WriteFile(path string, data []byte) error {
+	// First ensure the directory exists:
+	dir := filepath.Dir(path)
+	err := EnsureDir(dir)
+	if err != nil {
+		return err
+	}
+	// Write using `renameio` to ensure an atomic write:
+	return renameio.WriteFile(path, data)
 }

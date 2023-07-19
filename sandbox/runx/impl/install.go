@@ -13,7 +13,7 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/codeclysm/extract"
-	"go.jetpack.io/runx/impl/github"
+	"go.jetpack.io/runx/impl/registry"
 	"go.jetpack.io/runx/impl/types"
 )
 
@@ -40,9 +40,14 @@ func Install(pkgs ...string) error {
 }
 
 func install(ref types.PkgRef) error {
-	gh := github.NewClient()
+	rootDir := filepath.Join(xdg.CacheHome, xdgInstallationSubdir)
+	reg, err := registry.NewLocalRegistry(rootDir)
+	if err != nil {
+		return err
+	}
+
 	// Figure out latest release:
-	release, err := gh.GetRelease(context.Background(), ref)
+	release, err := reg.GetRelease(context.Background(), ref)
 	if err != nil {
 		return err
 	}
@@ -63,7 +68,15 @@ func install(ref types.PkgRef) error {
 		return errors.New("no artifact found")
 	}
 
-	installPath := filepath.Join(xdg.CacheHome, xdgInstallationSubdir, resolvedRef.Owner, resolvedRef.Repo, resolvedRef.Version)
+	installPath := filepath.Join(
+		xdg.CacheHome,
+		xdgInstallationSubdir,
+		resolvedRef.Owner,
+		resolvedRef.Repo,
+		resolvedRef.Version,
+		runtime.GOOS,
+		runtime.GOARCH,
+	)
 	err = os.MkdirAll(installPath, 0700)
 	if err != nil {
 		return err
