@@ -1,11 +1,11 @@
-package gh
+package github
 
 import (
-	"github.com/google/go-github/v53/github"
+	githubimpl "github.com/google/go-github/v53/github"
 	"go.jetpack.io/runx/impl/types"
 )
 
-func convertGithubReleases(releases []*github.RepositoryRelease) []types.ReleaseMetadata {
+func convertGithubReleases(releases []*githubimpl.RepositoryRelease) []types.ReleaseMetadata {
 	result := []types.ReleaseMetadata{}
 	for _, release := range releases {
 		if release == nil {
@@ -16,7 +16,7 @@ func convertGithubReleases(releases []*github.RepositoryRelease) []types.Release
 	return result
 }
 
-func convertGithubRelease(release github.RepositoryRelease) types.ReleaseMetadata {
+func convertGithubRelease(release githubimpl.RepositoryRelease) types.ReleaseMetadata {
 	return types.ReleaseMetadata{
 		Name:        release.GetName(),
 		CreatedAt:   release.GetCreatedAt().Time,
@@ -25,7 +25,7 @@ func convertGithubRelease(release github.RepositoryRelease) types.ReleaseMetadat
 	}
 }
 
-func convertGithubAssets(assets []*github.ReleaseAsset) []types.ArtifactMetadata {
+func convertGithubAssets(assets []*githubimpl.ReleaseAsset) []types.ArtifactMetadata {
 	result := []types.ArtifactMetadata{}
 	for _, asset := range assets {
 		if asset == nil {

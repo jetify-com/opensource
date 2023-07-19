@@ -1,11 +1,12 @@
 package cli
 
-// TODO: should it be `pkg show` or `pkg info`?
+// TODO: should it be `pkg show` (like poetry) or `pkg info` (like yarn)?
+// Might be moot, this CLI is mostly for testing; we'll integrate w/ devbox instead.
 
 import (
 	"github.com/k0kubun/pp"
 	"github.com/spf13/cobra"
-	"go.jetpack.io/runx/impl/gh"
+	"go.jetpack.io/runx/impl/github"
 	"go.jetpack.io/runx/impl/pkgref"
 )
 
@@ -25,7 +26,7 @@ func releasesCmd(cmd *cobra.Command, args []string) error {
 		return error
 	}
 
-	gh := gh.NewClient()
+	gh := github.NewClient()
 	releases, err := gh.ListReleases(cmd.Context(), ref.Owner, ref.Repo)
 	if err != nil {
 		return err

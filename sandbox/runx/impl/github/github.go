@@ -1,21 +1,21 @@
-package gh
+package github
 
 import (
 	"context"
 
-	"github.com/google/go-github/v53/github"
+	githubimpl "github.com/google/go-github/v53/github"
 	"go.jetpack.io/runx/impl/httpcacher"
 	"go.jetpack.io/runx/impl/pkgref"
 	"go.jetpack.io/runx/impl/types"
 )
 
 type Client struct {
-	gh *github.Client
+	gh *githubimpl.Client
 }
 
 func NewClient() *Client {
 	return &Client{
-		gh: github.NewClient(httpcacher.DefaultClient),
+		gh: githubimpl.NewClient(httpcacher.DefaultClient),
 	}
 }
 
@@ -31,20 +31,21 @@ func (c *Client) ListReleases(ctx context.Context, owner, repo string) ([]types.
 }
 
 func (c *Client) GetRelease(ctx context.Context, ref pkgref.PkgRef) (types.ReleaseMetadata, error) {
-	var release *github.RepositoryRelease
-	var resp *github.Response
+	var release *githubimpl.RepositoryRelease
+	var resp *githubimpl.Response
 	var err error
 
 	if ref.Version == "" || ref.Version == "latest" {
-		release, _, err = c.gh.Repositories.GetLatestRelease(context.Background(), ref.Owner, ref.Repo)
+		release, resp, err = c.gh.Repositories.GetLatestRelease(context.Background(), ref.Owner, ref.Repo)
 	} else {
-		release, _, err = c.gh.Repositories.GetReleaseByTag(context.Background(), ref.Owner, ref.Repo, ref.Version)
+		release, resp, err = c.gh.Repositories.GetReleaseByTag(context.Background(), ref.Owner, ref.Repo, ref.Version)
 	}
 
 	if err != nil {
 		return types.ReleaseMetadata{}, err
 	}
-	if resp.StatusCode == 404 || release == nil {
+
+	if resp == nil || release == nil || resp.StatusCode == 404 {
 		return types.ReleaseMetadata{}, types.ErrPackageNotFound
 	}
 

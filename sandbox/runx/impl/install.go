@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,9 +13,9 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/codeclysm/extract"
-	"github.com/google/go-github/v53/github"
-	"go.jetpack.io/runx/impl/httpcacher"
+	"go.jetpack.io/runx/impl/github"
 	"go.jetpack.io/runx/impl/pkgref"
+	"go.jetpack.io/runx/impl/types"
 )
 
 var xdgInstallationSubdir = "jetpack.io/pkgs"
@@ -40,8 +41,9 @@ func Install(pkgs ...string) error {
 }
 
 func install(ref pkgref.PkgRef) error {
+	gh := github.NewClient()
 	// Figure out latest release:
-	release, err := getReleaseMetadata(ref)
+	release, err := gh.GetRelease(context.Background(), ref)
 	if err != nil {
 		return err
 	}
@@ -49,14 +51,17 @@ func install(ref pkgref.PkgRef) error {
 	resolvedRef := pkgref.PkgRef{
 		Owner:   ref.Owner,
 		Repo:    ref.Repo,
-		Version: release.GetTagName(),
+		Version: release.Name,
 	}
 	fmt.Printf("Installing %s...\n", resolvedRef)
 
 	// Figure out which asset to download:
-	artifact, err := getArtifactMetadata(release)
+	artifact, err := getArtifactForCurrentPlatform(release)
 	if err != nil {
 		return err
+	}
+	if artifact == nil {
+		return errors.New("no artifact found")
 	}
 
 	installPath := filepath.Join(xdg.CacheHome, xdgInstallationSubdir, resolvedRef.Owner, resolvedRef.Repo, resolvedRef.Version)
@@ -87,71 +92,48 @@ func install(ref pkgref.PkgRef) error {
 		return err
 	}
 
+	fmt.Printf("Installed at %s...\n", installPath)
+
 	return nil
 }
 
-func getArtifactMetadata(releaseMeta *github.RepositoryRelease) (*ArtifactMetadata, error) {
+func getArtifactForCurrentPlatform(release types.ReleaseMetadata) (*types.ArtifactMetadata, error) {
 	// Attempt to figure out the right artifact for the current platform.
 	// TODO:
-	// - Pass platform as an argument
-	// - Support different "templates" for the artifact names
+	// - Support different "templates" for the artifact names if our default heuristic doesn't work.
 
-	assetNames := []string{}
-	for _, asset := range releaseMeta.Assets {
-		assetNames = append(assetNames, *asset.Name)
+	platform := types.Platform{
+		OS:   runtime.GOOS,
+		Arch: runtime.GOARCH,
 	}
-	fmt.Println(assetNames)
 
-	for _, asset := range releaseMeta.Assets {
-		if isAssetForCurrentPlatform(asset) {
-			return &ArtifactMetadata{
-				DownloadURL:   asset.GetBrowserDownloadURL(),
-				Name:          asset.GetName(),
-				DownloadCount: asset.GetDownloadCount(),
-				CreatedAt:     asset.GetCreatedAt().Time,
-				UpdatedAt:     asset.GetUpdatedAt().Time,
-				ContentType:   asset.GetContentType(),
-				Size:          asset.GetSize(),
-			}, nil
+	for _, artifact := range release.Artifacts {
+		if isArtifactForPlatform(artifact, platform) {
+			return &artifact, nil
 		}
 	}
 	return nil, nil
 }
 
-func isAssetForCurrentPlatform(asset *github.ReleaseAsset) bool {
-	tokens := strings.FieldsFunc(strings.ToLower(asset.GetName()), func(r rune) bool {
+func isArtifactForPlatform(artifact types.ArtifactMetadata, platform types.Platform) bool {
+	// Invalid platform:
+	if platform.Arch == "" || platform.OS == "" {
+		return false
+	}
+
+	tokens := strings.FieldsFunc(strings.ToLower(artifact.Name), func(r rune) bool {
 		return !unicode.IsLetter(r) && !unicode.IsNumber(r)
 	})
 	hasOS := false
 	hasArch := false
 
 	for _, token := range tokens {
-		if token == runtime.GOOS {
+		if token == platform.OS {
 			hasOS = true
 		}
-		if token == runtime.GOARCH {
+		if token == platform.Arch {
 			hasArch = true
 		}
 	}
 	return hasOS && hasArch
-}
-
-func getReleaseMetadata(ref pkgref.PkgRef) (*github.RepositoryRelease, error) {
-	gh := github.NewClient(httpcacher.DefaultClient)
-	var release *github.RepositoryRelease
-	var err error
-
-	// TODO: handle when repo doesn't exist, when tag doesn't exist, etc.
-	if ref.Version == "" || ref.Version == "latest" {
-		release, _, err = gh.Repositories.GetLatestRelease(context.Background(), ref.Owner, ref.Repo)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		release, _, err = gh.Repositories.GetReleaseByTag(context.Background(), ref.Owner, ref.Repo, ref.Version)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return release, nil
 }

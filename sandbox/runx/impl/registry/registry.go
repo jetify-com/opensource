@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"go.jetpack.io/runx/impl/fileutil"
-	"go.jetpack.io/runx/impl/gh"
+	"go.jetpack.io/runx/impl/github"
 )
 
 type Registry struct {
 	rootPath fileutil.Path
-	gh       *gh.Client
+	gh       *github.Client
 }
 
 func NewLocalRegistry(rootDir string) (*Registry, error) {
@@ -21,7 +21,7 @@ func NewLocalRegistry(rootDir string) (*Registry, error) {
 
 	return &Registry{
 		rootPath: rootPath,
-		gh:       gh.NewClient(),
+		gh:       github.NewClient(),
 	}, nil
 }
 
