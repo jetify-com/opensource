@@ -6,18 +6,18 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"go.jetpack.io/ghet"
+	"go.jetpack.io/runx"
 )
 
 func RootCmd() *cobra.Command {
 	command := &cobra.Command{
-		Use:   "ghet",
-		Short: "Install packages from Github releases",
+		Use:   "runx",
+		Short: "Package runner",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return cmd.Help()
 			}
-			return ghet.Download(args...)
+			return runx.Install(args...)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,

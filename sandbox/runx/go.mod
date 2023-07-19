@@ -1,11 +1,14 @@
-module go.jetpack.io/ghet
+module go.jetpack.io/runx
 
 go 1.20
 
 require (
 	github.com/adrg/xdg v0.4.0
+	github.com/cavaliergopher/grab/v3 v3.0.1
+	github.com/codeclysm/extract v2.2.0+incompatible
 	github.com/google/go-github/v53 v53.2.0
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
+	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.4
 )
@@ -17,8 +20,13 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/juju/errors v1.0.0 // indirect
+	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
@@ -29,6 +37,5 @@ require (
 	golang.org/x/sys v0.8.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

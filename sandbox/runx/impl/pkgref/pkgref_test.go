@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"go.jetpack.io/ghet/impl/pkgref"
+	"go.jetpack.io/runx/impl/pkgref"
 )
 
 func TestFromString_Valid(t *testing.T) {
