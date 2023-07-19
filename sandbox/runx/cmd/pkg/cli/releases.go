@@ -7,7 +7,7 @@ import (
 	"github.com/k0kubun/pp"
 	"github.com/spf13/cobra"
 	"go.jetpack.io/runx/impl/github"
-	"go.jetpack.io/runx/impl/pkgref"
+	"go.jetpack.io/runx/impl/types"
 )
 
 func ReleasesCmd() *cobra.Command {
@@ -21,7 +21,7 @@ func ReleasesCmd() *cobra.Command {
 }
 
 func releasesCmd(cmd *cobra.Command, args []string) error {
-	ref, error := pkgref.FromString(args[0])
+	ref, error := types.NewPkgRef(args[0])
 	if error != nil {
 		return error
 	}

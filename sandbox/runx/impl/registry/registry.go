@@ -5,6 +5,7 @@ import (
 
 	"go.jetpack.io/runx/impl/fileutil"
 	"go.jetpack.io/runx/impl/github"
+	"go.jetpack.io/runx/impl/types"
 )
 
 type Registry struct {
@@ -25,6 +26,6 @@ func NewLocalRegistry(rootDir string) (*Registry, error) {
 	}, nil
 }
 
-func (r *Registry) ListReleases(ctx context.Context, owner, repo string) ([]ReleaseMetadata, error) {
+func (r *Registry) ListReleases(ctx context.Context, owner, repo string) ([]types.ReleaseMetadata, error) {
 	return nil, nil
 }
