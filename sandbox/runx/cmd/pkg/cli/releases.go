@@ -5,8 +5,8 @@ package cli
 import (
 	"github.com/k0kubun/pp"
 	"github.com/spf13/cobra"
+	"go.jetpack.io/runx/impl/gh"
 	"go.jetpack.io/runx/impl/pkgref"
-	"go.jetpack.io/runx/impl/registry"
 )
 
 func ReleasesCmd() *cobra.Command {
@@ -25,7 +25,7 @@ func releasesCmd(cmd *cobra.Command, args []string) error {
 		return error
 	}
 
-	gh := registry.NewGithubRegistry()
+	gh := gh.NewClient()
 	releases, err := gh.ListReleases(cmd.Context(), ref.Owner, ref.Repo)
 	if err != nil {
 		return err
