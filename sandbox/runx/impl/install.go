@@ -14,17 +14,16 @@ import (
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/codeclysm/extract"
 	"go.jetpack.io/runx/impl/github"
-	"go.jetpack.io/runx/impl/pkgref"
 	"go.jetpack.io/runx/impl/types"
 )
 
 var xdgInstallationSubdir = "jetpack.io/pkgs"
 
 func Install(pkgs ...string) error {
-	refs := []pkgref.PkgRef{}
+	refs := []types.PkgRef{}
 
 	for _, pkg := range pkgs {
-		ref, err := pkgref.FromString(pkg)
+		ref, err := types.NewPkgRef(pkg)
 		if err != nil {
 			return err
 		}
@@ -40,7 +39,7 @@ func Install(pkgs ...string) error {
 	return nil
 }
 
-func install(ref pkgref.PkgRef) error {
+func install(ref types.PkgRef) error {
 	gh := github.NewClient()
 	// Figure out latest release:
 	release, err := gh.GetRelease(context.Background(), ref)
@@ -48,7 +47,7 @@ func install(ref pkgref.PkgRef) error {
 		return err
 	}
 
-	resolvedRef := pkgref.PkgRef{
+	resolvedRef := types.PkgRef{
 		Owner:   ref.Owner,
 		Repo:    ref.Repo,
 		Version: release.Name,

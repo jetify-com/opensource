@@ -5,7 +5,6 @@ import (
 
 	githubimpl "github.com/google/go-github/v53/github"
 	"go.jetpack.io/runx/impl/httpcacher"
-	"go.jetpack.io/runx/impl/pkgref"
 	"go.jetpack.io/runx/impl/types"
 )
 
@@ -30,7 +29,7 @@ func (c *Client) ListReleases(ctx context.Context, owner, repo string) ([]types.
 	return convertGithubReleases(releases), nil
 }
 
-func (c *Client) GetRelease(ctx context.Context, ref pkgref.PkgRef) (types.ReleaseMetadata, error) {
+func (c *Client) GetRelease(ctx context.Context, ref types.PkgRef) (types.ReleaseMetadata, error) {
 	var release *githubimpl.RepositoryRelease
 	var resp *githubimpl.Response
 	var err error

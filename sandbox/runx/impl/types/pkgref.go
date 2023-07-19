@@ -1,4 +1,4 @@
-package pkgref
+package types
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ type PkgRef struct {
 	Version string
 }
 
-func FromString(pkg string) (PkgRef, error) {
+func NewPkgRef(pkg string) (PkgRef, error) {
 	version := "latest"
 	ownerrepo := pkg
 
