@@ -2,11 +2,6 @@ package types
 
 import "time"
 
-type Platform struct {
-	OS   string
-	Arch string
-}
-
 type ReleaseMetadata struct {
 	// Name here is the release name, which often is the same as the tag name (usually the version).
 	// Two things:

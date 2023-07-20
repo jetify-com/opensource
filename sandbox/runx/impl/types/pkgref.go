@@ -15,20 +15,20 @@ func NewPkgRef(pkg string) (PkgRef, error) {
 	version := "latest"
 	ownerrepo := pkg
 
-	at_splits := strings.SplitN(pkg, "@", 2)
-	if len(at_splits) == 2 {
-		version = at_splits[1]
-		ownerrepo = at_splits[0]
+	before, after, found := strings.Cut(pkg, "@")
+	if found {
+		ownerrepo = before
+		version = after
 	}
 
-	slash_splits := strings.SplitN(ownerrepo, "/", 2)
-	if len(slash_splits) != 2 {
+	owner, repo, found := strings.Cut(ownerrepo, "/")
+	if !found {
 		return PkgRef{}, fmt.Errorf("invalid package reference: %s", pkg)
 	}
 
 	return PkgRef{
-		Owner:   slash_splits[0],
-		Repo:    slash_splits[1],
+		Owner:   owner,
+		Repo:    repo,
 		Version: version,
 	}, nil
 }

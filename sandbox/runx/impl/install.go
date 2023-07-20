@@ -77,7 +77,7 @@ func install(ref types.PkgRef) error {
 		runtime.GOOS,
 		runtime.GOARCH,
 	)
-	err = os.MkdirAll(installPath, 0700)
+	err = os.MkdirAll(installPath, 0600)
 	if err != nil {
 		return err
 	}
@@ -114,10 +114,7 @@ func getArtifactForCurrentPlatform(release types.ReleaseMetadata) (*types.Artifa
 	// TODO:
 	// - Support different "templates" for the artifact names if our default heuristic doesn't work.
 
-	platform := types.Platform{
-		OS:   runtime.GOOS,
-		Arch: runtime.GOARCH,
-	}
+	platform := types.NewPlatform(runtime.GOOS, runtime.GOARCH)
 
 	for _, artifact := range release.Artifacts {
 		if isArtifactForPlatform(artifact, platform) {
@@ -129,7 +126,7 @@ func getArtifactForCurrentPlatform(release types.ReleaseMetadata) (*types.Artifa
 
 func isArtifactForPlatform(artifact types.ArtifactMetadata, platform types.Platform) bool {
 	// Invalid platform:
-	if platform.Arch == "" || platform.OS == "" {
+	if platform.Arch() == "" || platform.OS() == "" {
 		return false
 	}
 
@@ -140,10 +137,10 @@ func isArtifactForPlatform(artifact types.ArtifactMetadata, platform types.Platf
 	hasArch := false
 
 	for _, token := range tokens {
-		if token == platform.OS {
+		if token == platform.OS() {
 			hasOS = true
 		}
-		if token == platform.Arch {
+		if token == platform.Arch() {
 			hasArch = true
 		}
 	}
