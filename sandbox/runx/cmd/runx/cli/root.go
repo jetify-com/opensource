@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	// "github.com/charmbracelet/lipgloss"
 	"github.com/fatih/color"
 	"go.jetpack.io/runx"
 )
