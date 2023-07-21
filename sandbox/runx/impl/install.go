@@ -2,147 +2,51 @@ package impl
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"os"
 	"path/filepath"
-	"runtime"
-	"strings"
-	"unicode"
 
 	"github.com/adrg/xdg"
-	"github.com/cavaliergopher/grab/v3"
-	"github.com/codeclysm/extract"
 	"go.jetpack.io/runx/impl/registry"
 	"go.jetpack.io/runx/impl/types"
 )
 
 var xdgInstallationSubdir = "jetpack.io/pkgs"
 
-func Install(pkgs ...string) error {
+func Install(pkgs ...string) ([]string, error) {
 	refs := []types.PkgRef{}
 
 	for _, pkg := range pkgs {
 		ref, err := types.NewPkgRef(pkg)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		refs = append(refs, ref)
 	}
 
-	for _, ref := range refs {
-		err := install(ref)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return install(refs...)
 }
 
-func install(ref types.PkgRef) error {
+func install(pkgs ...types.PkgRef) ([]string, error) {
+	paths := []string{}
+	for _, pkg := range pkgs {
+		path, err := installOne(pkg)
+		if err != nil {
+			return nil, err
+		}
+		paths = append(paths, path)
+	}
+	return paths, nil
+}
+
+func installOne(ref types.PkgRef) (string, error) {
 	rootDir := filepath.Join(xdg.CacheHome, xdgInstallationSubdir)
 	reg, err := registry.NewLocalRegistry(rootDir)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	// Figure out latest release:
-	release, err := reg.GetRelease(context.Background(), ref)
+	pkgPath, err := reg.GetPackage(context.Background(), ref, types.CurrentPlatform())
 	if err != nil {
-		return err
+		return "", err
 	}
-
-	resolvedRef := types.PkgRef{
-		Owner:   ref.Owner,
-		Repo:    ref.Repo,
-		Version: release.Name,
-	}
-	fmt.Printf("Installing %s...\n", resolvedRef)
-
-	// Figure out which asset to download:
-	artifact, err := getArtifactForCurrentPlatform(release)
-	if err != nil {
-		return err
-	}
-	if artifact == nil {
-		return errors.New("no artifact found")
-	}
-
-	installPath := filepath.Join(
-		xdg.CacheHome,
-		xdgInstallationSubdir,
-		resolvedRef.Owner,
-		resolvedRef.Repo,
-		resolvedRef.Version,
-		runtime.GOOS,
-		runtime.GOARCH,
-	)
-	err = os.MkdirAll(installPath, 0600)
-	if err != nil {
-		return err
-	}
-
-	// TODO: Add httpcacher
-	grabResp, err := grab.Get(installPath, artifact.DownloadURL)
-	if err != nil {
-		return err
-	}
-
-	reader, err := grabResp.Open()
-	if err != nil {
-		return err
-	}
-
-	// TODO: only extract if we haven't already extracted
-	err = extract.Archive(context.Background(), reader, installPath, nil)
-	if err != nil {
-		return err
-	}
-
-	err = os.Remove(grabResp.Filename)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Installed at %s...\n", installPath)
-
-	return nil
-}
-
-func getArtifactForCurrentPlatform(release types.ReleaseMetadata) (*types.ArtifactMetadata, error) {
-	// Attempt to figure out the right artifact for the current platform.
-	// TODO:
-	// - Support different "templates" for the artifact names if our default heuristic doesn't work.
-
-	platform := types.NewPlatform(runtime.GOOS, runtime.GOARCH)
-
-	for _, artifact := range release.Artifacts {
-		if isArtifactForPlatform(artifact, platform) {
-			return &artifact, nil
-		}
-	}
-	return nil, nil
-}
-
-func isArtifactForPlatform(artifact types.ArtifactMetadata, platform types.Platform) bool {
-	// Invalid platform:
-	if platform.Arch() == "" || platform.OS() == "" {
-		return false
-	}
-
-	tokens := strings.FieldsFunc(strings.ToLower(artifact.Name), func(r rune) bool {
-		return !unicode.IsLetter(r) && !unicode.IsNumber(r)
-	})
-	hasOS := false
-	hasArch := false
-
-	for _, token := range tokens {
-		if token == platform.OS() {
-			hasOS = true
-		}
-		if token == platform.Arch() {
-			hasArch = true
-		}
-	}
-	return hasOS && hasArch
+	return pkgPath, nil
 }

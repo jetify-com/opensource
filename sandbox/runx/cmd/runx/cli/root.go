@@ -17,7 +17,7 @@ func RootCmd() *cobra.Command {
 			if len(args) == 0 {
 				return cmd.Help()
 			}
-			return runx.Install(args...)
+			return runx.Run(args...)
 		},
 		SilenceErrors: true,
 		SilenceUsage:  true,
