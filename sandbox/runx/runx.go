@@ -5,5 +5,10 @@ import (
 )
 
 func Install(pkgs ...string) error {
-	return impl.Install(pkgs...)
+	_, err := impl.Install(pkgs...)
+	return err
+}
+
+func Run(args ...string) error {
+	return impl.Run(args...)
 }

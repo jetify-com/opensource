@@ -6,6 +6,7 @@ require (
 	github.com/adrg/xdg v0.4.0
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/codeclysm/extract v2.2.0+incompatible
+	github.com/fatih/color v1.15.0
 	github.com/google/go-github/v53 v53.2.0
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
 	github.com/k0kubun/pp v3.0.1+incompatible

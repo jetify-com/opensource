@@ -5,31 +5,24 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
+	"github.com/fatih/color"
 	"go.jetpack.io/runx"
 )
 
-func RootCmd() *cobra.Command {
-	command := &cobra.Command{
-		Use:   "runx",
-		Short: "Package runner",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
-				return cmd.Help()
-			}
-			return runx.Install(args...)
-		},
-		SilenceErrors: true,
-		SilenceUsage:  true,
-	}
-
-	return command
+func Help() {
+	c := color.New(color.FgCyan).Add(color.Underline)
+	c.Println("runx")
+	fmt.Println()
+	fmt.Println("Usage: runx [+<org>/<repo>]... [<cmd>] [<args>]...")
 }
 
 func Execute(ctx context.Context, args []string) int {
-	cmd := RootCmd()
-	cmd.SetArgs(args)
-	err := cmd.ExecuteContext(ctx)
+	if len(args) == 0 {
+		Help()
+		return 0
+	}
+
+	err := runx.Run(args...)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err)
 		return 1

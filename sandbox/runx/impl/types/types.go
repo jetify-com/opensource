@@ -2,20 +2,17 @@ package types
 
 import "time"
 
-type Platform struct {
-	OS   string
-	Arch string
-}
-
 type ReleaseMetadata struct {
 	// Name here is the release name, which often is the same as the tag name (usually the version).
 	// Two things:
 	// 1. There's also TagName, consider using that instead
 	// 2. Should this be called Tag or Version, so we can reserve Name for tha package name if
 	//    we want to include that?
-	Name        string             `json:"name"`
+	TagName     string             `json:"tag_name"`
 	CreatedAt   time.Time          `json:"created_at"`
 	PublishedAt time.Time          `json:"published_at"`
+	Draft       bool               `json:"draft"`
+	Prerelease  bool               `json:"prerelease"`
 	Artifacts   []ArtifactMetadata `json:"artifacts"`
 }
 

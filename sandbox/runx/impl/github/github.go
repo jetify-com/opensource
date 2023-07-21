@@ -19,7 +19,9 @@ func NewClient() *Client {
 }
 
 func (c *Client) ListReleases(ctx context.Context, owner, repo string) ([]types.ReleaseMetadata, error) {
-	releases, resp, err := c.gh.Repositories.ListReleases(ctx, owner, repo, nil /* opts */)
+	releases, resp, err := c.gh.Repositories.ListReleases(ctx, owner, repo, &githubimpl.ListOptions{
+		PerPage: 100, // Max allowed by GitHub API
+	})
 	if err != nil {
 		return nil, err
 	}
