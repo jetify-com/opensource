@@ -125,6 +125,10 @@ func (r *Registry) resolveVersion(ref types.PkgRef) (types.PkgRef, error) {
 		return types.PkgRef{}, err
 	}
 
+	if len(releases) == 0 {
+		return types.PkgRef{}, types.ErrReleaseNotFound
+	}
+
 	found := false
 	latestVersion := "latest"
 	for _, release := range releases {
@@ -135,8 +139,9 @@ func (r *Registry) resolveVersion(ref types.PkgRef) (types.PkgRef, error) {
 		}
 	}
 
+	// Return the first draft or prerelease if we couldn't find a stable release:
 	if !found {
-		return types.PkgRef{}, types.ErrReleaseNotFound
+		latestVersion = releases[0].TagName
 	}
 
 	return types.PkgRef{
