@@ -18,10 +18,12 @@ func convertGithubReleases(releases []*githubimpl.RepositoryRelease) []types.Rel
 
 func convertGithubRelease(release githubimpl.RepositoryRelease) types.ReleaseMetadata {
 	return types.ReleaseMetadata{
-		Name:        release.GetName(),
+		TagName:     release.GetTagName(),
 		CreatedAt:   release.GetCreatedAt().Time,
 		PublishedAt: release.GetPublishedAt().Time,
 		Artifacts:   convertGithubAssets(release.Assets),
+		Draft:       release.GetDraft(),
+		Prerelease:  release.GetPrerelease(),
 	}
 }
 

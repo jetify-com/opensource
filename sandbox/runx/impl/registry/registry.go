@@ -125,11 +125,20 @@ func (r *Registry) resolveVersion(ref types.PkgRef) (types.PkgRef, error) {
 		return types.PkgRef{}, err
 	}
 
-	if len(releases) == 0 {
+	found := false
+	latestVersion := "latest"
+	for _, release := range releases {
+		if !release.Draft && !release.Prerelease {
+			found = true
+			latestVersion = release.TagName
+			break
+		}
+	}
+
+	if !found {
 		return types.PkgRef{}, types.ErrReleaseNotFound
 	}
 
-	latestVersion := releases[0].Name
 	return types.PkgRef{
 		Owner:   ref.Owner,
 		Repo:    ref.Repo,

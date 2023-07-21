@@ -1,7 +1,7 @@
 package registry
 
 import (
-	"fmt"
+	"path/filepath"
 	"strings"
 	"unicode"
 
@@ -10,7 +10,11 @@ import (
 
 func findArtifactForPlatform(artifacts []types.ArtifactMetadata, platform types.Platform) *types.ArtifactMetadata {
 	for _, artifact := range artifacts {
-		if isArtifactForPlatform(artifact, platform) {
+		if isArtifactForPlatform(artifact, platform) && isKnownArchive(artifact.Name) {
+			// We only consider known artchives because sometimes releases contain multiple files
+			// for the same platform. Some times those files are alternative installation methods
+			// like `.dmg`, `.msi`, or `.deb`, and sometimes they are metadata files like `.sha256`
+			// or a `.sig` file. We don't want to install those.
 			return &artifact
 		}
 	}
@@ -18,7 +22,6 @@ func findArtifactForPlatform(artifacts []types.ArtifactMetadata, platform types.
 }
 
 func isArtifactForPlatform(artifact types.ArtifactMetadata, platform types.Platform) bool {
-	fmt.Println("Checking artifact: ", artifact.Name)
 	// Invalid platform:
 	if platform.Arch() == "" || platform.OS() == "" {
 		return false
@@ -49,7 +52,7 @@ func isArtifactForPlatform(artifact types.ArtifactMetadata, platform types.Platf
 }
 
 var alternateOSNames = map[string][]string{
-	"darwin": {"macos"},
+	"darwin": {"macos", "mac"},
 }
 
 func matchesOS(platform types.Platform, token string) bool {
@@ -67,7 +70,8 @@ func matchesOS(platform types.Platform, token string) bool {
 
 var alternateArchNames = map[string][]string{
 	"386":   {"i386"},
-	"amd64": {"x86_64"},
+	"arm64": {"universal"},
+	"amd64": {"x86_64", "universal"},
 }
 
 func matchesArch(platform types.Platform, token string) bool {
@@ -77,6 +81,37 @@ func matchesArch(platform types.Platform, token string) bool {
 	alts := alternateArchNames[platform.Arch()]
 	for _, alt := range alts {
 		if token == alt {
+			return true
+		}
+	}
+	return false
+}
+
+var knownExts = []string{
+	".bz2",
+	".gz",
+	".lz",
+	".lzma",
+	".lzo",
+	".tar",
+	".taz",
+	".taZ",
+	".tbz",
+	".tbz2",
+	".tgz",
+	".tlz",
+	".tz2",
+	".tzst",
+	".xz",
+	".Z",
+	".zip",
+	".zst",
+}
+
+func isKnownArchive(name string) bool {
+	ext := filepath.Ext(name)
+	for _, knownExt := range knownExts {
+		if ext == knownExt {
 			return true
 		}
 	}

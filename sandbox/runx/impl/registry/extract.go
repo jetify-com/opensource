@@ -24,15 +24,32 @@ func Extract(ctx context.Context, src string, dest string) error {
 		return err
 	}
 
+	// Automatically flatten contents if they are inside a single directory
+	srcDir := contentDir(tmpDest)
+
 	parent := filepath.Dir(dest)
 	err = fileutil.EnsureDir(parent)
 	if err != nil {
 		return err
 	}
 
-	err = os.Rename(tmpDest, dest)
+	err = os.Rename(srcDir, dest)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func contentDir(path string) string {
+	contents, err := os.ReadDir(path)
+	if err != nil {
+		return path
+	}
+	if len(contents) != 1 {
+		return path
+	}
+	if !contents[0].IsDir() {
+		return path
+	}
+	return filepath.Join(path, contents[0].Name())
 }
