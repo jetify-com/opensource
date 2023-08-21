@@ -6,4 +6,5 @@ use (
 	./typeid/typeid
 	./typeid/typeid-go
 	./tyson
+	./pkg
 )
