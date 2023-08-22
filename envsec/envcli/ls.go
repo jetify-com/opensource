@@ -11,13 +11,14 @@ import (
 
 const environmentFlagName = "environment"
 
-func ListCmd(provider configProvider) *cobra.Command {
-	type envListCmdFlags struct {
-		ShowValues bool
-		Format     string
-	}
+type listCmdFlags struct {
+	configFlags
+	ShowValues bool
+	Format     string
+}
 
-	flags := envListCmdFlags{}
+func listCmd() *cobra.Command {
+	flags := &listCmdFlags{}
 
 	command := &cobra.Command{
 		Use:     "ls",
@@ -26,7 +27,7 @@ func ListCmd(provider configProvider) *cobra.Command {
 		Long:    "List all stored environment variables. If no environment flag is provided, variables in all environments will be listed.",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			cmdCfg, err := provider(cmd.Context())
+			cmdCfg, err := flags.genConfig(cmd.Context())
 			if err != nil {
 				return err
 			}
@@ -72,6 +73,7 @@ func ListCmd(provider configProvider) *cobra.Command {
 		"table",
 		"Display the key values in key=value format",
 	)
+	flags.configFlags.register(command)
 
 	return command
 }

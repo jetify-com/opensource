@@ -13,7 +13,12 @@ import (
 	"go.jetpack.io/envsec/tux"
 )
 
-func SetCmd(provider configProvider) *cobra.Command {
+type setCmdFlags struct {
+	configFlags
+}
+
+func setCmd() *cobra.Command {
+	flags := &setCmdFlags{}
 	command := &cobra.Command{
 		Use:   "set <NAME1>=<value1> [<NAME2>=<value2>]...",
 		Short: "Securely store one or more environment variables",
@@ -37,7 +42,7 @@ func SetCmd(provider configProvider) *cobra.Command {
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			cmdCfg, err := provider(cmd.Context())
+			cmdCfg, err := flags.genConfig(cmd.Context())
 			if err != nil {
 				return errors.WithStack(err)
 			}
@@ -59,6 +64,7 @@ func SetCmd(provider configProvider) *cobra.Command {
 			return nil
 		},
 	}
+	flags.configFlags.register(command)
 	return command
 }
 

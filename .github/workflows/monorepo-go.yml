@@ -18,21 +18,19 @@ jobs:
       - name: Checkout Monorepo
         uses: actions/checkout@v3
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          cache-dependency-path: go.work.sum
+      - name: Install devbox
+        uses: jetpack-io/devbox-install-action@v0.5.0
 
       - name: Go modules should be up-to-date
         run: |
-          find . -type f -name go.mod -maxdepth 4 -execdir go mod tidy \;
-          go work sync
+          devbox run go-mod-sync
           git diff --exit-code
-      # TODO: add linting via golangci-lint, but it's a bit tricky to setup
-      # in a monorepo, to automatically run on all go modules.
+          
+      - name: Lint
+        run: devbox run lint
 
       - name: Build
-        run: find . -type f -name go.mod -maxdepth 4 -execdir go build -v ./... \;
+        run: devbox run build
 
       - name: Test
-        run: find . -type f -name go.mod -maxdepth 4 -execdir go test -v ./... \;
+        run: devbox run 
