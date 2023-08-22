@@ -11,7 +11,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
 	"go.jetpack.io/pkg/cuecfg"
-	"go.jetpack.io/pkg/usererr"
 )
 
 type User struct {
@@ -23,8 +22,8 @@ func (a *Authenticator) GetUser() (*User, error) {
 	filesystemTokens := &tokenSet{}
 	if err := cuecfg.ParseFile(a.getAuthFilePath(), filesystemTokens); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, usererr.New(
-				"You must be logged in to use this command. Run `%s`", a.AuthCommandHint,
+			return nil, fmt.Errorf(
+				"you must be logged in to use this command. Run `%s`", a.AuthCommandHint,
 			)
 		}
 		return nil, err

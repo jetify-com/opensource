@@ -13,7 +13,6 @@ import (
 
 	"github.com/pkg/errors"
 	"go.jetpack.io/pkg/cuecfg"
-	"go.jetpack.io/pkg/usererr"
 )
 
 // Authenticator performs various auth0 login flows to authenticate users.
@@ -60,7 +59,7 @@ func (a *Authenticator) RefreshTokens() (*tokenSet, error) {
 	if err := cuecfg.ParseFile(a.getAuthFilePath(), tokens); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil,
-				usererr.New("You must have previously logged in to use this command")
+				fmt.Errorf("you must have previously logged in to use this command")
 		}
 		return nil, err
 	}
@@ -68,7 +67,7 @@ func (a *Authenticator) RefreshTokens() (*tokenSet, error) {
 	tokens, err := a.doRefreshToken(tokens.RefreshToken)
 	if err != nil {
 		if errors.Is(err, errExpiredOrInvalidRefreshToken) {
-			return nil, usererr.New("Your refresh token is expired or invalid. "+
+			return nil, fmt.Errorf("your refresh token is expired or invalid. "+
 				"Please log in again using `%s`", a.AuthCommandHint)
 		}
 		return nil, err

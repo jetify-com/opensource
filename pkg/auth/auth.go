@@ -10,14 +10,13 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/pkg/browser"
 	"github.com/pkg/errors"
-	"go.jetpack.io/pkg/usererr"
-	"go.jetpack.io/pkg/xdg"
 )
 
 var errExpiredOrInvalidRefreshToken = errors.New("refresh token is expired or invalid")
@@ -160,7 +159,7 @@ func (a *Authenticator) requestTokens(
 		}
 	}
 
-	return nil, usererr.New("max number of tries exceeded")
+	return nil, errors.New("max number of tries exceeded")
 }
 
 func (a *Authenticator) doRefreshToken(
@@ -292,8 +291,8 @@ func (a *Authenticator) handleFailure(body []byte, code int) (int, error) {
 	// the dreaded "invalid_grant" will be returned and device
 	// must stop polling.
 	if tokenErrorBody.Error == "expired_token" || tokenErrorBody.Error == "invalid_grant" {
-		return 0, usererr.New(
-			"The device code has expired. Please try `%s` again.", a.AuthCommandHint)
+		return 0, fmt.Errorf(
+			"the device code has expired. Please try `%s` again", a.AuthCommandHint)
 	}
 
 	// "access_denied" can be received for:
@@ -301,13 +300,17 @@ func (a *Authenticator) handleFailure(body []byte, code int) (int, error) {
 	// 2. Auth server denied the transaction.
 	// 3. A configured Auth0 "rule" denied access
 	if tokenErrorBody.Error == "access_denied" {
-		return 0, usererr.New("Access was denied")
+		return 0, errors.New("Access was denied")
 	}
 
 	// Unknown error
-	return 0, usererr.New("Unable to login")
+	return 0, errors.New("Unable to login")
 }
 
 func (a *Authenticator) getAuthFilePath() string {
-	return xdg.StateSubpath(filepath.Join(a.AppName, "auth.json"))
+	base, err := os.UserCacheDir()
+	if err != nil {
+		base = "~/.cache"
+	}
+	return filepath.Join(base, a.AppName, "auth.json")
 }
