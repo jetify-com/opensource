@@ -2,7 +2,6 @@ go 1.20
 
 use (
 	./envsec
-	./pkg
 	./sandbox/runx
 	./typeid/typeid
 	./typeid/typeid-go

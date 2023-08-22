@@ -12,8 +12,6 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	"go.jetpack.io/pkg/cuecfg"
-	"go.jetpack.io/pkg/usererr"
 )
 
 // Authenticator performs various auth0 login flows to authenticate users.
@@ -45,7 +43,7 @@ func (a *Authenticator) DeviceAuthFlow(ctx context.Context, w io.Writer) error {
 		return err
 	}
 
-	if err = cuecfg.WriteFile(a.getAuthFilePath(), tokenSuccess); err != nil {
+	if err = writeFile(a.getAuthFilePath(), tokenSuccess); err != nil {
 		return err
 	}
 
@@ -57,10 +55,10 @@ func (a *Authenticator) DeviceAuthFlow(ctx context.Context, w io.Writer) error {
 // tokens are missing or expired. Handle accordingly
 func (a *Authenticator) RefreshTokens() (*tokenSet, error) {
 	tokens := &tokenSet{}
-	if err := cuecfg.ParseFile(a.getAuthFilePath(), tokens); err != nil {
+	if err := parseFile(a.getAuthFilePath(), tokens); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil,
-				usererr.New("You must have previously logged in to use this command")
+				fmt.Errorf("you must have previously logged in to use this command")
 		}
 		return nil, err
 	}
@@ -68,13 +66,13 @@ func (a *Authenticator) RefreshTokens() (*tokenSet, error) {
 	tokens, err := a.doRefreshToken(tokens.RefreshToken)
 	if err != nil {
 		if errors.Is(err, errExpiredOrInvalidRefreshToken) {
-			return nil, usererr.New("Your refresh token is expired or invalid. "+
+			return nil, fmt.Errorf("our refresh token is expired or invalid. "+
 				"Please log in again using `%s`", a.AuthCommandHint)
 		}
 		return nil, err
 	}
 
-	return tokens, cuecfg.WriteFile(a.getAuthFilePath(), tokens)
+	return tokens, writeFile(a.getAuthFilePath(), tokens)
 }
 
 func (a *Authenticator) Logout() error {
