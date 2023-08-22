@@ -8,13 +8,13 @@
       "echo 'Welcome to devbox!' > /dev/null"
     ],
     "scripts": {
-      "build": "find . -type f -name go.mod -maxdepth 4 -execdir go build -v ./... \\;",
       "go-mod-sync": [
         "find . -maxdepth 4 -type f -name go.mod -execdir go mod tidy \\;",
         "go work sync"
       ],
-      "lint": "find . -type f -name \"go.mod\" -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && golangci-lint run\"",
-      "test": "find . -type f -name go.mod -maxdepth 4 -execdir go test -v ./... \\;"
+      "build": "find . -maxdepth 4 -type f -name go.mod -execdir go build -v ./... \\;",
+      "lint": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && golangci-lint run\"",
+      "test": "find . -maxdepth 4 -type f -name go.mod -execdir go test -v ./... \\;"
     }
   }
 }
