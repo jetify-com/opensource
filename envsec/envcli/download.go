@@ -20,7 +20,7 @@ type downloadOptions struct {
 	format string
 }
 
-func DownloadCmd(cmdCfg *CmdConfig) *cobra.Command {
+func DownloadCmd(provider configProvider) *cobra.Command {
 	opts := &downloadOptions{}
 	command := &cobra.Command{
 		Use:   "download <file1>",
@@ -34,7 +34,10 @@ func DownloadCmd(cmdCfg *CmdConfig) *cobra.Command {
 			return errors.Wrapf(errUnsupportedFormat, "format: %s", opts.format)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-
+			cmdCfg, err := provider(cmd.Context())
+			if err != nil {
+				return errors.WithStack(err)
+			}
 			envVars, err := cmdCfg.Store.List(cmd.Context(), cmdCfg.EnvId)
 			if err != nil {
 				return errors.WithStack(err)

@@ -11,7 +11,7 @@ import (
 
 const environmentFlagName = "environment"
 
-func ListCmd(cmdCfg *CmdConfig) *cobra.Command {
+func ListCmd(provider configProvider) *cobra.Command {
 	type envListCmdFlags struct {
 		ShowValues bool
 		Format     string
@@ -26,6 +26,10 @@ func ListCmd(cmdCfg *CmdConfig) *cobra.Command {
 		Long:    "List all stored environment variables. If no environment flag is provided, variables in all environments will be listed.",
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			cmdCfg, err := provider(cmd.Context())
+			if err != nil {
+				return err
+			}
 			// Populate the valid Environments
 			envNames := []string{"DEV", "PROD", "STAGING"}
 			// If a specific environment was set by the user, then just use that one.

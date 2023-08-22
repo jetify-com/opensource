@@ -21,7 +21,7 @@ type uploadOptions struct {
 	format string
 }
 
-func UploadCmd(cmdCfg *CmdConfig) *cobra.Command {
+func UploadCmd(provider configProvider) *cobra.Command {
 	opts := &uploadOptions{}
 	command := &cobra.Command{
 		Use:   "upload <file1> [<fileN>]...",
@@ -73,6 +73,10 @@ func UploadCmd(cmdCfg *CmdConfig) *cobra.Command {
 				}
 			}
 
+			cmdCfg, err := provider(cmd.Context())
+			if err != nil {
+				return err
+			}
 			err = SetEnvMap(cmd.Context(), cmdCfg.Store, cmdCfg.EnvId, envMap)
 			if err != nil {
 				return errors.WithStack(err)

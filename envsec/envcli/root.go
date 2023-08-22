@@ -12,11 +12,12 @@ import (
 	"go.jetpack.io/envsec"
 )
 
-type CmdConfig struct {
+type cmdConfig struct {
 	Store envsec.Store
 	EnvId envsec.EnvId
 }
 
+// TODO: These should not be global
 type globalFlags struct {
 	projectId string
 	orgId     string
@@ -25,7 +26,7 @@ type globalFlags struct {
 
 func EnvCmd() *cobra.Command {
 	flags := &globalFlags{}
-	cmdConfig := CmdConfig{}
+	var provider configProvider
 
 	command := &cobra.Command{
 		Use:   "envsec",
@@ -38,26 +39,24 @@ func EnvCmd() *cobra.Command {
 			store values that contain passwords and other secrets.
 		`),
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			c, err := newCmdConfig(cmd.Context(), flags)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			cmdConfig = *c
+			provider = newConfigProvider(flags)
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
+		// we're manually showing usage
+		SilenceUsage: true,
 	}
 
 	registerFlags(command, flags)
 
-	command.AddCommand(DownloadCmd(&cmdConfig))
-	command.AddCommand(ExecCmd(&cmdConfig))
-	command.AddCommand(ListCmd(&cmdConfig))
-	command.AddCommand(RemoveCmd(&cmdConfig))
-	command.AddCommand(SetCmd(&cmdConfig))
-	command.AddCommand(UploadCmd(&cmdConfig))
+	command.AddCommand(DownloadCmd(provider))
+	command.AddCommand(ExecCmd(provider))
+	command.AddCommand(ListCmd(provider))
+	command.AddCommand(RemoveCmd(provider))
+	command.AddCommand(SetCmd(provider))
+	command.AddCommand(UploadCmd(provider))
 	command.AddCommand(authCmd())
 	command.SetUsageFunc(UsageFunc)
 	return command
@@ -91,19 +90,23 @@ func Execute(ctx context.Context) {
 	_ = cmd.ExecuteContext(ctx)
 }
 
-func newCmdConfig(ctx context.Context, flags *globalFlags) (*CmdConfig, error) {
-	s, err := envsec.NewStore(ctx, &envsec.SSMConfig{})
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
+type configProvider func(ctx context.Context) (*cmdConfig, error)
 
-	envid, err := envsec.NewEnvId(flags.projectId, flags.orgId, flags.envName)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
+func newConfigProvider(flags *globalFlags) configProvider {
+	return func(ctx context.Context) (*cmdConfig, error) {
+		s, err := envsec.NewStore(ctx, &envsec.SSMConfig{})
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
 
-	return &CmdConfig{
-		Store: s,
-		EnvId: envid,
-	}, nil
+		envid, err := envsec.NewEnvId(flags.projectId, flags.orgId, flags.envName)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		return &cmdConfig{
+			Store: s,
+			EnvId: envid,
+		}, nil
+	}
 }
