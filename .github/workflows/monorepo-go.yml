@@ -33,4 +33,4 @@ jobs:
         run: devbox run build
 
       - name: Test
-        run: devbox run 
+        run: devbox run test
