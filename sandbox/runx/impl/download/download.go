@@ -11,7 +11,9 @@ import (
 
 func DownloadOnce(url string, dest string) error {
 	dir := filepath.Dir(dest)
-	fileutil.EnsureDir(dir)
+	if err := fileutil.EnsureDir(dir); err != nil {
+		return err
+	}
 
 	info := fileutil.FileInfo(dest)
 	if info != nil && info.Mode().IsRegular() && info.Size() > 0 {

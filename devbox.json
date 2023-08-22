@@ -1,0 +1,20 @@
+{
+  "packages": [
+    "go@latest",
+    "golangci-lint@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo 'Welcome to devbox!' > /dev/null"
+    ],
+    "scripts": {
+      "go-mod-sync": [
+        "find . -maxdepth 4 -type f -name go.mod -execdir go mod tidy \\;",
+        "go work sync"
+      ],
+      "build": "find . -maxdepth 4 -type f -name go.mod -execdir go build -v ./... \\;",
+      "lint": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && golangci-lint run\"",
+      "test": "find . -maxdepth 4 -type f -name go.mod -execdir go test -v ./... \\;"
+    }
+  }
+}
