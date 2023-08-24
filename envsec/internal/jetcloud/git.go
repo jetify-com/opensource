@@ -18,7 +18,7 @@ func gitRepoURL(wd string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSpace(string(output)), nil
+	return normalizeGitRepoURL(string(output)), nil
 }
 
 func gitSubdirectory(wd string) (string, error) {
@@ -28,4 +28,30 @@ func gitSubdirectory(wd string) (string, error) {
 		return "", err
 	}
 	return filepath.Clean(strings.TrimSpace(string(output))), nil
+}
+
+// github
+// git format git@github.com:jetpack-io/opensource.git
+// https format https://github.com/jetpack-io/opensource.git
+
+// bitbucket
+
+// git@bitbucket.org:fargo3d/public.git
+// https://bitbucket.org/fargo3d/public.git
+
+// gh format is same as git
+//
+// normalized: github.com/jetpack-io/opensource
+func normalizeGitRepoURL(repoURL string) string {
+	result := strings.TrimSpace(repoURL)
+	if strings.HasPrefix(result, "git@") {
+		result = strings.TrimPrefix(strings.Replace(result, ":", "/", 1), "git@")
+	} else {
+		result = strings.TrimPrefix(result, "https://")
+		result = strings.TrimPrefix(result, "http://")
+	}
+
+	// subdomain www is rarely used but the big 3 (github, gitlab, bitbucket)
+	// allow it. Obviously this doesn't work for all subdomains.
+	return strings.TrimSuffix(strings.TrimPrefix(result, "www."), ".git")
 }

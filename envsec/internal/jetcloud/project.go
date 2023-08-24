@@ -12,7 +12,7 @@ import (
 const dirName = ".jetpack"
 const configName = "envsec.json"
 
-type config struct {
+type projectConfig struct {
 	ID projectID `json:"id"`
 }
 
@@ -42,7 +42,7 @@ func InitProject(user *auth.User, wd string) (projectID, error) {
 		return nilProjectID, err
 	}
 
-	cfg := config{ID: projectID}
+	cfg := projectConfig{ID: projectID}
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return nilProjectID, err
@@ -55,7 +55,7 @@ func ProjectID(wd string) (projectID, error) {
 	if err != nil {
 		return nilProjectID, err
 	}
-	var cfg config
+	var cfg projectConfig
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return nilProjectID, err
 	}

@@ -10,7 +10,7 @@ import (
 
 type projectPrefix struct{}
 
-func (projectPrefix) Type() string { return "project" }
+func (projectPrefix) Type() string { return "proj" }
 
 type projectID struct{ typeid.TypeID[projectPrefix] }
 
