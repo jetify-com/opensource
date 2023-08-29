@@ -53,12 +53,15 @@ func (f *configFlags) genConfig(ctx context.Context) (*cmdConfig, error) {
 	}
 	awsFederated := awsfed.NewAWSFed()
 	ssmConfig, err := awsFederated.GetSSMConfig(user.GetAccessToken())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 	s, err := envsec.NewStore(ctx, ssmConfig)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	envid, err := envsec.NewEnvId(f.projectId, user.GetOrgId(), f.envName)
+	envid, err := envsec.NewEnvId(user.GetOrgId(), f.envName)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

@@ -11,11 +11,17 @@ import (
 const PATH_PREFIX = "/jetpack-data/env"
 
 func varPath(envId EnvId, varName string) string {
-	return path.Join(projectPath(envId), envId.EnvName, varName)
+	return path.Join(projectPath(envId), envId.ProjectId, envId.EnvName, varName)
+}
+
+func orgPath(envId EnvId) string {
+	// because of aws permissions orgPath needs to have a trailing `/`
+	return path.Join(PATH_PREFIX, envId.OrgId) + "/"
 }
 
 func projectPath(envId EnvId) string {
-	return path.Join(PATH_PREFIX, envId.ProjectId)
+	// because of aws permissions projectPath needs to have a trailing `/`
+	return path.Join(orgPath(envId), envId.ProjectId) + "/"
 }
 
 func nameFromPath(path string) string {

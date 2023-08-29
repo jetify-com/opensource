@@ -36,7 +36,6 @@ func EnvCmd() *cobra.Command {
 	command.AddCommand(removeCmd())
 	command.AddCommand(setCmd())
 	command.AddCommand(uploadCmd())
-	command.AddCommand(testCmd())
 	command.SetUsageFunc(UsageFunc)
 	return command
 }
