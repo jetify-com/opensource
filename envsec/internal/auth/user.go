@@ -15,6 +15,12 @@ import (
 type User struct {
 	filesystemTokens *tokenSet
 	IDToken          *jwt.Token
+	AccessToken      *jwt.Token
+}
+
+type UserClaim struct {
+	jwt.RegisteredClaims
+	OrgID string `json:"https://auth.jetpack.io/org_id,omitempty"`
 }
 
 func (a *Authenticator) GetUser() (*User, error) {
@@ -27,8 +33,12 @@ func (a *Authenticator) GetUser() (*User, error) {
 		}
 		return nil, err
 	}
-	// Attempt to parse and verify the ID token.
+	// Attempt to parse and verify the ID&Access tokens.
 	IDToken, err := a.parseToken(filesystemTokens.IDToken)
+	if err != nil && !errors.Is(err, jwt.ErrTokenExpired) {
+		return nil, err
+	}
+	AccessToken, err := a.parseToken(filesystemTokens.AccessToken)
 	if err != nil && !errors.Is(err, jwt.ErrTokenExpired) {
 		return nil, err
 	}
@@ -43,9 +53,17 @@ func (a *Authenticator) GetUser() (*User, error) {
 		if err != nil {
 			return nil, err
 		}
+		AccessToken, err = a.parseToken(filesystemTokens.AccessToken)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return &User{filesystemTokens: filesystemTokens, IDToken: IDToken}, nil
+	return &User{
+		filesystemTokens: filesystemTokens,
+		IDToken:          IDToken,
+		AccessToken:      AccessToken,
+	}, nil
 }
 
 func (u *User) String() string {
@@ -71,6 +89,18 @@ func (u *User) OrgID() string {
 		return ""
 	}
 	return u.IDToken.Claims.(jwt.MapClaims)["org_id"].(string)
+func (u *User) GetAccessToken() string {
+	if u == nil || u.AccessToken == nil {
+		return ""
+	}
+	return u.AccessToken.Raw
+}
+
+func (u *User) GetOrgId() string {
+	if u == nil || u.AccessToken == nil {
+		return ""
+	}
+	return u.AccessToken.Claims.(*UserClaim).OrgID
 }
 
 func (a *Authenticator) parseToken(stringToken string) (*jwt.Token, error) {
@@ -83,8 +113,8 @@ func (a *Authenticator) parseToken(stringToken string) (*jwt.Token, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-
-	token, err := jwt.Parse(stringToken, jwks.Keyfunc)
+	var userClaim UserClaim
+	token, err := jwt.ParseWithClaims(stringToken, &userClaim, jwks.Keyfunc)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

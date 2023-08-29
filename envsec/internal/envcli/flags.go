@@ -9,12 +9,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.jetpack.io/envsec"
+	"go.jetpack.io/envsec/internal/awsfed"
 )
 
 // to be composed into xyzCmdFlags structs
 type configFlags struct {
 	projectId string
-	orgId     string
 	envName   string
 }
 
@@ -26,12 +26,12 @@ func (f *configFlags) register(cmd *cobra.Command) {
 		"Project id to namespace secrets by",
 	)
 
-	cmd.PersistentFlags().StringVar(
-		&f.orgId,
-		"org-id",
-		"",
-		"Organization id to namespace secrets by",
-	)
+	// cmd.PersistentFlags().StringVar(
+	// 	&f.orgId,
+	// 	"org-id",
+	// 	"",
+	// 	"Organization id to namespace secrets by",
+	// )
 
 	cmd.PersistentFlags().StringVar(
 		&f.envName,
@@ -47,12 +47,18 @@ type cmdConfig struct {
 }
 
 func (f *configFlags) genConfig(ctx context.Context) (*cmdConfig, error) {
-	s, err := envsec.NewStore(ctx, &envsec.SSMConfig{})
+	user, err := newAuthenticator().GetUser()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	awsFederated := awsfed.NewAWSFed()
+	ssmConfig, err := awsFederated.GetSSMConfig(user.GetAccessToken())
+	s, err := envsec.NewStore(ctx, ssmConfig)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	envid, err := envsec.NewEnvId(f.projectId, f.orgId, f.envName)
+	envid, err := envsec.NewEnvId(f.projectId, user.GetOrgId(), f.envName)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
