@@ -20,7 +20,8 @@ type AWSFed struct {
 func NewAWSFed() *AWSFed {
 	return &AWSFed{
 		// for valiation of JWT (can be cached to improve performance)
-		JwksURL:        "https://jetpack-io.us.auth0.com/.well-known/jwks.json",
+		JwksURL: "https://jetpack-io.us.auth0.com/.well-known/jwks.json",
+		// todo change these values below to resources created by terraform
 		Region:         "us-east-1",
 		AccountId:      "984256416385",
 		IdentityPoolId: "us-east-1:da3c3c71-61c7-4f7c-8e3d-3770e9b61379",
@@ -66,32 +67,7 @@ func (a *AWSFed) GetSSMConfig(accessToken string) (*envsec.SSMConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	// authsess, err := session.NewSession(&aws.Config{
-	// 	Region: aws.String(a.Region),
-	// 	Credentials: credentials.NewStaticCredentials(
-	// 		*stsCredentials.AccessKeyId,
-	// 		*stsCredentials.SecretKey,
-	// 		*stsCredentials.SessionToken,
-	// 	),
-	// })
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// orgId, err := a.getOrgId(accessToken)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// ssmsvc := ssm.New(authsess)
 
-	// params, err := ssmsvc.GetParametersByPath(&ssm.GetParametersByPathInput{
-	// 	Path: aws.String(fmt.Sprintf("/jetpackio/secrets/%s/", orgId)),
-	// })
-
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// debug.Log("params: %v\n", params.GoString())
 	return &envsec.SSMConfig{
 		Region:          a.Region,
 		AccessKeyId:     *stsCredentials.AccessKeyId,
