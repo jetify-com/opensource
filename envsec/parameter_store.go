@@ -135,7 +135,7 @@ func (s *parameterStore) ListByPath(ctx context.Context, path string) ([]EnvVar,
 		params := resp.Parameters
 		for _, p := range params {
 			results = append(results, EnvVar{
-				Name:  aws.ToString(p.Name), // TODO: Full path?
+				Name:  nameFromPath(aws.ToString(p.Name)),
 				Value: awsSSMParamStoreValueToString(p.Value),
 			})
 		}

@@ -31,7 +31,7 @@ func newSSMStore(ctx context.Context, config *SSMConfig) (*SSMStore, error) {
 }
 
 func (s *SSMStore) List(ctx context.Context, envId EnvId) ([]EnvVar, error) {
-	return s.store.ListByPath(ctx, varPath(envId, ""))
+	return s.store.ListByPath(ctx, envPath(envId))
 }
 
 func (s *SSMStore) Get(ctx context.Context, envId EnvId, name string) (string, error) {

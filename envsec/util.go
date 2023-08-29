@@ -24,6 +24,11 @@ func projectPath(envId EnvId) string {
 	return path.Join(orgPath(envId), envId.ProjectId) + "/"
 }
 
+func envPath(envId EnvId) string {
+	// because of aws permissions projectPath needs to have a trailing `/`
+	return path.Join(projectPath(envId), envId.EnvName) + "/"
+}
+
 func nameFromPath(path string) string {
 	subpaths := strings.Split(path, "/")
 	if len(subpaths) == 0 {
