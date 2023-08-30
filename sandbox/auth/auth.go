@@ -45,8 +45,12 @@ func Login(issuer string, clientID string) (*oauth2.Token, error) {
 		return nil, err
 	}
 
-	go srv.Start() // TODO: handle errors
-	defer srv.Stop()
+	go func() {
+		_ = srv.Start() // TODO: handle errors
+	}()
+	defer func() {
+		_ = srv.Stop()
+	}()
 	resp := srv.WaitForResponse()
 	// TODO: check state
 

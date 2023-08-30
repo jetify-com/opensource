@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"sync"
 )
 
 type CallbackServer struct {
@@ -101,15 +100,11 @@ func (s *CallbackServer) WaitForResponse() Response {
 	fmt.Println("waiting for response")
 	resp := <-s.respCh
 	fmt.Println("got response")
-	s.Stop()
+	_ = s.Stop()
 	return resp
 }
 
 func (s *CallbackServer) Stop() error {
 	fmt.Println("stopping server")
-	sync.OnceFunc(func() {
-		fmt.Println("closing response channel")
-		close(s.respCh)
-	})
 	return s.server.Close()
 }
