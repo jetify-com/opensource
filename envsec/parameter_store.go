@@ -144,6 +144,32 @@ func (s *parameterStore) ListByPath(ctx context.Context, path string) ([]EnvVar,
 	return results, nil
 }
 
+func (s *parameterStore) ListByTags(ctx context.Context, envId EnvId) ([]EnvVar, error) {
+	// Create the request object:
+	req := &ssm.DescribeParametersInput{
+		ParameterFilters: buildFilters(envId),
+	}
+
+	varNames := []string{}
+	// Paginate through the results:
+	paginator := ssm.NewDescribeParametersPaginator(s.client, req)
+	for paginator.HasMorePages() {
+		// Issue the request for the next page:
+		resp, err := paginator.NextPage(ctx)
+		if err != nil {
+			return []EnvVar{}, errors.WithStack(err)
+		}
+		// Append results:
+		for _, p := range resp.Parameters {
+			// AWS returns the parameter path as its "name":
+			varName := nameFromPath(aws.ToString(p.Name))
+			varNames = append(varNames, varName)
+		}
+	}
+
+	return s.getAll(ctx, envId, varNames)
+}
+
 func (s *parameterStore) getAll(ctx context.Context, envId EnvId, varNames []string) ([]EnvVar, error) {
 	// Start with empty results
 	results := []EnvVar{}

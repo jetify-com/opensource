@@ -6,27 +6,20 @@ package envsec
 import (
 	"path"
 	"strings"
+
+	"go.jetpack.io/envsec/internal/debug"
 )
 
 const PATH_PREFIX = "/jetpack-data/env"
 
 func varPath(envId EnvId, varName string) string {
-	return path.Join(projectPath(envId), envId.ProjectId, envId.EnvName, varName)
-}
-
-func orgPath(envId EnvId) string {
-	// because of aws permissions orgPath needs to have a trailing `/`
-	return path.Join(PATH_PREFIX, envId.OrgId) + "/"
+	path := path.Join(projectPath(envId), envId.EnvName, varName)
+	debug.Log("varpath: %s \n\n", path)
+	return path
 }
 
 func projectPath(envId EnvId) string {
-	// because of aws permissions projectPath needs to have a trailing `/`
-	return path.Join(orgPath(envId), envId.ProjectId) + "/"
-}
-
-func envPath(envId EnvId) string {
-	// because of aws permissions projectPath needs to have a trailing `/`
-	return path.Join(projectPath(envId), envId.EnvName) + "/"
+	return path.Join(PATH_PREFIX, envId.ProjectId)
 }
 
 func nameFromPath(path string) string {

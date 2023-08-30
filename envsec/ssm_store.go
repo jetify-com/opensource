@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
+	"go.jetpack.io/envsec/internal/debug"
 )
 
 type SSMStore struct {
@@ -31,7 +32,7 @@ func newSSMStore(ctx context.Context, config *SSMConfig) (*SSMStore, error) {
 }
 
 func (s *SSMStore) List(ctx context.Context, envId EnvId) ([]EnvVar, error) {
-	return s.store.ListByPath(ctx, envPath(envId))
+	return s.store.ListByTags(ctx, envId)
 }
 
 func (s *SSMStore) Get(ctx context.Context, envId EnvId, name string) (string, error) {
@@ -89,6 +90,35 @@ func (s *SSMStore) DeleteAll(ctx context.Context, envId EnvId, names []string) e
 	return s.store.deleteAll(ctx, envId, names)
 }
 
+func buildFilters(envId EnvId) []types.ParameterStringFilter {
+	filters := []types.ParameterStringFilter{
+		{
+			Key:    lo.ToPtr("Path"),
+			Option: lo.ToPtr("Recursive"),
+			Values: []string{projectPath(envId)},
+		},
+	}
+	if envId.ProjectId != "" {
+		filters = append(filters, types.ParameterStringFilter{
+			Key:    lo.ToPtr("tag:project-id"),
+			Values: []string{envId.ProjectId},
+		})
+	}
+	if envId.OrgId != "" {
+		filters = append(filters, types.ParameterStringFilter{
+			Key:    lo.ToPtr("tag:org-id"),
+			Values: []string{envId.OrgId},
+		})
+	}
+	if envId.EnvName != "" {
+		filters = append(filters, types.ParameterStringFilter{
+			Key:    lo.ToPtr("tag:env-name"),
+			Values: []string{envId.EnvName},
+		})
+	}
+	debug.Log("filters: %v\n\n", filters)
+	return filters
+}
 func buildTags(envId EnvId, varName string) []types.Tag {
 	tags := []types.Tag{}
 	if envId.ProjectId != "" {
