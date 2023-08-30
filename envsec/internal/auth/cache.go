@@ -69,6 +69,7 @@ func saveJWKSCache(url string, path string) ([]byte, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+	defer resp.Body.Close()
 
 	out, err := os.Create(path)
 	if err != nil {
