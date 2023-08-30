@@ -45,7 +45,7 @@ func listCmd() *cobra.Command {
 				envId := envsec.EnvId{
 					OrgId:     cmdCfg.EnvId.OrgId,
 					ProjectId: cmdCfg.EnvId.ProjectId,
-					EnvName:   envName,
+					EnvName:   strings.ToLower(envName),
 				}
 				envVars, err := cmdCfg.Store.List(cmd.Context(), envId)
 				if err != nil {
