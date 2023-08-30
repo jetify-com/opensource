@@ -40,7 +40,7 @@ func (f *configFlags) register(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(
 		&f.envName,
 		"environment",
-		"dev",
+		"DEV",
 		"Environment name, such as dev or prod",
 	)
 }
