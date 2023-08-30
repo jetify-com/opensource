@@ -15,7 +15,7 @@ import (
 type User struct {
 	filesystemTokens *tokenSet
 	IDToken          *jwt.Token
-	AccessToken      *jwt.Token
+	accessToken      *jwt.Token
 }
 
 type UserClaim struct {
@@ -61,8 +61,8 @@ func (a *Authenticator) GetUser() (*User, error) {
 
 	return &User{
 		filesystemTokens: filesystemTokens,
+		accessToken:      AccessToken,
 		IDToken:          IDToken,
-		AccessToken:      AccessToken,
 	}, nil
 }
 
@@ -84,18 +84,18 @@ func (u *User) ID() string {
 	return u.IDToken.Claims.(jwt.MapClaims)["sub"].(string)
 }
 
-func (u *User) GetAccessToken() string {
-	if u == nil || u.AccessToken == nil {
+func (u *User) AccessToken() string {
+	if u == nil || u.accessToken == nil {
 		return ""
 	}
-	return u.AccessToken.Raw
+	return u.accessToken.Raw
 }
 
-func (u *User) GetOrgId() string {
-	if u == nil || u.AccessToken == nil {
+func (u *User) OrgId() string {
+	if u == nil || u.accessToken == nil {
 		return ""
 	}
-	return u.AccessToken.Claims.(*UserClaim).OrgID
+	return u.accessToken.Claims.(*UserClaim).OrgID
 }
 
 func (a *Authenticator) parseToken(stringToken string) (*jwt.Token, error) {

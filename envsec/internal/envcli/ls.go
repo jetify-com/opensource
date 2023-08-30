@@ -4,6 +4,8 @@
 package envcli
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.jetpack.io/envsec"
@@ -32,10 +34,10 @@ func listCmd() *cobra.Command {
 				return err
 			}
 			// Populate the valid Environments
-			envNames := []string{"dev", "prod", "staging"}
+			envNames := []string{"DEV", "PROD", "STAGING"}
 			// If a specific environment was set by the user, then just use that one.
 			if cmd.Flags().Changed(environmentFlagName) {
-				envNames = []string{cmdCfg.EnvId.EnvName}
+				envNames = []string{strings.ToLower(cmdCfg.EnvId.EnvName)}
 			}
 
 			// TODO: parallelize

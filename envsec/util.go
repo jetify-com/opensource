@@ -13,7 +13,7 @@ import (
 const PATH_PREFIX = "/jetpack-data/env"
 
 func varPath(envId EnvId, varName string) string {
-	path := path.Join(projectPath(envId), envId.EnvName, varName)
+	path := path.Join(projectPath(envId), strings.ToLower(envId.EnvName), varName)
 	debug.Log("varpath: %s \n\n", path)
 	return path
 }

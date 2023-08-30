@@ -5,6 +5,7 @@ package envsec
 
 import (
 	"context"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ssm/types"
 	"github.com/hashicorp/go-multierror"
@@ -113,7 +114,7 @@ func buildFilters(envId EnvId) []types.ParameterStringFilter {
 	if envId.EnvName != "" {
 		filters = append(filters, types.ParameterStringFilter{
 			Key:    lo.ToPtr("tag:env-name"),
-			Values: []string{envId.EnvName},
+			Values: []string{strings.ToLower(envId.EnvName)},
 		})
 	}
 	debug.Log("filters: %v\n\n", filters)
@@ -136,7 +137,7 @@ func buildTags(envId EnvId, varName string) []types.Tag {
 	if envId.EnvName != "" {
 		tags = append(tags, types.Tag{
 			Key:   lo.ToPtr("env-name"),
-			Value: lo.ToPtr(envId.EnvName),
+			Value: lo.ToPtr(strings.ToLower(envId.EnvName)),
 		})
 	}
 

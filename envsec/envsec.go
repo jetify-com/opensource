@@ -5,10 +5,8 @@ package envsec
 
 import (
 	"context"
-	"os"
 
 	"github.com/pkg/errors"
-	"go.jetpack.io/envsec/internal/jetcloud"
 )
 
 // Uniquely identifies an environment in which we store environment variables.
@@ -22,20 +20,12 @@ type EnvId struct {
 	EnvName string
 }
 
-func NewEnvId(orgId string, envName string) (EnvId, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return EnvId{}, errors.New("Failed to get current workding directory")
-	}
-	projectId, err := jetcloud.ProjectID(wd)
-	if err != nil {
-		return EnvId{}, errors.New("Failed to retrieve projectID")
-	}
-	if projectId.String() == "" {
+func NewEnvId(projectId string, orgId string, envName string) (EnvId, error) {
+	if projectId == "" {
 		return EnvId{}, errors.New("ProjectId can not be empty")
 	}
 	return EnvId{
-		ProjectId: projectId.String(),
+		ProjectId: projectId,
 		OrgId:     orgId,
 		EnvName:   envName,
 	}, nil
