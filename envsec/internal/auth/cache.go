@@ -79,7 +79,6 @@ func saveJWKSCache(url string, path string) ([]byte, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	fmt.Printf("resp.body: %s \n\n", jwks)
 	_, err = out.Write(jwks)
 	if err != nil {
 		return nil, errors.WithStack(err)
