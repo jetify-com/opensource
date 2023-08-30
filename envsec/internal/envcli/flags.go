@@ -59,13 +59,20 @@ func (f *configFlags) genConfig(ctx context.Context) (*cmdConfig, error) {
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		awsFederated := awsfed.NewAWSFed()
-		ssmConfig, err = awsFederated.GetSSMConfig(user.AccessToken())
+		awsFederated := awsfed.New()
+		stsCredentials, err := awsFederated.AWSCreds(ctx, user.AccessToken)
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
-		f.orgId = user.OrgId()
+		ssmConfig = &envsec.SSMConfig{
+			Region:          awsFederated.Region,
+			AccessKeyId:     *stsCredentials.AccessKeyId,
+			SecretAccessKey: *stsCredentials.SecretKey,
+			SessionToken:    *stsCredentials.SessionToken,
+		}
+
+		f.orgId = user.OrgID()
 		wd, err := os.Getwd()
 		if err != nil {
 			return nil, errors.New("Failed to get current workding directory")

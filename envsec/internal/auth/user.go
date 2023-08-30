@@ -13,9 +13,8 @@ import (
 )
 
 type User struct {
-	filesystemTokens *tokenSet
-	IDToken          *jwt.Token
-	accessToken      *jwt.Token
+	AccessToken *jwt.Token
+	IDToken     *jwt.Token
 }
 
 type UserClaim struct {
@@ -24,8 +23,8 @@ type UserClaim struct {
 }
 
 func (a *Authenticator) GetUser() (*User, error) {
-	filesystemTokens := &tokenSet{}
-	if err := parseFile(a.getAuthFilePath(), filesystemTokens); err != nil {
+	unverifiedTokens := &tokenSet{}
+	if err := parseFile(a.getAuthFilePath(), unverifiedTokens); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil, fmt.Errorf(
 				"you must be logged in to use this command. Run `%s`", a.AuthCommandHint,
@@ -33,37 +32,26 @@ func (a *Authenticator) GetUser() (*User, error) {
 		}
 		return nil, err
 	}
-	// Attempt to parse and verify the ID&Access tokens.
-	IDToken, err := a.parseToken(filesystemTokens.IDToken)
-	if err != nil && !errors.Is(err, jwt.ErrTokenExpired) {
-		return nil, err
-	}
-	AccessToken, err := a.parseToken(filesystemTokens.AccessToken)
+	// Attempt to parse and verify the tokens.
+	user, err := a.verifyAndBuildUser(unverifiedTokens)
 	if err != nil && !errors.Is(err, jwt.ErrTokenExpired) {
 		return nil, err
 	}
 
 	// If the token is expired, refresh the tokens and try again.
 	if errors.Is(err, jwt.ErrTokenExpired) {
-		filesystemTokens, err = a.RefreshTokens()
+		unverifiedTokens, err = a.RefreshTokens()
 		if err != nil {
 			return nil, err
 		}
-		IDToken, err = a.parseToken(filesystemTokens.IDToken)
-		if err != nil {
-			return nil, err
-		}
-		AccessToken, err = a.parseToken(filesystemTokens.AccessToken)
-		if err != nil {
+
+		user, err = a.verifyAndBuildUser(unverifiedTokens)
+		if err != nil && !errors.Is(err, jwt.ErrTokenExpired) {
 			return nil, err
 		}
 	}
 
-	return &User{
-		filesystemTokens: filesystemTokens,
-		accessToken:      AccessToken,
-		IDToken:          IDToken,
-	}, nil
+	return user, nil
 }
 
 func (u *User) String() string {
@@ -84,21 +72,15 @@ func (u *User) ID() string {
 	return u.IDToken.Claims.(jwt.MapClaims)["sub"].(string)
 }
 
-func (u *User) AccessToken() string {
-	if u == nil || u.accessToken == nil {
+func (u *User) OrgID() string {
+	if u == nil || u.AccessToken == nil {
 		return ""
 	}
-	return u.accessToken.Raw
+	// return u.IDToken.Claims.(jwt.MapClaims)["org_id"].(string)
+	return u.AccessToken.Claims.(*UserClaim).OrgID
 }
 
-func (u *User) OrgId() string {
-	if u == nil || u.accessToken == nil {
-		return ""
-	}
-	return u.accessToken.Claims.(*UserClaim).OrgID
-}
-
-func (a *Authenticator) parseToken(stringToken string) (*jwt.Token, error) {
+func (a *Authenticator) verifyAndBuildUser(tokens *tokenSet) (*User, error) {
 	jwksURL := fmt.Sprintf(
 		"https://%s/.well-known/jwks.json",
 		a.Domain,
@@ -109,10 +91,17 @@ func (a *Authenticator) parseToken(stringToken string) (*jwt.Token, error) {
 		return nil, errors.WithStack(err)
 	}
 	var userClaim UserClaim
-	token, err := jwt.ParseWithClaims(stringToken, &userClaim, jwks.Keyfunc)
+	accessToken, err := jwt.ParseWithClaims(tokens.AccessToken, &userClaim, jwks.Keyfunc)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	idToken, err := jwt.Parse(tokens.IDToken, jwks.Keyfunc)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	return token, nil
+	return &User{
+		AccessToken: accessToken,
+		IDToken:     idToken,
+	}, nil
 }

@@ -53,7 +53,7 @@ func (c *client) newProjectID(ctx context.Context, user *auth.User, repo, subdir
 	fmt.Fprintf(os.Stderr, "Creating new project for repo=%s subdir=%s\n", repo, subdir)
 
 	p, err := post[project](ctx, c, user, map[string]string{
-		"org_id":   user.OrgId(),
+		"org_id":   user.OrgID(),
 		"repo_url": repo,
 		"subdir":   subdir,
 	})
