@@ -31,12 +31,11 @@ func (a *Authenticator) fetchJWKSWithCache() (*keyfunc.JWKS, error) {
 
 	if jwksJSON == nil { // cache miss
 		// save new keys to cache
-		err = saveJWKSCache(jwksURL, path)
+		jwksJSON, err = saveJWKSCache(jwksURL, path)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
 	}
-
 	jwks, err := keyfunc.NewJSON(jwksJSON)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -64,23 +63,26 @@ func readJWKSCache(path string) ([]byte, error) {
 	return byteContent, nil
 }
 
-func saveJWKSCache(url string, path string) error {
-	resp, err := http.Get(url)
+func saveJWKSCache(url string, path string) ([]byte, error) {
+	var client http.Client
+	resp, err := client.Get(url)
 	if err != nil {
-		return fmt.Errorf("error while making fetching jwks: %w", err)
+		return nil, errors.WithStack(err)
 	}
-	defer resp.Body.Close()
 
 	out, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("error while creating cache for jwks: %w", err)
+		return nil, errors.WithStack(err)
 	}
 	defer out.Close()
-
-	_, err = io.Copy(out, resp.Body)
+	jwks, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("error while copying data: %w", err)
+		return nil, errors.WithStack(err)
 	}
-
-	return nil
+	fmt.Printf("resp.body: %s \n\n", jwks)
+	_, err = out.Write(jwks)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return jwks, nil
 }
