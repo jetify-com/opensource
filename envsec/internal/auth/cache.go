@@ -13,16 +13,16 @@ import (
 )
 
 const dirName = ".jetpack"
-const jwksFileName = "jwks.json"
-const cacheDuration = 1 * time.Hour
 
 func (a *Authenticator) fetchJWKSWithCache() (*keyfunc.JWKS, error) {
 	jwksURL := fmt.Sprintf("https://%s/.well-known/jwks.json", a.Domain)
-	wd, err := os.Getwd()
+	cacheFileName := fmt.Sprintf("%s.jwks.json", a.Domain)
+	cacheBaseDir, err := os.UserCacheDir()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		cacheBaseDir = "~/.cache"
 	}
-	path := filepath.Join(wd, dirName, jwksFileName)
+	// example ~/.cache/.jetpack/auth.jetpack.io.jwks.json
+	path := filepath.Join(cacheBaseDir, dirName, cacheFileName)
 	// check Cache if miss, jwksJSON will be empty
 	jwksJSON, err := readJWKSCache(path)
 	if err != nil {
@@ -53,14 +53,11 @@ func readJWKSCache(path string) ([]byte, error) {
 	}
 	modificationTime := fileInfo.ModTime()
 	current := time.Now()
-	if current.After(modificationTime.Add(cacheDuration)) {
+	// cache duration: 1 hour
+	if current.After(modificationTime.Add(time.Hour)) {
 		return nil, nil
 	}
-	byteContent, err := os.ReadFile(path)
-	if err != nil {
-		return nil, nil
-	}
-	return byteContent, nil
+	return os.ReadFile(path)
 }
 
 func saveJWKSCache(url string, path string) ([]byte, error) {
