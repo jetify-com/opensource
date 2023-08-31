@@ -12,17 +12,19 @@ import (
 	"github.com/pkg/errors"
 )
 
-const dirName = ".jetpack"
+const dirName = "jetpack"
 
 func (a *Authenticator) fetchJWKSWithCache() (*keyfunc.JWKS, error) {
 	jwksURL := fmt.Sprintf("https://%s/.well-known/jwks.json", a.Domain)
-	cacheFileName := fmt.Sprintf("%s.jwks.json", a.Domain)
-	cacheBaseDir, err := os.UserCacheDir()
+	fileName := fmt.Sprintf("%s.jwks.json", a.Domain)
+	baseDir, err := os.UserCacheDir()
 	if err != nil {
-		cacheBaseDir = "~/.cache"
+		baseDir = "~/.cache"
 	}
-	// example ~/.cache/.jetpack/auth.jetpack.io.jwks.json
-	path := filepath.Join(cacheBaseDir, dirName, cacheFileName)
+	// example ~/.cache/jetpack/auth.jetpack.io.jwks.json
+	cacheDir := filepath.Join(baseDir, dirName)
+	path := filepath.Join(cacheDir, fileName)
+
 	// check Cache if miss, jwksJSON will be empty
 	jwksJSON, err := readJWKSCache(path)
 	if err != nil {
@@ -31,7 +33,7 @@ func (a *Authenticator) fetchJWKSWithCache() (*keyfunc.JWKS, error) {
 
 	if jwksJSON == nil { // cache miss
 		// save new keys to cache
-		jwksJSON, err = saveJWKSCache(jwksURL, path)
+		jwksJSON, err = saveJWKSCache(jwksURL, cacheDir, path)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
@@ -60,14 +62,17 @@ func readJWKSCache(path string) ([]byte, error) {
 	return os.ReadFile(path)
 }
 
-func saveJWKSCache(url string, path string) ([]byte, error) {
+func saveJWKSCache(url string, cacheDir string, path string) ([]byte, error) {
 	var client http.Client
 	resp, err := client.Get(url)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	defer resp.Body.Close()
-
+	// make sure cache dir exists before creating the file
+	if os.MkdirAll(cacheDir, os.ModePerm); err != nil {
+		return nil, errors.WithStack(err)
+	}
 	out, err := os.Create(path)
 	if err != nil {
 		return nil, errors.WithStack(err)
