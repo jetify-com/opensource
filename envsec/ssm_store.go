@@ -13,8 +13,7 @@ import (
 )
 
 type SSMStore struct {
-	config *SSMConfig
-	store  *parameterStore
+	store *parameterStore
 }
 
 // SSMStore implements interface Store (compile-time check)
@@ -26,8 +25,7 @@ func newSSMStore(ctx context.Context, config *SSMConfig) (*SSMStore, error) {
 		return nil, errors.WithStack(err)
 	}
 	store := &SSMStore{
-		config: config,
-		store:  paramStore,
+		store: paramStore,
 	}
 	return store, nil
 }
@@ -57,7 +55,7 @@ func (s *SSMStore) Set(
 	name string,
 	value string,
 ) error {
-	path := s.config.VarPath(envId, name)
+	path := s.store.config.VarPath(envId, name)
 
 	// New parameter definition
 	tags := buildTags(envId, name)
