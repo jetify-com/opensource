@@ -70,7 +70,7 @@ func saveJWKSCache(url string, cacheDir string, path string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 	// make sure cache dir exists before creating the file
-	if os.MkdirAll(cacheDir, os.ModePerm); err != nil {
+	if err = os.MkdirAll(cacheDir, os.ModePerm); err != nil {
 		return nil, errors.WithStack(err)
 	}
 	out, err := os.Create(path)
