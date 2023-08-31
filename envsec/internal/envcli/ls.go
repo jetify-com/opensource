@@ -34,7 +34,7 @@ func listCmd() *cobra.Command {
 				return err
 			}
 			// Populate the valid Environments
-			envNames := []string{"DEV", "PROD", "STAGING"}
+			envNames := []string{"dev", "prod", "staging"}
 			// If a specific environment was set by the user, then just use that one.
 			if cmd.Flags().Changed(environmentFlagName) {
 				envNames = []string{strings.ToLower(cmdCfg.EnvId.EnvName)}
