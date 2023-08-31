@@ -13,7 +13,8 @@ import (
 )
 
 type SSMStore struct {
-	store *parameterStore
+	config *SSMConfig
+	store  *parameterStore
 }
 
 // SSMStore implements interface Store (compile-time check)
@@ -25,7 +26,8 @@ func newSSMStore(ctx context.Context, config *SSMConfig) (*SSMStore, error) {
 		return nil, errors.WithStack(err)
 	}
 	store := &SSMStore{
-		store: paramStore,
+		config: config,
+		store:  paramStore,
 	}
 	return store, nil
 }
@@ -55,7 +57,7 @@ func (s *SSMStore) Set(
 	name string,
 	value string,
 ) error {
-	path := varPath(envId, name)
+	path := s.config.VarPath(envId, name)
 
 	// New parameter definition
 	tags := buildTags(envId, name)
@@ -87,36 +89,6 @@ func (s *SSMStore) Delete(ctx context.Context, envId EnvId, name string) error {
 
 func (s *SSMStore) DeleteAll(ctx context.Context, envId EnvId, names []string) error {
 	return s.store.deleteAll(ctx, envId, names)
-}
-
-func buildFilters(envId EnvId) []types.ParameterStringFilter {
-	filters := []types.ParameterStringFilter{
-		{
-			Key:    lo.ToPtr("Path"),
-			Option: lo.ToPtr("Recursive"),
-			Values: []string{pathNamespace(envId)},
-		},
-	}
-	if envId.ProjectId != "" {
-		filters = append(filters, types.ParameterStringFilter{
-			Key:    lo.ToPtr("tag:project-id"),
-			Values: []string{envId.ProjectId},
-		})
-	}
-	if envId.OrgId != "" {
-		filters = append(filters, types.ParameterStringFilter{
-			Key:    lo.ToPtr("tag:org-id"),
-			Values: []string{envId.OrgId},
-		})
-	}
-	if envId.EnvName != "" {
-		filters = append(filters, types.ParameterStringFilter{
-			Key:    lo.ToPtr("tag:env-name"),
-			Values: []string{envId.EnvName},
-		})
-	}
-
-	return filters
 }
 
 func buildTags(envId EnvId, varName string) []types.Tag {
