@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
+	"path"
 
 	"go.jetpack.io/envsec/internal/auth"
 	"go.jetpack.io/envsec/internal/envvar"
@@ -41,20 +41,14 @@ func newClient() *client {
 	}
 }
 
-func (c *client) endpoint(path string) string {
-	endpointURL, err := url.JoinPath(c.apiHost, path)
-	if err != nil {
-		panic(err)
-	}
-	return endpointURL
+func (c *client) endpoint(p string) string {
+	return path.Join(c.apiHost, p)
 }
 
 func (c *client) newProjectID(ctx context.Context, user *auth.User, repo, subdir string) (projectID, error) {
 	fmt.Fprintf(os.Stderr, "Creating new project for repo=%s subdir=%s\n", repo, subdir)
 
 	p, err := post[project](ctx, c, user, map[string]string{
-		// TODO: org_id should be a claim in the ID token, not passed as post data
-		"org_id":   user.OrgID(),
 		"repo_url": repo,
 		"subdir":   subdir,
 	})
