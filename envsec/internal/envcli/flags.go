@@ -130,9 +130,9 @@ func genSSMConfigForUser(
 		return nil, errors.WithStack(err)
 	}
 	return &envsec.SSMConfig{
-		AccessKeyId:     *creds.AccessKeyId,
-		SecretAccessKey: *creds.SecretKey,
-		SessionToken:    *creds.SessionToken,
-		Region:          fed.Region,
+		AccessKeyId:  *creds.AccessKeyId,
+		SecretKey:    *creds.SecretKey,
+		SessionToken: *creds.SessionToken,
+		Region:       fed.Region,
 	}, nil
 }

@@ -72,11 +72,11 @@ type Config interface {
 }
 
 type SSMConfig struct {
-	Region          string
-	AccessKeyId     string
-	SecretAccessKey string
-	SessionToken    string
-	KmsKeyId        string
+	Region       string
+	AccessKeyId  string
+	SecretKey    string
+	SessionToken string
+	KmsKeyId     string
 }
 
 // SSMStore implements interface Config (compile-time check)
