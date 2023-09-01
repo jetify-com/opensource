@@ -2,25 +2,73 @@ package auth
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
+	"go.jetpack.io/auth/session"
 
 	"go.jetpack.io/auth/internal/authflow"
 	"go.jetpack.io/auth/internal/callbackserver"
-	"golang.org/x/oauth2"
+	"go.jetpack.io/auth/internal/tokenstore"
 )
 
 type Client struct {
 	issuer   string
 	clientID string
+	store    *tokenstore.Store
 }
 
 func NewClient(issuer string, clientID string) (*Client, error) {
+	store, err := tokenstore.New(storeDir())
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
 		issuer:   issuer,
 		clientID: clientID,
+		store:    store,
 	}, nil
 }
 
-func Login(issuer string, clientID string) (*oauth2.Token, error) {
+func storeDir() string {
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		cacheDir = "~/.cache"
+	}
+	return filepath.Join(cacheDir, "go.jetpack.io", "auth")
+}
+
+func (c *Client) LoginFlow() (*session.Token, error) {
+	tok, err := login(c.issuer, c.clientID)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = c.store.WriteToken(c.issuer, c.clientID, tok)
+	return tok, nil
+}
+
+func (c *Client) LogoutFlow() error {
+	// For now we just delete the token from the store.
+	// But in the future we might want to revoke the token with the server, and do the oauth logout flow.
+	return c.RevokeSession()
+}
+
+func (c *Client) GetSession() *session.Token {
+	// TODO: automatically refresh token as needed
+	return c.store.ReadToken(c.issuer, c.clientID)
+}
+
+func (c *Client) RefreshSession() *session.Token {
+	panic("refresh session not implemented")
+}
+
+func (c *Client) RevokeSession() error {
+	return c.store.DeleteToken(c.issuer, c.clientID)
+}
+
+func login(issuer string, clientID string) (*session.Token, error) {
 	flow, err := authflow.New(issuer, clientID)
 	if err != nil {
 		return nil, err

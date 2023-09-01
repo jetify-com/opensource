@@ -10,7 +10,7 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"go.jetpack.io/auth"
-	"golang.org/x/oauth2"
+	"go.jetpack.io/auth/session"
 )
 
 type loginFlags struct {
@@ -45,7 +45,12 @@ func loginCmd(flags *loginFlags) func(cmd *cobra.Command, args []string) error {
 }
 
 func login(issuer, clientID string) error {
-	tok, err := auth.Login(issuer, clientID)
+	client, err := auth.NewClient(issuer, clientID)
+	if err != nil {
+		return err
+	}
+
+	tok, err := client.LoginFlow()
 	if err != nil {
 		return err
 	}
@@ -57,12 +62,15 @@ func login(issuer, clientID string) error {
 	return nil
 }
 
-func printToken(tok *oauth2.Token) error {
-	data, err := json.MarshalIndent(tok, "", "  ")
+func printToken(tok *session.Token) error {
+	fmt.Println("Tokens:")
+	err := printJSON(tok)
 	if err != nil {
 		return err
 	}
-	err = printJSON(data)
+
+	fmt.Println("\nID Token Claims:")
+	err = printJSON(tok.IDClaims())
 	if err != nil {
 		return err
 	}
@@ -70,7 +78,12 @@ func printToken(tok *oauth2.Token) error {
 	return nil
 }
 
-func printJSON(bytes []byte) error {
+func printJSON(v any) error {
+	bytes, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return err
+	}
+
 	if !isTerminal() {
 		color.NoColor = true
 	}
