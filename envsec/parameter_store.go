@@ -5,6 +5,8 @@ package envsec
 
 import (
 	"context"
+	"fmt"
+	"path"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -111,34 +113,46 @@ func (s *parameterStore) overwriteParameterValue(ctx context.Context, v *paramet
 	return errors.WithStack(err)
 }
 
-func (s *parameterStore) ListByPath(ctx context.Context, path string) ([]EnvVar, error) {
+func (s *parameterStore) listByPath(ctx context.Context, envId EnvId) ([]EnvVar, error) {
+	path := path.Join(PATH_PREFIX, envId.OrgId) + "/"
+	fmt.Printf("listbypath path: %s \n\n", path)
 	// Create the request object:
 	req := &ssm.GetParametersByPathInput{
-		Path:           aws.String(path),
-		WithDecryption: lo.ToPtr(true),
-		Recursive:      lo.ToPtr(true),
+		Path: aws.String(path),
+		// WithDecryption: lo.ToPtr(true),
+		// Recursive:      lo.ToPtr(true),
 	}
 
 	// Start with empty results
 	results := []EnvVar{}
 
-	// Paginate through the results:
-	paginator := ssm.NewGetParametersByPathPaginator(s.client, req)
-	for paginator.HasMorePages() {
-		// Issue the request for the next page:
-		resp, err := paginator.NextPage(ctx)
-		if err != nil {
-			return results, errors.WithStack(err)
-		}
+	client := ssm.New(ssm.Options{
+		Region: s.config.Region,
+		Credentials: credentials.NewStaticCredentialsProvider(
+			s.config.AccessKeyId, s.config.SecretAccessKey, s.config.SessionToken,
+		),
+	})
+	output, err := client.GetParametersByPath(ctx, req)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 
-		// Append results:
-		params := resp.Parameters
-		for _, p := range params {
-			results = append(results, EnvVar{
-				Name:  aws.ToString(p.Name), // TODO: Full path?
-				Value: awsSSMParamStoreValueToString(p.Value),
-			})
-		}
+	// Paginate through the results:
+	// paginator := ssm.NewGetParametersByPathPaginator(s.client, req)
+	// for paginator.HasMorePages() {
+	// 	// Issue the request for the next page:
+	// 	resp, err := paginator.NextPage(ctx)
+	// 	if err != nil {
+	// 		return results, errors.WithStack(err)
+	// 	}
+
+	// Append results:
+	params := output.Parameters
+	for _, p := range params {
+		results = append(results, EnvVar{
+			Name:  aws.ToString(p.Name), // TODO: Full path?
+			Value: awsSSMParamStoreValueToString(p.Value),
+		})
 	}
 	sort(results)
 	return results, nil

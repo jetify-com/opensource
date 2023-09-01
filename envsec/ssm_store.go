@@ -32,7 +32,10 @@ func newSSMStore(ctx context.Context, config *SSMConfig) (*SSMStore, error) {
 	return store, nil
 }
 
-func (s *SSMStore) List(ctx context.Context, envId EnvId) ([]EnvVar, error) {
+func (s *SSMStore) List(ctx context.Context, envId EnvId, jetAuthenticated bool) ([]EnvVar, error) {
+	if jetAuthenticated {
+		return s.store.listByPath(ctx, envId)
+	}
 	return s.store.listByTags(ctx, envId)
 }
 

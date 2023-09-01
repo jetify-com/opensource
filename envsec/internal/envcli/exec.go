@@ -45,7 +45,11 @@ func execCmd() *cobra.Command {
 				EnvName:   envNames[0],
 			}
 			// Get list of stored env variables
-			envVars, err := cmdCfg.Store.List(cmd.Context(), envId)
+			envVars, err := cmdCfg.Store.List(
+				cmd.Context(),
+				envId,
+				cmdCfg.JetAuthenticated,
+			)
 			if err != nil {
 				return errors.WithStack(err)
 			}

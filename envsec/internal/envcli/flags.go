@@ -65,12 +65,14 @@ func (f *configFlags) validateProjectID() (string, error) {
 }
 
 type cmdConfig struct {
-	Store envsec.Store
-	EnvId envsec.EnvId
+	Store            envsec.Store
+	EnvId            envsec.EnvId
+	JetAuthenticated bool
 }
 
 func (f *configFlags) genConfig(ctx context.Context) (*cmdConfig, error) {
 	var user *auth.User
+	jetAuthenticated := false
 	var err error
 	if f.orgId == "" {
 		user, err = newAuthenticator().GetUser()
@@ -81,6 +83,7 @@ func (f *configFlags) genConfig(ctx context.Context) (*cmdConfig, error) {
 		} else if err != nil {
 			return nil, errors.WithStack(err)
 		}
+		jetAuthenticated = true
 	}
 
 	ssmConfig, err := genSSMConfigForUser(ctx, user)
@@ -108,8 +111,9 @@ func (f *configFlags) genConfig(ctx context.Context) (*cmdConfig, error) {
 	}
 
 	return &cmdConfig{
-		Store: s,
-		EnvId: envid,
+		Store:            s,
+		EnvId:            envid,
+		JetAuthenticated: jetAuthenticated,
 	}, nil
 }
 
