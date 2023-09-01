@@ -8,7 +8,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func (f *AuthFlow) verify(tok *oauth2.Token) error {
+///////
+//////
+
+func (f *AuthFlow) Verify(tok *oauth2.Token) error {
 	ctx := context.Background()
 	if !tok.Valid() {
 		return fmt.Errorf("oauth token is not valid")
