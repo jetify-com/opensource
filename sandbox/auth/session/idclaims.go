@@ -30,8 +30,6 @@ type IDClaims struct {
 	Name       string           `json:"name,omitempty"`
 	GivenName  string           `json:"given_name,omitempty"`
 	FamilyName string           `json:"family_name,omitempty"`
-	Username   string           `json:"username,omitempty"`
-	Website    string           `json:"website,omitempty"`
 	UpdatedAt  *jwt.NumericDate `json:"updated_at,omitempty"`
 
 	// Not a default claim in the standards, but used by Auth0
