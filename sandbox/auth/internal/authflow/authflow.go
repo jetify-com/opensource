@@ -6,6 +6,7 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/pkg/browser"
 	"go.jetpack.io/auth/internal/pkce"
+	"go.jetpack.io/auth/session"
 	"golang.org/x/oauth2"
 )
 
@@ -48,16 +49,21 @@ func (f *AuthFlow) OpenBrowser() error {
 	return browser.OpenURL(f.URL)
 }
 
-func (f *AuthFlow) Exchange(code string) (*oauth2.Token, error) {
+func (f *AuthFlow) Exchange(code string) (*session.Token, error) {
 	ctx := context.Background()
-	tok, err := f.oauth2Conf.Exchange(ctx, code, pkce.VerifierOption(f.pkceCodeVerifier))
+	otok, err := f.oauth2Conf.Exchange(ctx, code, pkce.VerifierOption(f.pkceCodeVerifier))
 	if err != nil {
 		return nil, err
 	}
 
-	err = f.verify(tok)
+	tok, err := session.FromOauth2(otok)
 	if err != nil {
 		return nil, err
 	}
+
+	// err = f.verify(tok)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return tok, nil
 }

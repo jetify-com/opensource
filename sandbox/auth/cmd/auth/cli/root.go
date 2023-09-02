@@ -20,6 +20,7 @@ func RootCmd() *cobra.Command {
 	}
 
 	command.AddCommand(LoginCmd())
+	command.AddCommand(WhoAmICmd())
 
 	return command
 }

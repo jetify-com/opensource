@@ -61,7 +61,7 @@ func (s *SSMStore) Set(
 	name string,
 	value string,
 ) error {
-	path := s.config.VarPath(envId, name)
+	path := s.store.config.VarPath(envId, name)
 
 	// New parameter definition
 	tags := buildTags(envId, name)

@@ -18,9 +18,9 @@ type AWSFed struct {
 func New() *AWSFed {
 	return &AWSFed{
 		AccountId:      "984256416385",
-		IdentityPoolId: "us-east-1:da3c3c71-61c7-4f7c-8e3d-3770e9b61379",
-		Provider:       "auth.jetpack.io",
-		Region:         "us-east-1",
+		IdentityPoolId: "us-west-2:8111c156-085b-4ac5-b94d-f823205f6261",
+		Provider:       "accounts.jetpack.io",
+		Region:         "us-west-2",
 	}
 }
 

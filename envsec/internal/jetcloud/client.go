@@ -36,7 +36,7 @@ func newClient() *client {
 	return &client{
 		apiHost: envvar.Get(
 			"ENVSEC_API_HOST",
-			"https://envsec-server-web-mike-jetpack-io.cloud.jetpack.dev/",
+			"https://envsec-server-web-prod.cloud.jetpack.dev/",
 		),
 	}
 }
@@ -90,6 +90,10 @@ func post[T any](ctx context.Context, c *client, user *auth.User, data any) (*T,
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, fmt.Errorf("request failed %d %s", resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

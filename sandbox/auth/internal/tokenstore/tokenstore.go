@@ -2,8 +2,9 @@ package tokenstore
 
 import (
 	"errors"
-	"go/token"
 	"os"
+
+	"go.jetpack.io/auth/session"
 )
 
 type Store struct {
@@ -22,8 +23,8 @@ func New(rootDir string) (*Store, error) {
 	}, nil
 }
 
-func (s *Store) ReadToken(issuer string, clientID string) *token.Token {
-	var tok token.Token
+func (s *Store) ReadToken(issuer string, clientID string) *session.Token {
+	var tok session.Token
 	path := s.path(issuer, clientID)
 	err := readJSONFile(path, &tok)
 	if err != nil {
@@ -32,7 +33,7 @@ func (s *Store) ReadToken(issuer string, clientID string) *token.Token {
 	return &tok
 }
 
-func (s *Store) WriteToken(issuer string, clientID string, tok *token.Token) error {
+func (s *Store) WriteToken(issuer string, clientID string, tok *session.Token) error {
 	if tok == nil {
 		// A nil token is the same as deleting the token.
 		return s.DeleteToken(issuer, clientID)

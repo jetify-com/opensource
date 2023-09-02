@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/coreos/go-oidc/v3 v3.6.0
 	github.com/fatih/color v1.15.0
+	github.com/go-jose/go-jose/v3 v3.0.0
 	github.com/gosimple/slug v1.13.1
 	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f
 	github.com/mattn/go-isatty v0.0.19
@@ -15,7 +16,6 @@ require (
 )
 
 require (
-	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
