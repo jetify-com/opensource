@@ -318,8 +318,11 @@ func awsSSMParamStoreValueToString(s *string) string {
 	return *s
 }
 
+// returns parameter name and env name given a full parameter
+// path e.g., input: /jetpack-data/env/org_id/proj_01234/dev/key123
+// returns "dev" and "key123"
 func envNameAndKeyFromPath(s string) (string, string) {
-	res := filepath.Base(s)
+	key := filepath.Base(s)
 	env := filepath.Base(filepath.Dir(s))
-	return env, res
+	return env, key
 }
