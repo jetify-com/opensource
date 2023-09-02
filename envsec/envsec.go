@@ -36,7 +36,9 @@ func NewEnvId(projectId string, orgId string, envName string) (EnvId, error) {
 
 type Store interface {
 	// List all environmnent variables and their values associated with the given envId.
-	List(ctx context.Context, envId EnvId, jetAuthenticated bool) ([]EnvVar, error)
+	List(ctx context.Context, envId EnvId) ([]EnvVar, error)
+	// List all environmnent variables using parameter path.
+	ListByPath(ctx context.Context, envId EnvId, envNames []string) (map[string][]EnvVar, error)
 	// Set the value of an environment variable.
 	Set(ctx context.Context, envId EnvId, name string, value string) error
 	// Set the values of multiple environment variables.

@@ -40,25 +40,39 @@ func listCmd() *cobra.Command {
 				envNames = []string{strings.ToLower(cmdCfg.EnvId.EnvName)}
 			}
 
-			// TODO: parallelize
-			for _, envName := range envNames {
+			if cmdCfg.JetAuthenticated {
 				envId := envsec.EnvId{
 					OrgId:     cmdCfg.EnvId.OrgId,
 					ProjectId: cmdCfg.EnvId.ProjectId,
-					EnvName:   strings.ToLower(envName),
+					EnvName:   envNames[0],
 				}
-				envVars, err := cmdCfg.Store.List(
-					cmd.Context(),
-					envId,
-					cmdCfg.JetAuthenticated,
-				)
-				if err != nil {
-					return errors.WithStack(err)
+				envVars, _ := cmdCfg.Store.ListByPath(cmd.Context(), envId, envNames)
+				for _, envName := range envNames {
+					err = printEnv(cmd, envName, envVars[envName], flags.ShowValues, flags.Format)
+					if err != nil {
+						return errors.WithStack(err)
+					}
 				}
+			} else {
+				// TODO: parallelize
+				for _, envName := range envNames {
+					envId := envsec.EnvId{
+						OrgId:     cmdCfg.EnvId.OrgId,
+						ProjectId: cmdCfg.EnvId.ProjectId,
+						EnvName:   strings.ToLower(envName),
+					}
+					envVars, err := cmdCfg.Store.List(
+						cmd.Context(),
+						envId,
+					)
+					if err != nil {
+						return errors.WithStack(err)
+					}
 
-				err = printEnv(cmd, envId, envVars, flags.ShowValues, flags.Format)
-				if err != nil {
-					return errors.WithStack(err)
+					err = printEnv(cmd, envName, envVars, flags.ShowValues, flags.Format)
+					if err != nil {
+						return errors.WithStack(err)
+					}
 				}
 			}
 			return nil

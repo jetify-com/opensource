@@ -32,11 +32,12 @@ func newSSMStore(ctx context.Context, config *SSMConfig) (*SSMStore, error) {
 	return store, nil
 }
 
-func (s *SSMStore) List(ctx context.Context, envId EnvId, jetAuthenticated bool) ([]EnvVar, error) {
-	if jetAuthenticated {
-		return s.store.listByPath(ctx, envId)
-	}
+func (s *SSMStore) List(ctx context.Context, envId EnvId) ([]EnvVar, error) {
 	return s.store.listByTags(ctx, envId)
+}
+
+func (s *SSMStore) ListByPath(ctx context.Context, envId EnvId, envNames []string) (map[string][]EnvVar, error) {
+	return s.store.listByPath(ctx, envId, envNames)
 }
 
 func (s *SSMStore) Get(ctx context.Context, envId EnvId, name string) (string, error) {

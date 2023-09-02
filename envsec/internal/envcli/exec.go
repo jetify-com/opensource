@@ -48,7 +48,6 @@ func execCmd() *cobra.Command {
 			envVars, err := cmdCfg.Store.List(
 				cmd.Context(),
 				envId,
-				cmdCfg.JetAuthenticated,
 			)
 			if err != nil {
 				return errors.WithStack(err)

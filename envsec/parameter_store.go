@@ -6,6 +6,7 @@ package envsec
 import (
 	"context"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -112,17 +113,20 @@ func (s *parameterStore) overwriteParameterValue(ctx context.Context, v *paramet
 	return errors.WithStack(err)
 }
 
-func (s *parameterStore) listByPath(ctx context.Context, envId EnvId) ([]EnvVar, error) {
-	path := path.Join(PATH_PREFIX, envId.OrgId, envId.ProjectId) + "/"
+func (s *parameterStore) listByPath(ctx context.Context, envId EnvId, envNames []string) (map[string][]EnvVar, error) {
+	paramPath := path.Join(PATH_PREFIX, envId.OrgId, envId.ProjectId)
+	if len(envNames) == 1 {
+		paramPath = path.Join(paramPath, envId.EnvName)
+	}
 	// Create the request object:
 	req := &ssm.GetParametersByPathInput{
-		Path:           aws.String(path),
+		Path:           aws.String(paramPath),
 		WithDecryption: lo.ToPtr(true),
 		Recursive:      lo.ToPtr(true),
 	}
 
 	// Start with empty results
-	results := []EnvVar{}
+	results := map[string][]EnvVar{}
 
 	// Paginate through the results:
 	paginator := ssm.NewGetParametersByPathPaginator(s.client, req)
@@ -130,19 +134,22 @@ func (s *parameterStore) listByPath(ctx context.Context, envId EnvId) ([]EnvVar,
 		// Issue the request for the next page:
 		resp, err := paginator.NextPage(ctx)
 		if err != nil {
-			return results, errors.WithStack(err)
+			return nil, errors.WithStack(err)
 		}
 
 		// Append results:
 		params := resp.Parameters
 		for _, p := range params {
-			results = append(results, EnvVar{
-				Name:  aws.ToString(p.Name), // TODO: Full path?
+			envName, key := envNameAndKeyFromPath(*p.Name)
+			results[envName] = append(results[envName], EnvVar{
+				Name:  key, // TODO: Full path?
 				Value: awsSSMParamStoreValueToString(p.Value),
 			})
 		}
 	}
-	sort(results)
+	for _, env := range envNames {
+		sort(results[env])
+	}
 	return results, nil
 }
 
@@ -309,4 +316,10 @@ func awsSSMParamStoreValueToString(s *string) string {
 		return ""
 	}
 	return *s
+}
+
+func envNameAndKeyFromPath(s string) (string, string) {
+	res := filepath.Base(s)
+	env := filepath.Base(filepath.Dir(s))
+	return env, res
 }

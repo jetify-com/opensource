@@ -61,7 +61,7 @@ func ensureValidNames(names []string) error {
 
 func printEnv(
 	cmd *cobra.Command,
-	envId envsec.EnvId,
+	envName string,
 	envVars []envsec.EnvVar, // list of (name, value) pairs
 	flagPrintValues bool,
 	flagFormat string,
@@ -82,11 +82,11 @@ func printEnv(
 
 	switch flagFormat {
 	case "table":
-		return printTableFormat(cmd, envId, envVarsMaskedValue)
+		return printTableFormat(cmd, envName, envVarsMaskedValue)
 	case "dotenv":
-		return printDotenvFormat(cmd, envId, envVarsMaskedValue)
+		return printDotenvFormat(cmd, envVarsMaskedValue)
 	case "json":
-		return printJsonFormat(cmd, envId, envVarsMaskedValue)
+		return printJsonFormat(cmd, envVarsMaskedValue)
 	default:
 		return errors.New("Incorrect format. Must be one of table|dotenv|json .")
 	}
@@ -94,10 +94,10 @@ func printEnv(
 }
 
 func printTableFormat(cmd *cobra.Command,
-	envId envsec.EnvId,
+	envName string,
 	envVars []envsec.EnvVar, // list of (name, value) pairs
 ) error {
-	err := tux.WriteHeader(cmd.OutOrStdout(), "Environment: %s\n", strings.ToLower(envId.EnvName))
+	err := tux.WriteHeader(cmd.OutOrStdout(), "Environment: %s\n", strings.ToLower(envName))
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -123,7 +123,6 @@ func printTableFormat(cmd *cobra.Command,
 
 func printDotenvFormat(
 	cmd *cobra.Command,
-	envId envsec.EnvId,
 	envVars []envsec.EnvVar, // list of (name, value) pairs
 ) error {
 	keyValsToPrint := ""
@@ -139,7 +138,6 @@ func printDotenvFormat(
 
 func printJsonFormat(
 	cmd *cobra.Command,
-	envId envsec.EnvId,
 	envVars []envsec.EnvVar, // list of (name, value) pairs
 ) error {
 	data, err := json.MarshalIndent(envVars, "", "  ")

@@ -42,7 +42,6 @@ func downloadCmd() *cobra.Command {
 			envVars, err := cmdCfg.Store.List(
 				cmd.Context(),
 				cmdCfg.EnvId,
-				cmdCfg.JetAuthenticated,
 			)
 			if err != nil {
 				return errors.WithStack(err)
