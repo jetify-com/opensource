@@ -88,7 +88,6 @@ func post[T any](ctx context.Context, c *client, tok *session.Token, data any) (
 		return nil, err
 	}
 
-	fmt.Printf("Response: %s\n", body)
 	var result T
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
