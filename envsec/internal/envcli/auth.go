@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"go.jetpack.io/auth"
+	"go.jetpack.io/auth/session"
 	"go.jetpack.io/envsec/internal/envvar"
 )
 
@@ -96,12 +97,10 @@ func whoAmICmd() *cobra.Command {
 		Short: "Show the current user",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := newAuthClient()
+			tok, err := getIDToken()
 			if err != nil {
 				return err
 			}
-
-			tok := client.GetSession()
 			if tok == nil {
 				fmt.Fprintln(cmd.OutOrStdout(), "Not logged in")
 				return nil
@@ -137,4 +136,15 @@ func newAuthClient() (*auth.Client, error) {
 	// "ENVSEC_AUTH_SCOPE" = "openid offline_access email profile"
 	// "ENVSEC_AUTH_AUDIENCE" = "https://api.jetpack.io",
 	return auth.NewClient(issuer, clientId)
+}
+
+func getIDToken() (*session.Token, error) {
+	if globalFlags.idToken != "" {
+		return session.TokenFromString(globalFlags.idToken)
+	}
+	client, err := newAuthClient()
+	if err != nil {
+		return nil, err
+	}
+	return client.GetSession(), nil
 }

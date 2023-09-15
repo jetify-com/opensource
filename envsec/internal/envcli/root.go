@@ -14,11 +14,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var globalFlags = &rootCmdFlags{}
+
 type rootCmdFlags struct {
 	jsonErrors bool
+	idToken    string
 }
 
-func RootCmd(flags *rootCmdFlags) *cobra.Command {
+func RootCmd() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "envsec",
 		Short: "Manage environment variables and secrets",
@@ -30,7 +33,7 @@ func RootCmd(flags *rootCmdFlags) *cobra.Command {
 			store values that contain passwords and other secrets.
 		`),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if flags.jsonErrors {
+			if globalFlags.jsonErrors {
 				// Don't print anything to stderr so we can print the error in json
 				cmd.SetErr(io.Discard)
 			}
@@ -46,10 +49,15 @@ func RootCmd(flags *rootCmdFlags) *cobra.Command {
 	}
 
 	command.PersistentFlags().BoolVar(
-		&flags.jsonErrors,
+		&globalFlags.jsonErrors,
 		"json-errors", false, "Print errors in json format",
 	)
 	command.Flag("json-errors").Hidden = true
+	command.PersistentFlags().StringVar(
+		&globalFlags.idToken,
+		"id-token", "", "ID token to use for authentication",
+	)
+	command.Flag("id-token").Hidden = true
 
 	command.AddCommand(authCmd())
 	command.AddCommand(downloadCmd())
@@ -64,13 +72,12 @@ func RootCmd(flags *rootCmdFlags) *cobra.Command {
 }
 
 func Execute(ctx context.Context) int {
-	flags := &rootCmdFlags{}
-	cmd := RootCmd(flags)
+	cmd := RootCmd()
 	err := cmd.ExecuteContext(ctx)
 	if err == nil {
 		return 0
 	}
-	if flags.jsonErrors {
+	if globalFlags.jsonErrors {
 		var jsonErr struct {
 			Error string `json:"error"`
 		}

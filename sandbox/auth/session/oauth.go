@@ -9,17 +9,7 @@ func FromOauth2(otok *oauth2.Token) (*Token, error) {
 		return nil, nil
 	}
 
-	tok := Token{
-		Token:   *otok,
-		IDToken: getRawIDToken(otok),
-	}
-
-	claims := tok.IDClaims()
-	if claims != nil {
-		tok.Issuer = claims.Issuer
-	}
-
-	return &tok, nil
+	return TokenFromString(getRawIDToken(otok))
 }
 
 func getRawIDToken(otok *oauth2.Token) string {

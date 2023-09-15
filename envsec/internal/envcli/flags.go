@@ -84,12 +84,10 @@ func (f *configFlags) genConfig(ctx context.Context) (*cmdConfig, error) {
 	var tok *session.Token
 
 	if f.orgId == "" {
-		client, err := newAuthClient()
+		tok, err := getIDToken()
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
-
-		tok := client.GetSession()
 		if tok == nil {
 			return nil, errors.Errorf(
 				"To use envsec you must log in (`envsec auth login`) or specify --project-id and --org-id",
