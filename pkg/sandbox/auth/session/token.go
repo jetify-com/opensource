@@ -13,7 +13,7 @@ type Token struct {
 
 	// The id token is technically contained in the original oauth2.Token (inside
 	// of extras). However, the extras don't get serialized to JSON, so the id token
-	// is lost of we save the token to disk and read it back. We copy the IDToken
+	// is lost if we save the token to disk and read it back. We copy the IDToken
 	// into this field so that it does get serialized properly.
 	IDToken string `json:"id_token,omitempty"`
 
