@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/rogpeppe/go-internal/renameio"
+	"github.com/google/renameio/v2"
 )
 
 type Path string
@@ -86,5 +86,5 @@ func WriteFile(path string, data []byte) error {
 		return err
 	}
 	// Write using `renameio` to ensure an atomic write:
-	return renameio.WriteFile(path, data)
+	return renameio.WriteFile(path, data, 0600)
 }
