@@ -5,6 +5,7 @@ package envcli
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/pkg/errors"
@@ -84,16 +85,13 @@ func (f *configFlags) genConfig(ctx context.Context) (*cmdConfig, error) {
 	var tok *session.Token
 
 	if f.orgId == "" {
-		tok, err := getIDToken()
+		_, err := getIDToken()
 		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-		if tok == nil {
-			return nil, errors.Errorf(
-				"To use envsec you must log in (`envsec auth login`) or specify --project-id and --org-id",
+			return nil, fmt.Errorf(
+				"%w: To use envsec you must log in (`envsec auth login`) or specify --project-id and --org-id",
+				err,
 			)
 		}
-
 	}
 
 	ssmConfig, err := genSSMConfigForUser(ctx, tok)

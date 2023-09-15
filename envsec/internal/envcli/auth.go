@@ -6,11 +6,14 @@ package envcli
 import (
 	"fmt"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.jetpack.io/auth"
 	"go.jetpack.io/auth/session"
 	"go.jetpack.io/envsec/internal/envvar"
 )
+
+var errNotLoggedIn = errors.New("not logged in")
 
 func authCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -101,10 +104,6 @@ func whoAmICmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if tok == nil {
-				fmt.Fprintln(cmd.OutOrStdout(), "Not logged in")
-				return nil
-			}
 			idClaims := tok.IDClaims()
 
 			fmt.Fprintf(cmd.OutOrStdout(), "Logged in\n")
@@ -146,5 +145,9 @@ func getIDToken() (*session.Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return client.GetSession(), nil
+	tok := client.GetSession()
+	if tok == nil {
+		return nil, errNotLoggedIn
+	}
+	return tok, nil
 }

@@ -15,6 +15,9 @@ func initCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			tok, err := getIDToken()
+			if err != nil {
+				return err
+			}
 
 			wd, err := os.Getwd()
 			if err != nil {
