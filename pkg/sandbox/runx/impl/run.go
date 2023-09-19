@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"strings"
@@ -44,7 +45,8 @@ func run(args parsedArgs) error {
 	if err != nil {
 		// If the command failed, we want to return the exit code
 		// of the command.
-		if exitErr, ok := err.(*exec.ExitError); ok {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
 			os.Exit(exitErr.ExitCode())
 		}
 		return err

@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"net/http"
 
 	githubimpl "github.com/google/go-github/v53/github"
 	"go.jetpack.io/pkg/sandbox/runx/impl/httpcacher"
@@ -25,7 +26,7 @@ func (c *Client) ListReleases(ctx context.Context, owner, repo string) ([]types.
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode == 404 {
+	if resp.StatusCode == http.StatusNotFound {
 		return nil, types.ErrPackageNotFound
 	}
 	return convertGithubReleases(releases), nil
