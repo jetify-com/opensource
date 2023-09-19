@@ -10,7 +10,7 @@
     ],
     "scripts": {
       "build": "go build -o dist/envsec cmd/envsec/main.go",
-      "lint": "golangci-lint run --timeout 300s",
+      "lint": "golangci-lint run",
       "test": "go test ./..."
     }
   },
