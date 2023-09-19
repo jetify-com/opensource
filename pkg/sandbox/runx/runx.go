@@ -4,9 +4,10 @@ import (
 	"go.jetpack.io/pkg/sandbox/runx/impl"
 )
 
-func Install(pkgs ...string) error {
-	_, err := impl.Install(pkgs...)
-	return err
+// Install installs the given packages and returns the paths to the directories
+// where they were installed.
+func Install(pkgs ...string) ([]string, error) {
+	return impl.Install(pkgs...)
 }
 
 func Run(args ...string) error {
