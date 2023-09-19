@@ -27,7 +27,9 @@ linters:
     - unused
     - usestdlibvars
     - varnamelen
-    # - wrapcheck If we're going to use github.com/pkg/errors we should probably turn this on?
+    # If we're going to use github.com/pkg/errors we should probably turn this on?
+    # Let's adopt new stackerr lib and we can turn this on.
+    # - wrapcheck 
     - unused
 
 linters-settings:
@@ -56,29 +58,9 @@ linters-settings:
   varnamelen:
     max-distance: 10
     ignore-decls:
-      - a []any
-      - c echo.Context
-      - const C
-      - e error
-      - e watch.Event
-      - f *foo.Bar
-      - f fmt.State
-      - i int
-      - id string
-      - m map[string]any
-      - m map[string]int
-      - n int
-      - ns string
+      - id []byte
       - r *http.Request
       - r io.Reader
-      - r *os.File
-      - re *regexp.Regexp
-      - sh *Shell
-      - sh *shell
-      - sh *shell.Shell
-      - sh shell
-      - T any
       - t testing.T
       - w http.ResponseWriter
       - w io.Writer
-      - w *os.File
