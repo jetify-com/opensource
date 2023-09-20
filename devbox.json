@@ -13,7 +13,7 @@
         "go work sync"
       ],
       "build": "find . -maxdepth 4 -type f -name go.mod -execdir go build -v ./... \\;",
-      "lint": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && golangci-lint run\"",
+      "lint": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && golangci-lint run --timeout 300s\"",
       "test": "find . -maxdepth 4 -type f -name go.mod -execdir go test -v ./... \\;"
     }
   }

@@ -7,16 +7,16 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentity"
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentity/types"
-	"go.jetpack.io/auth/session"
 	"go.jetpack.io/envsec/internal/envvar"
 	"go.jetpack.io/envsec/internal/filecache"
+	"go.jetpack.io/pkg/sandbox/auth/session"
 )
 
 const cacheKey = "awsfed"
 
 type AWSFed struct {
-	AccountId      string
-	IdentityPoolId string
+	AccountID      string
+	IdentityPoolID string
 	LegacyProvider string
 	Provider       string
 	Region         string
@@ -24,8 +24,8 @@ type AWSFed struct {
 
 func New() *AWSFed {
 	return &AWSFed{
-		AccountId:      "984256416385",
-		IdentityPoolId: "us-west-2:8111c156-085b-4ac5-b94d-f823205f6261",
+		AccountID:      "984256416385",
+		IdentityPoolID: "us-west-2:8111c156-085b-4ac5-b94d-f823205f6261",
 		LegacyProvider: "auth.jetpack.io",
 		Provider: envvar.Get(
 			"ENVSEC_AUTH_DOMAIN",
@@ -63,8 +63,8 @@ func (a *AWSFed) AWSCreds(
 	getIdoutput, err := svc.GetId(
 		ctx,
 		&cognitoidentity.GetIdInput{
-			AccountId:      &a.AccountId,
-			IdentityPoolId: &a.IdentityPoolId,
+			AccountId:      &a.AccountID,
+			IdentityPoolId: &a.IdentityPoolID,
 			Logins:         logins,
 		},
 	)
