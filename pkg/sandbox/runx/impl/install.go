@@ -2,14 +2,14 @@ package impl
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 
-	"github.com/adrg/xdg"
 	"go.jetpack.io/pkg/sandbox/runx/impl/registry"
 	"go.jetpack.io/pkg/sandbox/runx/impl/types"
 )
 
-var xdgInstallationSubdir = "jetpack.io/pkgs"
+var xdgInstallationSubdir = "go.jetpack.io/pkgs"
 
 func Install(pkgs ...string) ([]string, error) {
 	refs := []types.PkgRef{}
@@ -38,7 +38,11 @@ func install(pkgs ...types.PkgRef) ([]string, error) {
 }
 
 func installOne(ref types.PkgRef) (string, error) {
-	rootDir := filepath.Join(xdg.CacheHome, xdgInstallationSubdir)
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		cacheDir = "~/.cache"
+	}
+	rootDir := filepath.Join(cacheDir, xdgInstallationSubdir)
 	reg, err := registry.NewLocalRegistry(rootDir)
 	if err != nil {
 		return "", err
