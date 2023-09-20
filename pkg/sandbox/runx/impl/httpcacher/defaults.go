@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 )
 
-const xdgSubdir = "go.jetpack.io/http"
+const xdgSubdir = "jetpack.io/http"
 
 // It's important to note that with the current implementation, the cache
 // must be a private cache: we're doing nothing to filter out requests/responses

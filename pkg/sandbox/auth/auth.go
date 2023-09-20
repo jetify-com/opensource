@@ -36,7 +36,7 @@ func storeDir() string {
 	if err != nil {
 		cacheDir = "~/.cache"
 	}
-	return filepath.Join(cacheDir, "go.jetpack.io", "auth")
+	return filepath.Join(cacheDir, "jetpack.io", "auth")
 }
 
 func (c *Client) LoginFlow() (*session.Token, error) {

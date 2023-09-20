@@ -9,7 +9,7 @@ import (
 	"go.jetpack.io/pkg/sandbox/runx/impl/types"
 )
 
-var xdgInstallationSubdir = "go.jetpack.io/pkgs"
+var xdgInstallationSubdir = "jetpack.io/pkgs"
 
 func Install(pkgs ...string) ([]string, error) {
 	refs := []types.PkgRef{}

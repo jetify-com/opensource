@@ -2,7 +2,7 @@ package awsfed
 
 import (
 	"context"
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 
@@ -40,7 +40,7 @@ func (a *AWSFed) AWSCreds(
 	ctx context.Context,
 	tok *session.Token,
 ) (*types.Credentials, error) {
-	cache := filecache.New("go.jetpack.io/envsec")
+	cache := filecache.New("jetpack.io/envsec")
 	if cachedCreds, err := cache.Get(cacheKey(tok)); err == nil {
 		var creds types.Credentials
 		if err := json.Unmarshal(cachedCreds, &creds); err == nil {
@@ -102,7 +102,7 @@ func cacheKey(t *session.Token) string {
 	if claims := t.IDClaims(); claims != nil && claims.OrgID != "" {
 		id = claims.OrgID
 	} else {
-		id = fmt.Sprintf("%x", md5.Sum([]byte(t.IDToken)))
+		id = fmt.Sprintf("%x", sha256.Sum256([]byte(t.IDToken)))
 	}
 
 	return fmt.Sprintf("%s-%s", cacheKeyPrefix, id)
