@@ -4,15 +4,22 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"time"
 )
 
 type CallbackServer struct {
-	addr     string
-	path     string
-	listener net.Listener
-	server   *http.Server
+	addr      string
+	path      string
+	listener  net.Listener
+	server    *http.Server
+	redirects *RedirectConfig
 
 	respCh chan (Response)
+}
+
+type RedirectConfig struct {
+	Success string
+	Failure string
 }
 
 type Response struct {
@@ -21,11 +28,12 @@ type Response struct {
 	State string `json:"state"`
 }
 
-func New() *CallbackServer {
+func New(redirects *RedirectConfig) *CallbackServer {
 	return &CallbackServer{
-		addr:   "127.0.0.1:4446",
-		path:   "/callback",
-		respCh: make(chan (Response)),
+		addr:      "127.0.0.1:4446",
+		path:      "/callback",
+		redirects: redirects,
+		respCh:    make(chan (Response)),
 	}
 }
 
@@ -79,12 +87,17 @@ func (s *CallbackServer) Start() error {
 			Code:  q.Get("code"),
 			State: q.Get("state"),
 		}
+
 		fmt.Println("sending response")
 		s.respCh <- resp
 
-		// TODO: define success and error redirects
-		fmt.Println("redirecting")
-		http.Redirect(w, r, "https://www.jetpack.io", http.StatusSeeOther)
+		if resp.Error != "" {
+			fmt.Println("redirecting")
+			http.Redirect(w, r, s.redirects.Failure, http.StatusSeeOther)
+		} else {
+			fmt.Println("redirecting")
+			http.Redirect(w, r, s.redirects.Success, http.StatusSeeOther)
+		}
 	})
 
 	fmt.Println("starting server")
@@ -100,6 +113,9 @@ func (s *CallbackServer) WaitForResponse() Response {
 	fmt.Println("waiting for response")
 	resp := <-s.respCh
 	fmt.Println("got response")
+	// delay a few moments before stopping the server
+	// otherwise, the server may stop before the redirect completes.
+	time.Sleep(time.Second)
 	_ = s.Stop()
 	return resp
 }

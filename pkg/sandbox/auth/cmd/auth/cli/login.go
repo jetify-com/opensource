@@ -14,20 +14,24 @@ import (
 )
 
 type loginFlags struct {
-	client string
+	client  string
+	success string
+	failure string
 }
 
 func LoginCmd() *cobra.Command {
 	flags := &loginFlags{}
 
 	command := &cobra.Command{
-		Use:   "login <issuer> --client <client-id>",
+		Use:   "login <issuer> --client <client-id> --success <url> --failure <url>",
 		Short: "Login using OIDC",
 		Args:  cobra.ExactArgs(1),
 		RunE:  loginCmd(flags),
 	}
 
 	command.Flags().StringVar(&flags.client, "client", "", "client id")
+	command.Flags().StringVar(&flags.success, "success", "https://www.jetpack.io/account/login/success", "URL to display in the browser upon success")
+	command.Flags().StringVar(&flags.failure, "failure", "https://www.jetpack.io/account/login/failure", "URL to display in the browser upon failure")
 
 	return command
 }
@@ -40,12 +44,13 @@ func loginCmd(flags *loginFlags) func(cmd *cobra.Command, args []string) error {
 		if clientID == "" {
 			return fmt.Errorf("please provide a client id")
 		}
-		return login(issuer, clientID)
+
+		return login(issuer, clientID, flags.success, flags.failure)
 	}
 }
 
-func login(issuer, clientID string) error {
-	client, err := auth.NewClient(issuer, clientID)
+func login(issuer, clientID, success, failure string) error {
+	client, err := auth.NewClient(issuer, clientID, success, failure)
 	if err != nil {
 		return err
 	}
