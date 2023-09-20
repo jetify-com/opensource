@@ -20,8 +20,9 @@ jobs:
 
       - name: Install devbox
         uses: jetpack-io/devbox-install-action@v0.7.0
-        with:
-          enable-cache: true
+        # Need to investigate why cache is causing ~/.cache to change ownership to roo
+        # with:
+        #   enable-cache: true
 
       - name: Mount golang cache
         uses: actions/cache@v3
