@@ -20,7 +20,7 @@ jobs:
 
       - name: Install devbox
         uses: jetpack-io/devbox-install-action@v0.7.0
-        # Need to investigate why cache is causing ~/.cache to change ownership to roo
+        # Need to investigate why cache is causing ~/.cache to change ownership to root
         # with:
         #   enable-cache: true
 
