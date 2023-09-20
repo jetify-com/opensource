@@ -17,7 +17,7 @@ import "net/http"
 // It could even implement state-while-revalidate type of logic on the client
 // side: https://developer.mozilla.org/en-US/docs/Web/API/Request/cache
 
-var DefaultClient = NewClient(defaultCacheDir)
+var DefaultClient = NewClient(defaultCacheDir())
 
 func NewClient(cacheDir string) *http.Client {
 	return newTransport(cacheDir).Client()

@@ -3,7 +3,6 @@ module go.jetpack.io/pkg
 go 1.20
 
 require (
-	github.com/adrg/xdg v0.4.0
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/codeclysm/extract v2.2.0+incompatible
 	github.com/coreos/go-oidc/v3 v3.6.0

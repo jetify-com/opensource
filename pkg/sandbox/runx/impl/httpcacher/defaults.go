@@ -1,9 +1,8 @@
 package httpcacher
 
 import (
+	"os"
 	"path/filepath"
-
-	"github.com/adrg/xdg"
 )
 
 const xdgSubdir = "jetpack.io/http"
@@ -16,4 +15,11 @@ const xdgSubdir = "jetpack.io/http"
 // TODO: consider supporting a shared cache. Consider changing the default caching
 // directory structure, to separate the private cache from the shared cache (which
 // could be copied between machines).
-var defaultCacheDir = filepath.Join(xdg.CacheHome, xdgSubdir)
+
+func defaultCacheDir() string {
+	cacheHome, err := os.UserCacheDir()
+	if err != nil {
+		cacheHome = "~/.cache"
+	}
+	return filepath.Join(cacheHome, xdgSubdir)
+}
