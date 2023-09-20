@@ -1,0 +1,10 @@
+{
+  "packages": [
+    "go@latest"
+  ],
+  "shell": {
+    "scripts": {
+      "build": "go build -o dist/runx cmd/runx/main.go"
+    }
+  }
+}
