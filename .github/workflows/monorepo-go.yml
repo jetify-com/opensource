@@ -21,6 +21,16 @@ jobs:
       - name: Install devbox
         uses: jetpack-io/devbox-install-action@v0.7.0
 
+      # can this be part of devbox action?
+      - name: Mount golang cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/golangci-lint
+            ~/.cache/go-build
+            ~/go/pkg
+          key: ${{ runner.os }}-${{ hashFiles('go.work.sum') }}
+
       - name: Go modules should be up-to-date
         run: |
           devbox run go-mod-sync
