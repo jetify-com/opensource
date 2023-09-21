@@ -55,9 +55,16 @@ func (c *Client) LogoutFlow() error {
 	return c.RevokeSession()
 }
 
-func (c *Client) GetSession() *session.Token {
-	// TODO: automatically refresh token as needed
-	return c.store.ReadToken(c.issuer, c.clientID)
+// GetSession returns the current valid session token, if any. If token is expired,
+// it will attempt to refresh it. If no token is found, or is unable to be refreshed,
+// it will return nil and false.
+// TODO: automatically refresh token as needed
+func (c *Client) GetSession() (*session.Token, bool) {
+	tok := c.store.ReadToken(c.issuer, c.clientID)
+	if tok == nil || !tok.Valid() {
+		return nil, false
+	}
+	return tok, true
 }
 
 func (c *Client) RefreshSession() *session.Token {
