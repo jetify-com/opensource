@@ -104,7 +104,7 @@ func whoAmICmd() *cobra.Command {
 
 			tok, ok := client.GetSession()
 			if !ok {
-				return errors.New("Not logged in. Run `envsec auth login` to log in.")
+				return errors.New("not logged in. Run `envsec auth login` to log in")
 			}
 			idClaims := tok.IDClaims()
 
