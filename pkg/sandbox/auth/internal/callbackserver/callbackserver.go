@@ -1,7 +1,6 @@
 package callbackserver
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 )
@@ -67,44 +66,30 @@ func (s *CallbackServer) Start() error {
 	}
 
 	http.HandleFunc(s.path, func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("callback received")
-		defer func() {
-			fmt.Println("callback handler exiting")
-			// _ = s.Stop()
-		}()
-
 		q := r.URL.Query()
 		resp := Response{
 			Error: q.Get("error"),
 			Code:  q.Get("code"),
 			State: q.Get("state"),
 		}
-		fmt.Println("sending response")
 		s.respCh <- resp
 
 		// TODO: define success and error redirects
-		fmt.Println("redirecting")
 		http.Redirect(w, r, "https://www.jetpack.io", http.StatusSeeOther)
 	})
 
-	fmt.Println("starting server")
 	if err := s.server.Serve(s.listener); err != nil && err != http.ErrServerClosed {
-		fmt.Println("error starting server")
 		return err
 	}
-	fmt.Println("server stopped")
 	return nil
 }
 
 func (s *CallbackServer) WaitForResponse() Response {
-	fmt.Println("waiting for response")
 	resp := <-s.respCh
-	fmt.Println("got response")
 	_ = s.Stop()
 	return resp
 }
 
 func (s *CallbackServer) Stop() error {
-	fmt.Println("stopping server")
 	return s.server.Close()
 }
