@@ -1,11 +1,14 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/coreos/go-oidc/v3/oidc"
 	"go.jetpack.io/pkg/sandbox/auth/session"
+	"golang.org/x/oauth2"
 
 	"go.jetpack.io/pkg/sandbox/auth/internal/authflow"
 	"go.jetpack.io/pkg/sandbox/auth/internal/callbackserver"
@@ -61,14 +64,58 @@ func (c *Client) LogoutFlow() error {
 // TODO: automatically refresh token as needed
 func (c *Client) GetSession() (*session.Token, bool) {
 	tok := c.store.ReadToken(c.issuer, c.clientID)
-	if tok == nil || !tok.Valid() {
+	if tok == nil {
 		return nil, false
 	}
+
+	// Refresh if the token is no longer valid:
+	if !tok.Valid() {
+		tok = c.refresh(tok)
+		if !tok.Valid() {
+			return nil, false
+		}
+		return tok, true
+	}
+
 	return tok, true
 }
 
-func (c *Client) RefreshSession() *session.Token {
-	panic("refresh session not implemented")
+func (c *Client) refresh(tok *session.Token) *session.Token {
+	ctx := context.Background()
+
+	if tok == nil {
+		return nil
+	}
+
+	// TODO: figure out how to share oidc provider and outh2 client
+	// with auth flow:
+	provider, err := oidc.NewProvider(ctx, c.issuer)
+	if err != nil {
+		return tok
+	}
+
+	conf := oauth2.Config{
+		ClientID: c.clientID,
+		Endpoint: provider.Endpoint(),
+		Scopes:   []string{"openid", "offline_access"},
+	}
+
+	// Refresh logic:
+	tokenSource := conf.TokenSource(ctx, &tok.Token)
+	newToken, err := tokenSource.Token()
+	if err != nil {
+		return tok
+	}
+
+	if newToken.AccessToken != tok.AccessToken {
+		tok.Token = *newToken
+		err = c.store.WriteToken(c.issuer, c.clientID, tok)
+		if err != nil {
+			return tok
+		}
+	}
+
+	return tok
 }
 
 func (c *Client) RevokeSession() error {
