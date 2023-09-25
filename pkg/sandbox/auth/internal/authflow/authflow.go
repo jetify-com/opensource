@@ -61,6 +61,7 @@ func (f *AuthFlow) Exchange(code string) (*session.Token, error) {
 		return nil, err
 	}
 
+	// TODO: Add verification
 	// err = f.verify(tok)
 	// if err != nil {
 	// 	return nil, err
