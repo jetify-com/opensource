@@ -87,7 +87,7 @@ func (c *Client) refresh(
 		return nil
 	}
 
-	// TODO: figure out how to share oidc provider and outh2 client
+	// TODO: figure out how to share oidc provider and oauth2 client
 	// with auth flow:
 	provider, err := oidc.NewProvider(ctx, c.issuer)
 	if err != nil {
