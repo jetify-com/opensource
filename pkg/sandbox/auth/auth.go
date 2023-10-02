@@ -87,10 +87,6 @@ func (c *Client) refresh(
 	ctx context.Context,
 	tok *session.Token,
 ) (*session.Token, error) {
-	if tok == nil {
-		return nil, ErrNotLoggedIn
-	}
-
 	// TODO: figure out how to share oidc provider and oauth2 client
 	// with auth flow:
 	provider, err := oidc.NewProvider(ctx, c.issuer)
