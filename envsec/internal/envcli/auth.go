@@ -6,7 +6,6 @@ package envcli
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.jetpack.io/envsec/internal/envvar"
 	"go.jetpack.io/pkg/sandbox/auth"
@@ -83,9 +82,12 @@ func refreshCmd() *cobra.Command {
 				return err
 			}
 
-			_, ok := client.GetSession(cmd.Context())
-			if !ok {
-				return errors.New("Failed to refresh: not logged in. Run `envsec auth login` to log in")
+			_, err = client.GetSession(cmd.Context())
+			if err != nil {
+				return fmt.Errorf(
+					"failed to refresh: %w. Run `envsec auth login` to log in",
+					err,
+				)
 			}
 			fmt.Fprintln(cmd.OutOrStdout(), "Refreshed successfully")
 			return nil
@@ -111,9 +113,9 @@ func whoAmICmd() *cobra.Command {
 				return err
 			}
 
-			tok, ok := client.GetSession(cmd.Context())
-			if !ok {
-				return errors.New("not logged in. Run `envsec auth login` to log in")
+			tok, err := client.GetSession(cmd.Context())
+			if err != nil {
+				return fmt.Errorf("error: %w. Run `envsec auth login` to log in", err)
 			}
 			idClaims := tok.IDClaims()
 
@@ -136,7 +138,6 @@ func whoAmICmd() *cobra.Command {
 				fmt.Fprintf(cmd.OutOrStdout(), "Access Token: %s\n", tok.AccessToken)
 				fmt.Fprintf(cmd.OutOrStdout(), "ID Token: %s\n", tok.IDToken)
 				fmt.Fprintf(cmd.OutOrStdout(), "Refresh Token: %s\n", tok.RefreshToken)
-
 			}
 
 			return nil

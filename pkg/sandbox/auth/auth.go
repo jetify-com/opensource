@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,6 +15,8 @@ import (
 	"go.jetpack.io/pkg/sandbox/auth/internal/callbackserver"
 	"go.jetpack.io/pkg/sandbox/auth/internal/tokenstore"
 )
+
+var ErrNotLoggedIn = fmt.Errorf("not logged in")
 
 type Client struct {
 	issuer   string
@@ -58,40 +61,41 @@ func (c *Client) LogoutFlow() error {
 	return c.RevokeSession()
 }
 
-// GetSession returns the current valid session token, if any. If token is expired,
-// it will attempt to refresh it. If no token is found, or is unable to be refreshed,
-// it will return nil and false.
-// TODO: automatically refresh token as needed
-func (c *Client) GetSession(ctx context.Context) (*session.Token, bool) {
-	tok := c.store.ReadToken(c.issuer, c.clientID)
-	if tok == nil {
-		return nil, false
+// GetSession returns the current valid session token, if any. If token is
+// expired, it will attempt to refresh it. If no token is found, or is unable
+// to be refreshed, it will return error.
+func (c *Client) GetSession(ctx context.Context) (*session.Token, error) {
+	tok, err := c.store.ReadToken(c.issuer, c.clientID)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, ErrNotLoggedIn
+	} else if err != nil {
+		return nil, err
 	}
 
 	// Refresh if the token is no longer valid:
 	if !tok.Valid() {
-		tok = c.refresh(ctx, tok)
-		if !tok.Valid() {
-			return nil, false
+		tok, err = c.refresh(ctx, tok)
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	return tok, true
+	return tok, nil
 }
 
 func (c *Client) refresh(
 	ctx context.Context,
 	tok *session.Token,
-) *session.Token {
+) (*session.Token, error) {
 	if tok == nil {
-		return nil
+		return nil, ErrNotLoggedIn
 	}
 
 	// TODO: figure out how to share oidc provider and oauth2 client
 	// with auth flow:
 	provider, err := oidc.NewProvider(ctx, c.issuer)
 	if err != nil {
-		return tok
+		return tok, err
 	}
 
 	conf := oauth2.Config{
@@ -104,18 +108,19 @@ func (c *Client) refresh(
 	tokenSource := conf.TokenSource(ctx, &tok.Token)
 	newToken, err := tokenSource.Token()
 	if err != nil {
-		return tok
+		return tok, err
 	}
 
 	if newToken.AccessToken != tok.AccessToken {
 		tok.Token = *newToken
+		tok.IDToken = newToken.Extra("id_token").(string)
 		err = c.store.WriteToken(c.issuer, c.clientID, tok)
 		if err != nil {
-			return tok
+			return tok, err
 		}
 	}
 
-	return tok
+	return tok, nil
 }
 
 func (c *Client) RevokeSession() error {

@@ -23,14 +23,14 @@ func New(rootDir string) (*Store, error) {
 	}, nil
 }
 
-func (s *Store) ReadToken(issuer string, clientID string) *session.Token {
+func (s *Store) ReadToken(issuer string, clientID string) (*session.Token, error) {
 	var tok session.Token
 	path := s.path(issuer, clientID)
 	err := readJSONFile(path, &tok)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return &tok
+	return &tok, nil
 }
 
 func (s *Store) WriteToken(issuer string, clientID string, tok *session.Token) error {
