@@ -19,7 +19,6 @@ func authCmd() *cobra.Command {
 
 	cmd.AddCommand(loginCmd())
 	cmd.AddCommand(logoutCmd())
-	cmd.AddCommand(refreshCmd())
 	cmd.AddCommand(whoAmICmd())
 
 	return cmd
@@ -63,34 +62,6 @@ func logoutCmd() *cobra.Command {
 				fmt.Fprintln(cmd.OutOrStdout(), "Logged out successfully")
 			}
 			return err
-		},
-	}
-
-	return cmd
-}
-
-// This is for debugging purposes only. Hidden.
-func refreshCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:    "refresh",
-		Short:  "Refresh credentials",
-		Args:   cobra.ExactArgs(0),
-		Hidden: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := newAuthClient()
-			if err != nil {
-				return err
-			}
-
-			_, err = client.GetSession(cmd.Context())
-			if err != nil {
-				return fmt.Errorf(
-					"failed to refresh: %w. Run `envsec auth login` to log in",
-					err,
-				)
-			}
-			fmt.Fprintln(cmd.OutOrStdout(), "Refreshed successfully")
-			return nil
 		},
 	}
 
