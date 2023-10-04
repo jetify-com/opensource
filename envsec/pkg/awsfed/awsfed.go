@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentity"
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentity/types"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
 	"go.jetpack.io/envsec"
 	"go.jetpack.io/envsec/internal/envvar"
@@ -99,6 +100,48 @@ func (a *AWSFed) AWSCreds(
 	return output.Credentials, nil
 }
 
+// AWSCredsFromIdToken behaves similar to AWSCreds but it takes JWT from input
+// rather than reading from a file or cache. This is to allow web services use
+// this package without having to write every user's JWT in a cache or a file.
+func (a *AWSFed) AWSCredsFromIdToken(
+	ctx context.Context,
+	idToken *jwt.Token,
+) (*types.Credentials, error) {
+
+	svc := cognitoidentity.New(cognitoidentity.Options{
+		Region: a.Region,
+	})
+
+	logins := map[string]string{
+		a.Provider: idToken.Raw,
+	}
+
+	getIdoutput, err := svc.GetId(
+		ctx,
+		&cognitoidentity.GetIdInput{
+			AccountId:      &a.AccountID,
+			IdentityPoolId: &a.IdentityPoolID,
+			Logins:         logins,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	output, err := svc.GetCredentialsForIdentity(
+		ctx,
+		&cognitoidentity.GetCredentialsForIdentityInput{
+			IdentityId: getIdoutput.IdentityId,
+			Logins:     logins,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return output.Credentials, nil
+}
+
 func cacheKey(t *session.Token) string {
 	id := ""
 	if claims := t.IDClaims(); claims != nil && claims.OrgID != "" {
@@ -119,6 +162,26 @@ func GenSSMConfigForUser(
 	}
 	fed := New()
 	creds, err := fed.AWSCreds(ctx, tok)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &envsec.SSMConfig{
+		AccessKeyID:     *creds.AccessKeyId,
+		SecretAccessKey: *creds.SecretKey,
+		SessionToken:    *creds.SessionToken,
+		Region:          fed.Region,
+	}, nil
+}
+
+func GenSSMConfigFromIdToken(
+	ctx context.Context,
+	tok *jwt.Token,
+) (*envsec.SSMConfig, error) {
+	if tok == nil {
+		return &envsec.SSMConfig{}, nil
+	}
+	fed := New()
+	creds, err := fed.AWSCredsFromIdToken(ctx, tok)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
