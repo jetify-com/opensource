@@ -2,6 +2,8 @@ package registry
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 
 	"go.jetpack.io/pkg/sandbox/runx/impl/download"
 	"go.jetpack.io/pkg/sandbox/runx/impl/fileutil"
@@ -9,21 +11,29 @@ import (
 	"go.jetpack.io/pkg/sandbox/runx/impl/types"
 )
 
+var xdgInstallationSubdir = "jetpack.io/pkgs"
+
 type Registry struct {
 	rootPath fileutil.Path
 	gh       *github.Client
 }
 
-func NewLocalRegistry(rootDir string) (*Registry, error) {
-	rootPath := fileutil.Path(rootDir)
-	err := rootPath.EnsureDir()
+func NewLocalRegistry(ctx context.Context, githubAPIToken string) (*Registry, error) {
+	cacheDir, err := os.UserCacheDir()
 	if err != nil {
+		cacheDir = "~/.cache"
+	}
+
+	rootDir := filepath.Join(cacheDir, xdgInstallationSubdir)
+	rootPath := fileutil.Path(rootDir)
+
+	if err := rootPath.EnsureDir(); err != nil {
 		return nil, err
 	}
 
 	return &Registry{
 		rootPath: rootPath,
-		gh:       github.NewClient(),
+		gh:       github.NewClient(ctx, githubAPIToken),
 	}, nil
 }
 
@@ -36,7 +46,7 @@ func (r *Registry) ListReleases(ctx context.Context, owner, repo string) ([]type
 }
 
 func (r *Registry) GetReleaseMetadata(ctx context.Context, ref types.PkgRef) (types.ReleaseMetadata, error) {
-	resolvedRef, err := r.resolveVersion(ref)
+	resolvedRef, err := r.ResolveVersion(ref)
 	if err != nil {
 		return types.ReleaseMetadata{}, err
 	}
@@ -49,7 +59,7 @@ func (r *Registry) GetReleaseMetadata(ctx context.Context, ref types.PkgRef) (ty
 }
 
 func (r *Registry) GetArtifactMetadata(ctx context.Context, ref types.PkgRef, platform types.Platform) (types.ArtifactMetadata, error) {
-	resolvedRef, err := r.resolveVersion(ref)
+	resolvedRef, err := r.ResolveVersion(ref)
 	if err != nil {
 		return types.ArtifactMetadata{}, err
 	}
@@ -67,7 +77,7 @@ func (r *Registry) GetArtifactMetadata(ctx context.Context, ref types.PkgRef, pl
 }
 
 func (r *Registry) GetArtifact(ctx context.Context, ref types.PkgRef, platform types.Platform) (string, error) {
-	resolvedRef, err := r.resolveVersion(ref)
+	resolvedRef, err := r.ResolveVersion(ref)
 	if err != nil {
 		return "", err
 	}
@@ -86,7 +96,7 @@ func (r *Registry) GetArtifact(ctx context.Context, ref types.PkgRef, platform t
 }
 
 func (r *Registry) GetPackage(ctx context.Context, ref types.PkgRef, platform types.Platform) (string, error) {
-	resolvedRef, err := r.resolveVersion(ref)
+	resolvedRef, err := r.ResolveVersion(ref)
 	if err != nil {
 		return "", err
 	}
@@ -115,7 +125,7 @@ func (r *Registry) GetPackage(ctx context.Context, ref types.PkgRef, platform ty
 	return installPath.String(), nil
 }
 
-func (r *Registry) resolveVersion(ref types.PkgRef) (types.PkgRef, error) {
+func (r *Registry) ResolveVersion(ref types.PkgRef) (types.PkgRef, error) {
 	if ref.Version != "" && ref.Version != "latest" {
 		return ref, nil
 	}

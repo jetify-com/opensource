@@ -1,15 +1,19 @@
 package runx
 
 import (
+	"context"
+
 	"go.jetpack.io/pkg/sandbox/runx/impl"
+	"go.jetpack.io/pkg/sandbox/runx/impl/runopt"
 )
 
-// Install installs the given packages and returns the paths to the directories
-// where they were installed.
-func Install(pkgs ...string) ([]string, error) {
-	return impl.Install(pkgs...)
+type RunX interface {
+	// Install installs the given packages and returns the paths to the directories
+	// where they were installed.
+	Install(ctx context.Context, pkgs ...string) ([]string, error)
+	Run(ctx context.Context, args ...string) error
 }
 
-func Run(args ...string) error {
-	return impl.Run(args...)
+func New(opts runopt.Opts) RunX {
+	return impl.New(opts)
 }

@@ -20,6 +20,7 @@ func RootCmd() *cobra.Command {
 	}
 
 	command.AddCommand(ReleasesCmd())
+	command.AddCommand(ResolveCmd())
 
 	return command
 }

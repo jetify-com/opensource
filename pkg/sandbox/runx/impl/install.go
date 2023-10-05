@@ -2,16 +2,12 @@ package impl
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 
 	"go.jetpack.io/pkg/sandbox/runx/impl/registry"
 	"go.jetpack.io/pkg/sandbox/runx/impl/types"
 )
 
-var xdgInstallationSubdir = "jetpack.io/pkgs"
-
-func Install(pkgs ...string) ([]string, error) {
+func (r *RunX) Install(ctx context.Context, pkgs ...string) ([]string, error) {
 	refs := []types.PkgRef{}
 
 	for _, pkg := range pkgs {
@@ -22,13 +18,13 @@ func Install(pkgs ...string) ([]string, error) {
 		refs = append(refs, ref)
 	}
 
-	return install(refs...)
+	return r.install(ctx, refs...)
 }
 
-func install(pkgs ...types.PkgRef) ([]string, error) {
+func (r *RunX) install(ctx context.Context, pkgs ...types.PkgRef) ([]string, error) {
 	paths := []string{}
 	for _, pkg := range pkgs {
-		path, err := installOne(pkg)
+		path, err := r.installOne(ctx, pkg)
 		if err != nil {
 			return nil, err
 		}
@@ -37,13 +33,8 @@ func install(pkgs ...types.PkgRef) ([]string, error) {
 	return paths, nil
 }
 
-func installOne(ref types.PkgRef) (string, error) {
-	cacheDir, err := os.UserCacheDir()
-	if err != nil {
-		cacheDir = "~/.cache"
-	}
-	rootDir := filepath.Join(cacheDir, xdgInstallationSubdir)
-	reg, err := registry.NewLocalRegistry(rootDir)
+func (r *RunX) installOne(ctx context.Context, ref types.PkgRef) (string, error) {
+	reg, err := registry.NewLocalRegistry(ctx, r.GithubAPIToken)
 	if err != nil {
 		return "", err
 	}

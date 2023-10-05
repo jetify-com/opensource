@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"context"
 	"errors"
 	"os"
 	"os/exec"
@@ -9,12 +10,12 @@ import (
 	"go.jetpack.io/pkg/sandbox/runx/impl/types"
 )
 
-func Run(args ...string) error {
+func (r *RunX) Run(ctx context.Context, args ...string) error {
 	parsed, err := parseArgs(args)
 	if err != nil {
 		return err
 	}
-	return run(parsed)
+	return r.run(ctx, parsed)
 }
 
 // TODO: is this the best name for this struct?
@@ -24,8 +25,8 @@ type parsedArgs struct {
 	Args     []string
 }
 
-func run(args parsedArgs) error {
-	paths, err := install(args.Packages...)
+func (r *RunX) run(ctx context.Context, args parsedArgs) error {
+	paths, err := r.install(ctx, args.Packages...)
 	if err != nil {
 		return err
 	}
