@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"go.jetpack.io/pkg/sandbox/runx"
+	"go.jetpack.io/pkg/sandbox/runx/impl/runx"
 )
 
 func Help() {
@@ -29,8 +29,12 @@ func Execute(ctx context.Context, args []string) int {
 	install := flag.Bool("install", false, "install packages only")
 	flag.Parse()
 
+	runx := runx.RunX{
+		GithubAPIToken: os.Getenv("RUNX_GITHUB_API_TOKEN"),
+	}
+
 	if *install {
-		paths, err := runx.Install(args[1:]...)
+		paths, err := runx.Install(ctx, args[1:]...)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err)
 			return 1
@@ -40,7 +44,7 @@ func Execute(ctx context.Context, args []string) int {
 			fmt.Printf("  %s\n", path)
 		}
 	} else {
-		if err := runx.Run(args...); err != nil {
+		if err := runx.Run(ctx, args...); err != nil {
 			fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err)
 			return 1
 		}

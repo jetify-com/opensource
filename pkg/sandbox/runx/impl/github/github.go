@@ -7,15 +7,23 @@ import (
 	githubimpl "github.com/google/go-github/v53/github"
 	"go.jetpack.io/pkg/sandbox/runx/impl/httpcacher"
 	"go.jetpack.io/pkg/sandbox/runx/impl/types"
+	"golang.org/x/oauth2"
 )
 
 type Client struct {
 	gh *githubimpl.Client
 }
 
-func NewClient() *Client {
+func NewClient(ctx context.Context, accessToken string) *Client {
+	tc := httpcacher.DefaultClient
+	if accessToken != "" {
+		ts := oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: accessToken},
+		)
+		tc = oauth2.NewClient(ctx, ts)
+	}
 	return &Client{
-		gh: githubimpl.NewClient(httpcacher.DefaultClient),
+		gh: githubimpl.NewClient(tc),
 	}
 }
 

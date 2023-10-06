@@ -8,31 +8,31 @@ import (
 
 	"github.com/k0kubun/pp"
 	"github.com/spf13/cobra"
-	"go.jetpack.io/pkg/sandbox/runx/impl/github"
+	"go.jetpack.io/pkg/sandbox/runx/impl/registry"
 	"go.jetpack.io/pkg/sandbox/runx/impl/types"
 )
 
-func ReleasesCmd() *cobra.Command {
+func ResolveCmd() *cobra.Command {
 	command := &cobra.Command{
-		Use:  "releases <owner>/<repo>",
+		Use:  "resolve <owner>/<repo>@<version>",
 		Args: cobra.ExactArgs(1),
-		RunE: releasesCmd,
+		RunE: resolveCmd,
 	}
 
 	return command
 }
 
-func releasesCmd(cmd *cobra.Command, args []string) error {
+func resolveCmd(cmd *cobra.Command, args []string) error {
 	ref, error := types.NewPkgRef(args[0])
 	if error != nil {
 		return error
 	}
 
-	gh := github.NewClient(cmd.Context(), os.Getenv("RUNX_GITHUB_API_TOKEN"))
-	releases, err := gh.ListReleases(cmd.Context(), ref.Owner, ref.Repo)
+	registry, err := registry.NewLocalRegistry(cmd.Context(), os.Getenv("RUNX_GITHUB_API_TOKEN"))
 	if err != nil {
 		return err
 	}
-	pp.Println(releases)
+
+	pp.Println(registry.ResolveVersion(ref))
 	return nil
 }
