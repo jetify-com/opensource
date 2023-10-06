@@ -7,8 +7,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"go.jetpack.io/pkg/sandbox/runx"
-	"go.jetpack.io/pkg/sandbox/runx/impl/runopt"
+	"go.jetpack.io/pkg/sandbox/runx/impl/runx"
 )
 
 func Help() {
@@ -30,9 +29,9 @@ func Execute(ctx context.Context, args []string) int {
 	install := flag.Bool("install", false, "install packages only")
 	flag.Parse()
 
-	runx := runx.New(runopt.Opts{
+	runx := runx.RunX{
 		GithubAPIToken: os.Getenv("RUNX_GITHUB_API_TOKEN"),
-	})
+	}
 
 	if *install {
 		paths, err := runx.Install(ctx, args[1:]...)

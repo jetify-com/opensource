@@ -21,7 +21,7 @@ type Registry struct {
 func NewLocalRegistry(ctx context.Context, githubAPIToken string) (*Registry, error) {
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
-		cacheDir = "~/.cache"
+		return nil, err
 	}
 
 	rootDir := filepath.Join(cacheDir, xdgInstallationSubdir)

@@ -4,7 +4,8 @@
   ],
   "shell": {
     "scripts": {
-      "build": "go build -o dist/runx cmd/runx/main.go"
+      "build": "go build -o dist/runx cmd/runx/main.go",
+      "build-pkg": "go build -o dist/pkg cmd/pkg/main.go"
     }
   }
 }
