@@ -118,7 +118,12 @@ func (r *Registry) GetPackage(ctx context.Context, ref types.PkgRef, platform ty
 		return "", err
 	}
 
-	err = Extract(ctx, artifactPath, installPath.String())
+	if isKnownArchive(filepath.Base(artifactPath)) {
+		err = Extract(ctx, artifactPath, installPath.String())
+	} else {
+		// If we can't extract, treat as binary
+		err = createSymbolicLink(artifactPath, installPath.String(), resolvedRef.Repo)
+	}
 	if err != nil {
 		return "", err
 	}
