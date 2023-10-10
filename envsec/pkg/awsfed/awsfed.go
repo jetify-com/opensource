@@ -38,7 +38,7 @@ func New() *AWSFed {
 	}
 }
 
-func (a *AWSFed) AWSCredsWithLocalCache(
+func (a *AWSFed) awsCredsWithLocalCache(
 	ctx context.Context,
 	tok *session.Token,
 ) (*types.Credentials, error) {
@@ -133,7 +133,7 @@ func GenSSMConfigFromToken(
 	var creds *types.Credentials
 	var err error
 	if useCache {
-		creds, err = fed.AWSCredsWithLocalCache(ctx, tok)
+		creds, err = fed.awsCredsWithLocalCache(ctx, tok)
 	} else {
 		creds, err = fed.awsCreds(ctx, tok.IDToken)
 	}
