@@ -35,7 +35,7 @@ func TestIsBinary(t *testing.T) {
 			}
 			file.Close()
 
-			got := isBinary(file.Name())
+			got := isExecutableBinary(file.Name())
 			if got != test.want {
 				t.Errorf("isBinary() = %v, want %v", got, test.want)
 			}

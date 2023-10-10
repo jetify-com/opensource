@@ -121,7 +121,7 @@ func (r *Registry) GetPackage(ctx context.Context, ref types.PkgRef, platform ty
 
 	if isKnownArchive(filepath.Base(artifactPath)) {
 		err = Extract(ctx, artifactPath, installPath.String())
-	} else if isBinary(artifactPath) {
+	} else if isExecutableBinary(artifactPath) {
 		err = createSymbolicLink(artifactPath, installPath.String(), resolvedRef.Repo)
 	}
 	if err != nil {
@@ -166,7 +166,8 @@ func (r *Registry) ResolveVersion(ref types.PkgRef) (types.PkgRef, error) {
 	}, nil
 }
 
-func isBinary(path string) bool {
+// Best effort heuristic to determine if the artifact is an executable binary.
+func isExecutableBinary(path string) bool {
 	file, err := os.Open(path)
 	if err != nil {
 		return false
