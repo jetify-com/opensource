@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -120,8 +121,7 @@ func (r *Registry) GetPackage(ctx context.Context, ref types.PkgRef, platform ty
 
 	if isKnownArchive(filepath.Base(artifactPath)) {
 		err = Extract(ctx, artifactPath, installPath.String())
-	} else {
-		// If we can't extract, treat as binary
+	} else if isBinary(artifactPath) {
 		err = createSymbolicLink(artifactPath, installPath.String(), resolvedRef.Repo)
 	}
 	if err != nil {
@@ -164,4 +164,37 @@ func (r *Registry) ResolveVersion(ref types.PkgRef) (types.PkgRef, error) {
 		Repo:    ref.Repo,
 		Version: latestVersion,
 	}, nil
+}
+
+func isBinary(path string) bool {
+	file, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	header := make([]byte, 4)
+	_, err = file.Read(header)
+	if err != nil {
+		return false
+	}
+
+	switch {
+	case bytes.HasPrefix(header, []byte("#!")): // Shebang
+		return true
+	case bytes.HasPrefix(header, []byte{0x7f, 0x45}): // ELF
+		return true
+	case bytes.Equal(header, []byte{0xfe, 0xed, 0xfa, 0xce}): // MachO32 BE
+		return true
+	case bytes.Equal(header, []byte{0xfe, 0xed, 0xfa, 0xcf}): // MachO64 BE
+		return true
+	case bytes.Equal(header, []byte{0xca, 0xfe, 0xba, 0xbe}): // Java class
+		return true
+	case bytes.Equal(header, []byte{0xCF, 0xFA, 0xED, 0xFE}): // Little-endian mac 64-bit
+		return true
+	case bytes.Equal(header, []byte{0xCE, 0xFA, 0xED, 0xFE}): // Little-endian mac 32-bit
+		return true
+	default:
+		return false
+	}
 }

@@ -56,8 +56,8 @@ func contentDir(path string) string {
 	return filepath.Join(path, contents[0].Name())
 }
 
-func createSymbolicLink(src, dest, repoName string) error {
-	if err := fileutil.EnsureDir(dest); err != nil {
+func createSymbolicLink(src, dst, repoName string) error {
+	if err := os.MkdirAll(dst, 0700); err != nil {
 		return err
 	}
 	if err := os.Chmod(src, 0755); err != nil {
@@ -69,8 +69,9 @@ func createSymbolicLink(src, dest, repoName string) error {
 	if strings.Contains(binaryName, repoName) {
 		binaryName = repoName
 	}
-	err := os.Symlink(src, filepath.Join(dest, binaryName))
+	err := os.Symlink(src, filepath.Join(dst, binaryName))
 	if errors.Is(err, os.ErrExist) {
+		// TODO: verify symlink points to the right place
 		return nil
 	}
 	return err
