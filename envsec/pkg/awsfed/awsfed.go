@@ -8,7 +8,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentity"
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentity/types"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
 	"go.jetpack.io/envsec"
 	"go.jetpack.io/envsec/internal/envvar"
@@ -39,7 +38,7 @@ func New() *AWSFed {
 	}
 }
 
-func (a *AWSFed) AWSCreds(
+func (a *AWSFed) AWSCredsWithLocalCache(
 	ctx context.Context,
 	tok *session.Token,
 ) (*types.Credentials, error) {
@@ -51,61 +50,30 @@ func (a *AWSFed) AWSCreds(
 		}
 	}
 
-	svc := cognitoidentity.New(cognitoidentity.Options{
-		Region: a.Region,
-	})
-
-	logins := map[string]string{}
-	if tok.IDClaims() == nil {
-		// skip
-	} else if tok.IDClaims().Issuer == fmt.Sprintf("https://%s/", a.LegacyProvider) {
-		logins[a.LegacyProvider] = tok.IDToken
-	} else {
-		logins[a.Provider] = tok.IDToken
-	}
-
-	getIdoutput, err := svc.GetId(
-		ctx,
-		&cognitoidentity.GetIdInput{
-			AccountId:      &a.AccountID,
-			IdentityPoolId: &a.IdentityPoolID,
-			Logins:         logins,
-		},
-	)
+	outputCreds, err := a.awsCreds(ctx, tok.IDToken)
 	if err != nil {
 		return nil, err
 	}
 
-	output, err := svc.GetCredentialsForIdentity(
-		ctx,
-		&cognitoidentity.GetCredentialsForIdentityInput{
-			IdentityId: getIdoutput.IdentityId,
-			Logins:     logins,
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	if creds, err := json.Marshal(output.Credentials); err != nil {
+	if creds, err := json.Marshal(outputCreds); err != nil {
 		return nil, err
 	} else if err := cache.SetT(
 		cacheKey(tok),
 		creds,
-		*output.Credentials.Expiration,
+		*outputCreds.Expiration,
 	); err != nil {
 		return nil, err
 	}
 
-	return output.Credentials, nil
+	return outputCreds, nil
 }
 
-// AWSCredsFromIdToken behaves similar to AWSCreds but it takes JWT from input
+// awsCreds behaves similar to AWSCredsWithLocalCache but it takes a JWT from input
 // rather than reading from a file or cache. This is to allow web services use
 // this package without having to write every user's JWT in a cache or a file.
-func (a *AWSFed) AWSCredsFromIdToken(
+func (a *AWSFed) awsCreds(
 	ctx context.Context,
-	idToken *jwt.Token,
+	idToken string,
 ) (*types.Credentials, error) {
 
 	svc := cognitoidentity.New(cognitoidentity.Options{
@@ -113,7 +81,7 @@ func (a *AWSFed) AWSCredsFromIdToken(
 	})
 
 	logins := map[string]string{
-		a.Provider: idToken.Raw,
+		a.Provider: idToken,
 	}
 
 	getIdoutput, err := svc.GetId(
@@ -153,35 +121,22 @@ func cacheKey(t *session.Token) string {
 	return fmt.Sprintf("%s-%s", cacheKeyPrefix, id)
 }
 
-func GenSSMConfigForUser(
+func GenSSMConfigFromToken(
 	ctx context.Context,
 	tok *session.Token,
+	useCache bool,
 ) (*envsec.SSMConfig, error) {
 	if tok == nil {
 		return &envsec.SSMConfig{}, nil
 	}
 	fed := New()
-	creds, err := fed.AWSCreds(ctx, tok)
-	if err != nil {
-		return nil, errors.WithStack(err)
+	var creds *types.Credentials
+	var err error
+	if useCache {
+		creds, err = fed.AWSCredsWithLocalCache(ctx, tok)
+	} else {
+		creds, err = fed.awsCreds(ctx, tok.IDToken)
 	}
-	return &envsec.SSMConfig{
-		AccessKeyID:     *creds.AccessKeyId,
-		SecretAccessKey: *creds.SecretKey,
-		SessionToken:    *creds.SessionToken,
-		Region:          fed.Region,
-	}, nil
-}
-
-func GenSSMConfigFromIdToken(
-	ctx context.Context,
-	tok *jwt.Token,
-) (*envsec.SSMConfig, error) {
-	if tok == nil {
-		return &envsec.SSMConfig{}, nil
-	}
-	fed := New()
-	creds, err := fed.AWSCredsFromIdToken(ctx, tok)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
