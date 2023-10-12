@@ -26,19 +26,19 @@ type data struct {
 type Option func(*cache)
 
 func New(domain string, opts ...Option) *cache {
-	c := &cache{domain: domain}
+	result := &cache{domain: domain}
 
 	var err error
-	c.cacheDir, err = os.UserCacheDir()
+	result.cacheDir, err = os.UserCacheDir()
 	if err != nil {
-		c.cacheDir = "~/.cache"
+		result.cacheDir = "~/.cache"
 	}
 
 	for _, opt := range opts {
-		opt(c)
+		opt(result)
 	}
 
-	return c
+	return result
 }
 
 func WithCacheDir(dir string) Option {
