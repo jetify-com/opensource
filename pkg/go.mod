@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/cavaliergopher/grab/v3 v3.0.1
-	github.com/codeclysm/extract v2.2.0+incompatible
+	github.com/codeclysm/extract/v3 v3.1.1
 	github.com/coreos/go-oidc/v3 v3.6.0
 	github.com/fatih/color v1.15.0
 	github.com/go-jose/go-jose/v3 v3.0.0
@@ -34,12 +34,14 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/juju/errors v1.0.0 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
+	github.com/klauspost/compress v1.15.13 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/ulikunitz/xz v0.5.11 // indirect
 	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect

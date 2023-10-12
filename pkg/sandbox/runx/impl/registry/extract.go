@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/codeclysm/extract"
+	"github.com/codeclysm/extract/v3"
 	"go.jetpack.io/pkg/sandbox/runx/impl/fileutil"
 )
 
