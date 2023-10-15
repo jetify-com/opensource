@@ -7,20 +7,16 @@ Experimental support for Devbox virtual machines on macOS.
 The `dxvm` command acts like `devbox shell` except that it launches the Devbox
 environment in a VM.
 
-To create a new VM, run the following:
+To create a new VM, run with the `-install` flag inside a Devbox project
+directory:
 
 	cd ~/my/project
 	dxvm -install
-	# Wait for the prompt. This might appear to hang the first time it's run
-	# while downloading the NixOS installer.
 
-	mkdir bootstrap
-	sudo mount -t virtiofs bootstrap bootstrap
-	sudo bootstrap/install.sh
-	sudo shutdown now
-	# ^C to exit
+The VM will start, install NixOS, and then reboot into a shell. This step might
+appear to hang at times while it downloads NixOS.
 
-Now that the VM is bootstrapped, you can launch it any time with:
+After the VM is created, you no longer need the `-install` flag:
 
 	cd ~/my/project
 	dxvm
@@ -33,6 +29,7 @@ The first time `dxvm` is run in a Devbox project, it creates a `.devbox/vm`
 directory that contains the VM's state and configuration files:
 
 - `log` - error and debug log messages
+- `console` - the Linux kernel console output
 - `disk.img` - main disk image, typically mounted as root
 - `id` - an opaque Virtualization Framework machine ID
 
@@ -41,6 +38,13 @@ VM's resources:
 
 - `mem` - the amount of memory (in bytes) to allocate to the VM
 - `cpu` - the number of CPUs to allocate to the VM
+
+There are two directories shared between the host and guest machines:
+
+- `boot -> /boot` - gives the host access to the NixOS kernel and initrd so it
+  can create a bootloader
+- `bootstrap -> ~/bootstrap` - contains a script for bootstrapping a new VM from
+  a vanilla NixOS installer ISO (only mounted with `-install`)
 
 ## Building
 
@@ -55,16 +59,16 @@ To compile and sign `dxvm` run:
 
 	devbox run build
 
+It's okay if it prints a couple of warnings about duplicate libraries and
+replacing the code-signing signature.
+
 The `devbox run build` script uses `./cmd/dxvmsign` to sign the Go binary, which
 allows it to use the Virtualization Framework. It's a small wrapper around
 Apple's `codesign` utility.
 
 ## Limitations
 
-- Mounting the Devbox project directory was temporarily removed while cleaning
-things up. Needs to be brought back.
-- Only aarch64-linux is implemented right now. Other systems have been tested,
-but they aren't an option in the dxvm command.
+- Intel macOS hasn't been tested yet.
 - Using ctrl-c to exit has the unfortunate side-effect of making it impossible
 to interrupt a program in the VM.
 - The host terminal has no way of telling the guest when it has resized (usually

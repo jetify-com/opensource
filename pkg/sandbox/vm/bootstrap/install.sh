@@ -7,4 +7,4 @@ mount -t virtiofs boot /mnt/boot
 cat << 'EOF' > /mnt/etc/nixos/configuration.nix
 {{ template "configuration.nix" . -}}
 EOF
-nixos-install --no-root-password --show-trace --root /mnt
+NIX_CONFIG="experimental-features = nix-command flakes" nixos-install --no-root-password --show-trace --root /mnt

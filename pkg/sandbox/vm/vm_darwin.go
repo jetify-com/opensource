@@ -12,6 +12,8 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 
 	"github.com/Code-Hex/vz/v3"
 	"golang.org/x/sys/unix"
@@ -22,12 +24,16 @@ var boot fs.FS
 // Default host resources to allocate to new VMs.
 var (
 	DefaultCPUs   int   = 1
-	DefaultMemory int   = 1 << 30 // 1 GiB
-	DefaultDisk   int64 = 1 << 32 // 4 GiB
+	DefaultMemory int   = 1 << 31 // 2 GiB
+	DefaultDisk   int64 = 1 << 34 // 16 GiB
 )
 
-// VM is a Devbox virtual machine. The zero value is a temporary VM that deletes
-// after stopping.
+// readyMarker is a message that signals to the host that the VM has reached a
+// shell prompt.
+const readyMarker = "devbox is ready"
+
+// VM is a Devbox virtual machine. The zero value is a temporary VM that is
+// deleted after it stops.
 type VM struct {
 	// ID is a Virtualization Framework machine ID.
 	ID []byte
@@ -77,14 +83,14 @@ type VM struct {
 	// level above slog.LevelError to disable logging.
 	Logger *slog.Logger
 
-	vzvm   *vz.VirtualMachine
-	config *vz.VirtualMachineConfiguration
-	files  dataDirectory
+	vzvm      *vz.VirtualMachine
+	config    *vz.VirtualMachineConfiguration
+	filePaths dataDirectory
 }
 
-func (vm *VM) Start(ctx context.Context) error {
+func (vm *VM) Run(ctx context.Context) error {
 	var err error
-	vm.files, err = fileBundle(vm.HostDataDir)
+	vm.filePaths, err = dataDir(vm.HostDataDir)
 	if err != nil {
 		return fmt.Errorf("create directory for virtual machine data: %v", err)
 	}
@@ -109,8 +115,14 @@ func (vm *VM) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("create virtual machine configuration: %v", err)
 	}
-	if err := vm.attachConsole(); err != nil {
-		return fmt.Errorf("attach console: %v", err)
+	if vm.Install {
+		if err := vm.attachInstallConsole(ctx); err != nil {
+			return fmt.Errorf("attach install console: %v", err)
+		}
+	} else {
+		if err := vm.attachConsole(); err != nil {
+			return fmt.Errorf("attach console: %v", err)
+		}
 	}
 	if err := vm.attachDisks(ctx); err != nil {
 		return fmt.Errorf("attach disks: %v", err)
@@ -139,12 +151,31 @@ func (vm *VM) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("create virtual machine: %v", err)
 	}
-	vm.Logger.Debug("starting virtual machine")
-	return vm.vzvm.Start()
+	if err := vm.vzvm.Start(); err != nil {
+		return err
+	}
+
+	for state := range vm.vzvm.StateChangedNotify() {
+		switch state {
+		case vz.VirtualMachineStateStarting:
+			vm.Logger.Debug("virtual machine state changed", "state", "starting")
+		case vz.VirtualMachineStateRunning:
+			vm.Logger.Debug("virtual machine state changed", "state", "running")
+		case vz.VirtualMachineStateError:
+			vm.Logger.Debug("virtual machine state changed", "state", "error")
+			return nil
+		case vz.VirtualMachineStateStopping:
+			vm.Logger.Debug("virtual machine state changed", "state", "stopping")
+		case vz.VirtualMachineStateStopped:
+			vm.Logger.Debug("virtual machine state changed", "state", "stopped")
+			return nil
+		}
+	}
+	return nil
 }
 
 func (vm *VM) Stop(ctx context.Context) error {
-	if vm == nil || vm.vzvm == nil {
+	if vm == nil || vm.vzvm == nil || vm.vzvm.State() == vz.VirtualMachineStateStopped {
 		return nil
 	}
 
@@ -154,7 +185,7 @@ func (vm *VM) Stop(ctx context.Context) error {
 		if !ok || err != nil {
 			vm.vzvm.Stop()
 			if err != nil {
-				ch <- fmt.Errorf("could not shutdown gracefully: %v", err)
+				ch <- fmt.Errorf("request stop: %v", err)
 				return
 			}
 			ch <- fmt.Errorf("invalid machine state for stopping")
@@ -174,17 +205,17 @@ func (vm *VM) configureCPUs() {
 	minCPU := int(vz.VirtualMachineConfigurationMinimumAllowedCPUCount())
 	maxCPU := int(vz.VirtualMachineConfigurationMaximumAllowedCPUCount())
 	if vm.CPUs == 0 {
-		vm.loadStateData("cpu", &vm.CPUs)
+		vm.loadStateData(vm.filePaths.cpu, &vm.CPUs)
 		if vm.CPUs == 0 {
 			vm.CPUs = clamp(DefaultCPUs, minCPU, maxCPU)
-			vm.saveStateData("cpu", vm.CPUs)
+			vm.saveStateData(vm.filePaths.cpu, vm.CPUs)
 			return
 		}
 	}
 	clamped := clamp(vm.CPUs, minCPU, maxCPU)
 	if vm.CPUs != clamped {
 		vm.CPUs = clamped
-		vm.saveStateData("cpu", vm.CPUs)
+		vm.saveStateData(vm.filePaths.cpu, vm.CPUs)
 	}
 }
 
@@ -192,17 +223,17 @@ func (vm *VM) configureMemory() {
 	minMemory := int(vz.VirtualMachineConfigurationMinimumAllowedMemorySize())
 	maxMemory := int(vz.VirtualMachineConfigurationMaximumAllowedMemorySize())
 	if vm.Memory == 0 {
-		vm.loadStateData("mem", &vm.Memory)
+		vm.loadStateData(vm.filePaths.memory, &vm.Memory)
 		if vm.Memory == 0 {
 			vm.Memory = clamp(DefaultMemory, minMemory, maxMemory)
-			vm.saveStateData("mem", vm.Memory)
+			vm.saveStateData(vm.filePaths.memory, vm.Memory)
 			return
 		}
 	}
 	clamped := clamp(vm.Memory, minMemory, maxMemory)
 	if vm.Memory != clamped {
 		vm.Memory = clamped
-		vm.saveStateData("mem", vm.Memory)
+		vm.saveStateData(vm.filePaths.memory, vm.Memory)
 	}
 }
 
@@ -221,15 +252,14 @@ func (vm *VM) linuxBootLoader(ctx context.Context) (*vz.LinuxBootLoader, error) 
 		return vm.installerBootLoader(ctx)
 	}
 
-	guestInitPath, err := os.Readlink(vm.files.init)
+	guestInitPath, err := os.Readlink(vm.filePaths.init)
 	if err != nil {
 		return nil, fmt.Errorf("determine path to kernel init file inside vm: %v", err)
 	}
-	// quiet loglevel=0 systemd.show_status=false udev.log_level=3
-	params := fmt.Sprintf("console=hvc0 root=/dev/vda init=%s quiet boot.shell_on_fail rd.systemd.show_status=false rd.udev.log_level=3 rd.udev.log_priority=3", guestInitPath)
+	params := fmt.Sprintf("console=hvc1 console=hvc0 root=/dev/vda init=%s quiet boot.shell_on_fail rd.systemd.show_status=false rd.udev.log_level=3 rd.udev.log_priority=3", guestInitPath)
 	vm.Logger.Debug("created boot loader", "params", params, "installer", vm.Install)
-	return vz.NewLinuxBootLoader(vm.files.kernel,
-		vz.WithInitrd(vm.files.initrd),
+	return vz.NewLinuxBootLoader(vm.filePaths.kernel,
+		vz.WithInitrd(vm.filePaths.initrd),
 		vz.WithCommandLine(params),
 	)
 }
@@ -243,20 +273,7 @@ func (vm *VM) efiBootLoader() (*vz.EFIBootLoader, error) {
 }
 
 func (vm *VM) nvram() (*vz.EFIVariableStore, error) {
-	path, err := vm.dataFilePath("nvram")
-	if err != nil {
-		return nil, fmt.Errorf("create nvram file: %v", err)
-	}
-
-	flag := os.O_RDWR | os.O_CREATE | os.O_EXCL
-	perm := os.FileMode(0o600)
-	f, err := os.OpenFile(path, flag, perm)
-	if errors.Is(err, os.ErrNotExist) {
-		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-			return nil, fmt.Errorf("create directory for nvram file: %v", err)
-		}
-		f, err = os.OpenFile(path, flag, perm)
-	}
+	f, err := os.OpenFile(vm.filePaths.nvram, os.O_RDWR|os.O_CREATE|os.O_EXCL, os.FileMode(0o600))
 	if err != nil && !errors.Is(err, os.ErrExist) {
 		return nil, fmt.Errorf("open nvram file: %v", err)
 	}
@@ -264,13 +281,13 @@ func (vm *VM) nvram() (*vz.EFIVariableStore, error) {
 	created := err == nil
 	if created {
 		f.Close()
-		nvram, err := vz.NewEFIVariableStore(path, vz.WithCreatingEFIVariableStore())
+		nvram, err := vz.NewEFIVariableStore(vm.filePaths.nvram, vz.WithCreatingEFIVariableStore())
 		if err != nil {
 			return nil, fmt.Errorf("create nvram variable store: %v", err)
 		}
 		return nvram, nil
 	}
-	nvram, err := vz.NewEFIVariableStore(path)
+	nvram, err := vz.NewEFIVariableStore(vm.filePaths.nvram)
 	if err != nil {
 		return nil, fmt.Errorf("load nvram variable store: %v", err)
 	}
@@ -278,6 +295,16 @@ func (vm *VM) nvram() (*vz.EFIVariableStore, error) {
 }
 
 func (vm *VM) attachConsole() error {
+	// Create two consoles: one for the kernel to log to and one for the user.
+	consoleAttach, err := vz.NewFileSerialPortAttachment(vm.filePaths.console, false)
+	if err != nil {
+		return fmt.Errorf("create console serial port attachment: %v", err)
+	}
+	consoleConfig, err := vz.NewVirtioConsoleDeviceSerialPortConfiguration(consoleAttach)
+	if err != nil {
+		return fmt.Errorf("create console serial port configuration: %v", err)
+	}
+
 	fd := int(os.Stdin.Fd())
 	term, err := unix.IoctlGetTermios(int(fd), unix.TIOCGETA)
 	if err != nil {
@@ -307,7 +334,7 @@ func (vm *VM) attachConsole() error {
 	if err != nil {
 		return fmt.Errorf("create serial port configuration: %v", err)
 	}
-	vm.config.SetSerialPortsVirtualMachineConfiguration([]*vz.VirtioConsoleDeviceSerialPortConfiguration{config})
+	vm.config.SetSerialPortsVirtualMachineConfiguration([]*vz.VirtioConsoleDeviceSerialPortConfiguration{config, consoleConfig})
 	vm.Logger.Debug("attached console device")
 	return nil
 }
@@ -352,7 +379,7 @@ func (vm *VM) attachEntropy() error {
 }
 
 func (vm *VM) configureLinuxPlatform() error {
-	err := vm.loadStateData("id", &vm.ID)
+	err := vm.loadStateData(vm.filePaths.id, &vm.ID)
 	if err != nil {
 		return fmt.Errorf("load machine identifier: %v", err)
 	}
@@ -364,7 +391,7 @@ func (vm *VM) configureLinuxPlatform() error {
 			return fmt.Errorf("create machine identifier: %v", err)
 		}
 		vm.ID = id.DataRepresentation()
-		if err := vm.saveStateData("id", vm.ID); err != nil {
+		if err := vm.saveStateData(vm.filePaths.id, vm.ID); err != nil {
 			return fmt.Errorf("save machine identifier: %v", err)
 		}
 		vm.Logger.Debug("created new machine identifier")
@@ -384,58 +411,134 @@ func (vm *VM) configureLinuxPlatform() error {
 	return nil
 }
 
+func (vm *VM) configureRosetta() (*vz.VirtioFileSystemDeviceConfiguration, error) {
+	switch vz.LinuxRosettaDirectoryShareAvailability() {
+	case vz.LinuxRosettaAvailabilityNotSupported:
+		return nil, fmt.Errorf("this version of macOS doesn't support rosetta")
+	case vz.LinuxRosettaAvailabilityNotInstalled:
+		vm.Logger.Debug("starting rosetta install")
+		if err := vz.LinuxRosettaDirectoryShareInstallRosetta(); err != nil {
+			return nil, fmt.Errorf("install rosetta: %v", err)
+		}
+		vm.Logger.Debug("rosetta installed")
+	}
+
+	share, err := vz.NewLinuxRosettaDirectoryShare()
+	if err != nil {
+		return nil, fmt.Errorf("create rosetta directory share: %v", err)
+	}
+	tag := "rosetta"
+	config, err := vz.NewVirtioFileSystemDeviceConfiguration(tag)
+	if err != nil {
+		return nil, fmt.Errorf("create virtiofs configuration %s: %v", tag, err)
+	}
+	config.SetDirectoryShare(share)
+	return config, nil
+}
+
 func (vm *VM) attachSharedDirs() error {
 	var configs []vz.DirectorySharingDeviceConfiguration
 	if vm.Install {
-		dir, err := vm.generateBootstrapScript()
+		bootstrapDir, err := vm.generateBootstrapScript()
 		if err != nil {
 			return fmt.Errorf("generate bootstrap files: %v", err)
 		}
-		bootDir, err := vm.dataFilePath("boot")
-		if err != nil {
-			return err
-		}
-		if err := os.MkdirAll(bootDir, 0o700); err != nil {
-			return err
-		}
-		vm.SharedDirectories = append(vm.SharedDirectories,
-			SharedDirectory{
-				Path:     dir,
-				ReadOnly: true,
-			},
-			SharedDirectory{
-				Path: bootDir,
-			},
-		)
-	}
-	for _, dir := range vm.SharedDirectories {
-		config, err := vm.configureDirShare(dir.Path, dir.ReadOnly)
+		config, err := vm.configureSingleDirShare(SharedDirectory{
+			Path:     bootstrapDir,
+			ReadOnly: true,
+		})
 		if err != nil {
 			return err
 		}
 		configs = append(configs, config)
 	}
+
+	bootDir := filepath.Dir(vm.filePaths.kernel)
+	if err := os.MkdirAll(bootDir, 0o700); err != nil {
+		return err
+	}
+	config, err := vm.configureSingleDirShare(SharedDirectory{
+		Path:     bootDir,
+		ReadOnly: false,
+	})
+	if err != nil {
+		return err
+	}
+	configs = append(configs, config)
+
+	// Track home directories separately so we can share them via a multiple
+	// directory share that gets mounted in /home/{{.User.Username}}.
+	userDirs := make([]SharedDirectory, 0, len(vm.SharedDirectories))
+	for _, dir := range vm.SharedDirectories {
+		if dir.HomeDir {
+			userDirs = append(userDirs, dir)
+			continue
+		}
+		config, err := vm.configureSingleDirShare(dir)
+		if err != nil {
+			return err
+		}
+		configs = append(configs, config)
+	}
+	config, err = vm.configureMultipleDirShare("home", userDirs...)
+	if err != nil {
+		return err
+	}
+	configs = append(configs, config)
+
+	if runtime.GOARCH == "arm64" {
+		rosetta, err := vm.configureRosetta()
+		if err != nil {
+			return fmt.Errorf("configure rosetta: %v", err)
+		}
+		configs = append(configs, rosetta)
+	}
+
 	vm.config.SetDirectorySharingDevicesVirtualMachineConfiguration(configs)
 	vm.Logger.Debug("attached shared directories", "count", len(configs))
 	return nil
 }
 
-func (vm *VM) configureDirShare(path string, readOnly bool) (*vz.VirtioFileSystemDeviceConfiguration, error) {
-	dir, err := vz.NewSharedDirectory(path, readOnly)
+func (vm *VM) configureSingleDirShare(sd SharedDirectory) (*vz.VirtioFileSystemDeviceConfiguration, error) {
+	dir, err := vz.NewSharedDirectory(sd.Path, sd.ReadOnly)
 	if err != nil {
-		return nil, fmt.Errorf("create shared directory %s: %v", path, err)
+		return nil, fmt.Errorf("create shared directory %s: %v", sd.Path, err)
 	}
 	share, err := vz.NewSingleDirectoryShare(dir)
 	if err != nil {
-		return nil, fmt.Errorf("create directory share %s: %v", path, err)
+		return nil, fmt.Errorf("create directory share %s: %v", sd.Path, err)
 	}
-	tag := "host"
-	config, err := vz.NewVirtioFileSystemDeviceConfiguration(filepath.Base(path))
+	tag := filepath.Base(sd.Path)
+	config, err := vz.NewVirtioFileSystemDeviceConfiguration(tag)
 	if err != nil {
-		return nil, fmt.Errorf("create virtiofs configuration %s -> %s: %v", path, tag, err)
+		return nil, fmt.Errorf("create virtiofs configuration %s -> %s: %v", sd.Path, tag, err)
 	}
 	config.SetDirectoryShare(share)
-	vm.Logger.Debug("configured shared directory", "dir", path, "readonly", readOnly)
+	vm.Logger.Debug("configured shared directory", "dir", sd.Path, "readonly", sd.ReadOnly)
+	return config, nil
+}
+
+func (vm *VM) configureMultipleDirShare(tag string, sd ...SharedDirectory) (*vz.VirtioFileSystemDeviceConfiguration, error) {
+	dirNames := make([]string, len(sd))
+	dirs := make(map[string]*vz.SharedDirectory, len(sd))
+	for i, dir := range sd {
+		vzdir, err := vz.NewSharedDirectory(dir.Path, dir.ReadOnly)
+		if err != nil {
+			return nil, fmt.Errorf("create shared directory %s: %v", dir.Path, err)
+		}
+		dirs[filepath.Base(dir.Path)] = vzdir
+		dirNames[i] = dir.String()
+	}
+	share, err := vz.NewMultipleDirectoryShare(dirs)
+	if err != nil {
+		return nil, fmt.Errorf("create multiple directory share for %s: %v", strings.Join(dirNames, ", "), err)
+	}
+	config, err := vz.NewVirtioFileSystemDeviceConfiguration(tag)
+	if err != nil {
+		return nil, fmt.Errorf("create virtiofs configuration (%s) -> %s: %v", strings.Join(dirNames, ", "), tag, err)
+	}
+	config.SetDirectoryShare(share)
+	vm.Logger.Debug("configured multiple shared directories", "dirs", dirNames)
 	return config, nil
 }
 
@@ -459,19 +562,7 @@ func (vm *VM) attachDisks(ctx context.Context) error {
 }
 
 func (vm *VM) rootDisk() (vz.StorageDeviceConfiguration, error) {
-	path, err := vm.dataFilePath("disk.img")
-	if err != nil {
-		return nil, fmt.Errorf("create root disk image: %v", err)
-	}
-	flag := os.O_RDWR | os.O_CREATE | os.O_EXCL
-	perm := os.FileMode(0o600)
-	f, err := os.OpenFile(path, flag, perm)
-	if errors.Is(err, os.ErrNotExist) {
-		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-			return nil, fmt.Errorf("create directory for root disk image: %v", err)
-		}
-		f, err = os.OpenFile(path, flag, perm)
-	}
+	f, err := os.OpenFile(vm.filePaths.image, os.O_RDWR|os.O_CREATE|os.O_EXCL, os.FileMode(0o600))
 	if err != nil && !errors.Is(err, os.ErrExist) {
 		return nil, err
 	}
@@ -488,7 +579,7 @@ func (vm *VM) rootDisk() (vz.StorageDeviceConfiguration, error) {
 		}
 	}
 
-	attach, err := vz.NewDiskImageStorageDeviceAttachment(path, false)
+	attach, err := vz.NewDiskImageStorageDeviceAttachment(vm.filePaths.image, false)
 	if err != nil {
 		return nil, fmt.Errorf("create root disk image storage device: %v", err)
 	}
@@ -499,11 +590,7 @@ func (vm *VM) rootDisk() (vz.StorageDeviceConfiguration, error) {
 	return config, nil
 }
 
-func (vm *VM) loadStateData(name string, value any) error {
-	path, err := vm.dataFilePath(name)
-	if err != nil {
-		return err
-	}
+func (vm *VM) loadStateData(path string, value any) error {
 	f, err := os.OpenFile(path, os.O_RDONLY, 0)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
@@ -513,74 +600,39 @@ func (vm *VM) loadStateData(name string, value any) error {
 	}
 	defer f.Close()
 
-	_, err = fmt.Fscanf(f, "%v", value)
+	switch value.(type) {
+	case []byte:
+		_, err = fmt.Fscanf(f, "%x", value)
+	default:
+		_, err = fmt.Fscanf(f, "%v", value)
+	}
 	if errors.Is(err, io.ErrUnexpectedEOF) {
 		return nil
 	}
 	return err
 }
 
-func (vm *VM) saveStateData(name string, value any) error {
-	path, err := vm.dataFilePath(name)
-	if err != nil {
-		return err
-	}
-	flag := os.O_WRONLY | os.O_CREATE | os.O_TRUNC
-	perm := os.FileMode(0o644)
-	f, err := os.OpenFile(path, flag, perm)
-	if errors.Is(err, os.ErrNotExist) {
-		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-			return err
-		}
-		f, err = os.OpenFile(path, flag, perm)
-	}
+func (vm *VM) saveStateData(path string, value any) error {
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.FileMode(0o644))
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	_, err = fmt.Fprintf(f, "%v\n", value)
+	switch value.(type) {
+	case []byte:
+		_, err = fmt.Fprintf(f, "%x\n", value)
+	default:
+		_, err = fmt.Fprintf(f, "%v\n", value)
+	}
 	return err
 }
 
-func (vm *VM) dataFilePath(name string) (string, error) {
-	if vm.HostDataDir == "" {
-		path, err := os.MkdirTemp("", "devboxvm-")
-		if err != nil {
-			return "", fmt.Errorf("create temporary directory for virtual machine data: %v", err)
-		}
-		vm.HostDataDir = path
-	}
-	return filepath.Join(vm.HostDataDir, name), nil
-}
-
-func (vm *VM) nixSystem() string {
-	return vm.Arch + "-" + vm.OS
-}
-
 func (vm *VM) initLogger() {
-	fail := func(err error) {
+	f, err := os.OpenFile(vm.filePaths.log, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.FileMode(0o644))
+	if err != nil {
 		vm.Logger = slog.Default()
 		vm.Logger.Error("could not create log file, using slog.Default()", "err", err)
-	}
-
-	path, err := vm.dataFilePath("log")
-	if err != nil {
-		fail(err)
-		return
-	}
-	flag := os.O_WRONLY | os.O_CREATE | os.O_APPEND
-	perm := os.FileMode(0o644)
-	f, err := os.OpenFile(path, flag, perm)
-	if errors.Is(err, os.ErrNotExist) {
-		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-			fail(err)
-			return
-		}
-		f, err = os.OpenFile(path, flag, perm)
-	}
-	if err != nil {
-		fail(err)
 		return
 	}
 	vm.Logger = slog.New(slog.NewTextHandler(f, &slog.HandlerOptions{
@@ -591,7 +643,15 @@ func (vm *VM) initLogger() {
 
 type SharedDirectory struct {
 	Path     string
+	HomeDir  bool
 	ReadOnly bool
+}
+
+func (sd SharedDirectory) String() string {
+	if sd.ReadOnly {
+		return sd.Path + ":ro"
+	}
+	return sd.Path + ":rw"
 }
 
 type dataDirectory struct {
@@ -601,15 +661,17 @@ type dataDirectory struct {
 	init      string
 	initrd    string
 	kernel    string
+	nvram     string
 	bootstrap string
 	image     string
 	cpu       string
 	memory    string
 	id        string
 	log       string
+	console   string
 }
 
-func fileBundle(dir string) (dataDirectory, error) {
+func dataDir(dir string) (dataDirectory, error) {
 	isTemp := false
 	if dir == "" {
 		var err error
@@ -618,6 +680,10 @@ func fileBundle(dir string) (dataDirectory, error) {
 			return dataDirectory{}, fmt.Errorf("create temporary directory for virtual machine data: %v", err)
 		}
 		isTemp = true
+	} else {
+		if err := os.MkdirAll(dir, 0o700); err != nil {
+			return dataDirectory{}, fmt.Errorf("create directory for virtual machine data: %v", err)
+		}
 	}
 	return dataDirectory{
 		path:      dir,
@@ -625,12 +691,14 @@ func fileBundle(dir string) (dataDirectory, error) {
 		init:      filepath.Join(dir, "boot", "default", "init"),
 		initrd:    filepath.Join(dir, "boot", "nixos-initrd"),
 		kernel:    filepath.Join(dir, "boot", "nixos-kernel"),
-		bootstrap: filepath.Join(dir, "install", "install.sh"),
+		nvram:     filepath.Join(dir, "nvram"),
+		bootstrap: filepath.Join(dir, "bootstrap", "install.sh"),
 		cpu:       filepath.Join(dir, "cpu"),
+		memory:    filepath.Join(dir, "mem"),
 		image:     filepath.Join(dir, "disk.img"),
 		id:        filepath.Join(dir, "id"),
 		log:       filepath.Join(dir, "log"),
-		memory:    filepath.Join(dir, "mem"),
+		console:   filepath.Join(dir, "console"),
 	}, nil
 }
 
@@ -638,7 +706,7 @@ func (d dataDirectory) cleanup() error {
 	if !d.isTemp {
 		return nil
 	}
-	slog.Debug("would delete " + d.path)
+	slog.Debug("clean up temporary data directory", "dir", d.path)
+	// TODO(gcurtis): actually do the os.RemoveAll after this is tested.
 	return nil
-	// os.RemoveAll(d.path)
 }
