@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/codeclysm/extract"
+	"github.com/codeclysm/extract/v3"
 	"go.jetpack.io/pkg/sandbox/runx/impl/fileutil"
 )
 
@@ -21,7 +21,7 @@ func Extract(ctx context.Context, src string, dest string) error {
 	}
 	defer reader.Close()
 
-	err = extract.Archive(context.Background(), reader, tmpDest, nil /* no renaming of files */)
+	err = extract.Archive(ctx, reader, tmpDest, nil /* no renaming of files */)
 	if err != nil {
 		return err
 	}
