@@ -19,21 +19,30 @@ import (
 var ErrNotLoggedIn = fmt.Errorf("not logged in")
 
 type Client struct {
-	issuer   string
-	clientID string
-	store    *tokenstore.Store
+	issuer          string
+	clientID        string
+	store           *tokenstore.Store
+	postLoginHook   hook
+	postRefreshHook hook
 }
 
-func NewClient(issuer string, clientID string) (*Client, error) {
+type hook func(context.Context, *session.Token) (*session.Token, error)
+
+func NewClient(
+	issuer, clientID string,
+	postLoginHook, postRefreshHook hook,
+) (*Client, error) {
 	store, err := tokenstore.New(storeDir())
 	if err != nil {
 		return nil, err
 	}
 
 	return &Client{
-		issuer:   issuer,
-		clientID: clientID,
-		store:    store,
+		issuer:          issuer,
+		clientID:        clientID,
+		store:           store,
+		postLoginHook:   postLoginHook,
+		postRefreshHook: postRefreshHook,
 	}, nil
 }
 
@@ -45,10 +54,17 @@ func storeDir() string {
 	return filepath.Join(cacheDir, "jetpack.io", "auth")
 }
 
-func (c *Client) LoginFlow() (*session.Token, error) {
+func (c *Client) LoginFlow(ctx context.Context) (*session.Token, error) {
 	tok, err := login(c.issuer, c.clientID)
 	if err != nil {
 		return nil, err
+	}
+
+	if c.postLoginHook != nil {
+		tok, err = c.postLoginHook(ctx, tok)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	_ = c.store.WriteToken(c.issuer, c.clientID, tok)
@@ -107,15 +123,22 @@ func (c *Client) refresh(
 		return tok, err
 	}
 
-	if newToken.AccessToken != tok.AccessToken {
-		tok.Token = *newToken
-		tok.IDToken = newToken.Extra("id_token").(string)
-		err = c.store.WriteToken(c.issuer, c.clientID, tok)
+	tok.Token = *newToken
+	idToken, ok := newToken.Extra("id_token").(string)
+	if !ok {
+		return tok, fmt.Errorf("missing id_token")
+	}
+	tok.IDToken = idToken
+	if c.postRefreshHook != nil {
+		tok, err = c.postLoginHook(ctx, tok)
 		if err != nil {
-			return tok, err
+			return nil, err
 		}
 	}
-
+	err = c.store.WriteToken(c.issuer, c.clientID, tok)
+	if err != nil {
+		return tok, err
+	}
 	return tok, nil
 }
 

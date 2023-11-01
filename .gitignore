@@ -1,2 +1,4 @@
 # ignore files by Jetbrains IDEs
 *.idea
+
+.DS_Store
