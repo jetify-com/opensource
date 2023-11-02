@@ -13,6 +13,8 @@ This particular implementation demonstrates how to use TypeIDs in a postgres dat
 To use typeids in your Postgres instance, you'll need define all the
 appropriate types and functions by running the SQL scripts in this repo.
 
+> Choose between 03_typeid.sql or 03_typeid_simple.sql depending on your needs.
+
 We recommend copying the SQL scripts into your migrations directory and using the
 migration tool of your choice. For example, [Flyway](https://flywaydb.org/), or
 [Liquibase](https://www.liquibase.org/).
@@ -79,6 +81,40 @@ SELECT * FROM users u WHERE u.id = 'user_01h455vb4pex5vsknk084sn02q';
 -- "(user,018962e7-3a6d-7290-b088-5c4e3bdf918c)",Ben Bitdiddle,ben@bitdiddle.com
 ```
 
+Then you can add in [the operator overload function for typeids](https://github.com/search?q=repo%3Ajetpack-io%2Ftypeid-sql%20compare_type_id_equality&type=code):
+
+
+## (Optional) Simple Variant
+
+Rather than having a combined type of `varchar` and `uuid`, you can use a simple variant, which is just a `text`
+> This provides easier integration with other database tooling, and you won't loose any of the benefits of TypeID.
+> You also won't need to handle operator overloading.
+```sql
+create table users (
+    "id"    text not null default typeid_generate('user') check (typeid_check(id, 'user')),
+    "name"  text,
+    "email" text
+);
+```
+```sql
+select typeid_generate('user');
+
+-- Result:
+-- "user_01h455vb4pex5vsknk084sn02q"
+
+```
+```sql
+select typeid_check('user_01h455vb4pex5vsknk084sn02q', 'user');
+
+-- Result:
+-- true
+```
+```sql
+select typeid_parse('user_01h455vb4pex5vsknk084sn02q');
+
+-- Result:
+-- (user,018962e7-3a6d-7290-b088-5c4e3bdf918c)
+```
 Then you can add in [the operator overload function for typeids](https://github.com/search?q=repo%3Ajetpack-io%2Ftypeid-sql%20compare_type_id_equality&type=code):
 
 ## Future work (contributions welcome)
