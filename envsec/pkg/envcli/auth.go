@@ -158,6 +158,7 @@ func getShortTermAccessToken(
 		// token store, but that means our existing refresh token would no longer
 		// be valid because it is only usable once.
 		tok.Expiry = time.Now()
+		tok.AccessToken = ""
 	} else {
 		tok.AccessToken = accessToken
 	}
