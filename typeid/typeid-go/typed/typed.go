@@ -33,6 +33,17 @@ func New[T TypePrefix]() (TypeID[T], error) {
 	return (TypeID[T])(tid), nil
 }
 
+func New2[T untyped.Unimplementable]() (T, error) {
+	var newID T
+	tid, err := untyped.New(typeFromTag(newID))
+	if err != nil {
+		return newID, err
+	}
+	var newID2 any = &newID
+	newID2.(interface{ CopyFrom(untyped.TypeID) }).CopyFrom(tid)
+	return newID, nil
+}
+
 func Type[T TypePrefix]() string {
 	var prefix T
 	return typeOf(prefix)
@@ -125,6 +136,12 @@ func typeOf(tp TypePrefix) string {
 	if tp.Type() != "" {
 		return tp.Type()
 	}
+	return typeFromTag(tp)
+}
+
+// tp could be a untyped.TypeID type, but I don't want to check type inside
+// the typeOf function.
+func typeFromTag(tp any) string {
 	t := reflect.TypeOf(tp)
 	if prefix, ok := prefixMap[t]; ok {
 		return prefix

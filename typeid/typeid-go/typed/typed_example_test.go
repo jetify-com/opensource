@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	untypeid "go.jetpack.io/typeid"
+	untyped "go.jetpack.io/typeid"
 	typeid "go.jetpack.io/typeid/typed"
 )
 
@@ -21,33 +21,42 @@ func (accountPrefix) Type() string { return "account" }
 type AccountID struct{ typeid.TypeID[accountPrefix] }
 
 type OrgID struct {
-	untypeid.TypeID `prefix:"org"`
+	untyped.TypeID `prefix:"org"`
 }
 
 func Example() {
 	userID, _ := typeid.New[UserID]()
 	accountID, _ := typeid.New[AccountID]()
 	orgID, _ := typeid.New[OrgID]()
+	orgID2, _ := typeid.New2[OrgID]()
 	// Each ID should have the correct type prefix:
 	fmt.Printf("User ID prefix: %s\n", userID.Type())
 	fmt.Printf("Account ID prefix: %s\n", accountID.Type())
 	fmt.Printf("Org ID prefix: %s\n", orgID.Type())
+	fmt.Printf("Org2 ID prefix: %s\n", orgID2.Type())
 	// The compiler considers their go types to be different:
 	fmt.Printf("%T != %T\n", userID, accountID)
 
 	start := time.Now()
 	for i := 0; i < 1000000; i++ {
 		id, _ := typeid.New[UserID]()
-		id.Type()
+		_ = id.Type()
 	}
 	fmt.Printf("1000000 New[UserID] calls took %v\n", time.Since(start))
 
 	start = time.Now()
 	for i := 0; i < 1000000; i++ {
 		id, _ := typeid.New[OrgID]()
-		id.Type()
+		_ = id.Type()
 	}
 	fmt.Printf("1000000 New[OrgID] calls took %v\n", time.Since(start))
+
+	start = time.Now()
+	for i := 0; i < 1000000; i++ {
+		id, _ := typeid.New2[OrgID]()
+		_ = id.Type()
+	}
+	fmt.Printf("1000000 New2[OrgID] calls took %v\n", time.Since(start))
 
 	// Output:
 	// User ID prefix: user

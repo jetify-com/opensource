@@ -66,6 +66,11 @@ func (tid TypeID) UUID() string {
 	return uuid.FromBytesOrNil(tid.UUIDBytes()).String()
 }
 
+func (tid *TypeID) CopyFrom(other TypeID) {
+	tid.prefix = other.prefix
+	tid.suffix = other.suffix
+}
+
 // From returns a new TypeID with the given prefix and suffix.
 // If suffix is the empty string, a random suffix will be generated.
 // If you want to create an id without a prefix, pass an empty string as the prefix.
@@ -164,5 +169,14 @@ func validateSuffix(suffix string) error {
 	if _, err := base32.Decode(suffix); err != nil {
 		return fmt.Errorf("invalid suffix: %w", err)
 	}
+	return nil
+}
+
+type Unimplementable interface {
+	dummy() dummy
+}
+type dummy any
+
+func (tid TypeID) dummy() dummy {
 	return nil
 }
