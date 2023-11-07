@@ -1,13 +1,15 @@
 package typed
 
+import "go.jetpack.io/typeid"
+
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
 // It parses a TypeID from a string using the same logic as FromString()
 func (tid *TypeID[T]) UnmarshalText(text []byte) error {
-	parsed, err := FromString[T](string(text))
+	tid2, err := typeid.FromString(string(text))
 	if err != nil {
 		return err
 	}
-	*tid = parsed
+	*tid = TypeID[T]{tid2}
 	return nil
 }
 
