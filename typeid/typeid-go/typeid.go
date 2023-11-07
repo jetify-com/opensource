@@ -11,8 +11,13 @@ import (
 
 // TypeID is a unique identifier with a given type as defined by the TypeID spec
 type TypeID struct {
+	Copier
 	prefix string
 	suffix string
+}
+
+type Copier interface {
+	CopyFrom(other TypeID)
 }
 
 // Nil represents an the null TypeID
@@ -172,11 +177,12 @@ func validateSuffix(suffix string) error {
 	return nil
 }
 
-type Unimplementable interface {
-	dummy() dummy
+type Unimplementable[T any] interface {
+	unimplementable(T) unimplementable
 }
-type dummy any
+type unimplementable any
 
-func (tid TypeID) dummy() dummy {
+// nolint: unused
+func (tid TypeID) unimplementable(TypeID) unimplementable {
 	return nil
 }
