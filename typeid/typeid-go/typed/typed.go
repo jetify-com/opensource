@@ -2,6 +2,7 @@ package typed
 
 import (
 	"fmt"
+	"reflect"
 
 	untyped "go.jetpack.io/typeid"
 )
@@ -34,7 +35,7 @@ func New[T TypePrefix]() (TypeID[T], error) {
 
 func Type[T TypePrefix]() string {
 	var prefix T
-	return prefix.Type()
+	return typeOf(prefix)
 }
 
 // Nil returns the null typeid of the given type.
@@ -45,7 +46,7 @@ func Nil[T TypePrefix]() TypeID[T] {
 // Type returns the type prefix of the TypeID
 func (tid TypeID[T]) Type() string {
 	var prefix T
-	return prefix.Type()
+	return typeOf(prefix)
 }
 
 // Suffix returns the suffix of the TypeID in it's canonical base32 representation.
@@ -86,8 +87,8 @@ func FromString[T TypePrefix](s string) (TypeID[T], error) {
 	if err != nil {
 		return Nil[T](), err
 	}
-	if tid.Type() != Type[T]() {
-		return Nil[T](), fmt.Errorf("invalid type, expected %s but got %s", Type[T](), tid.Type())
+	if typeOf(tid) != Type[T]() {
+		return Nil[T](), fmt.Errorf("invalid type, expected %s but got %s", Type[T](), typeOf(tid))
 	}
 	return (TypeID[T])(tid), nil
 }
@@ -116,4 +117,24 @@ func Must[T TypePrefix](tid TypeID[T], err error) TypeID[T] {
 		panic(err)
 	}
 	return tid
+}
+
+var prefixMap = map[reflect.Type]string{}
+
+func typeOf(tp TypePrefix) string {
+	if tp.Type() != "" {
+		return tp.Type()
+	}
+	t := reflect.TypeOf(tp)
+	if prefix, ok := prefixMap[t]; ok {
+		return prefix
+	}
+
+	for i := 0; i < t.NumField(); i++ {
+		if t.Field(i).Name == "TypeID" {
+			prefixMap[t] = t.Field(i).Tag.Get("prefix")
+			return t.Field(i).Tag.Get("prefix")
+		}
+	}
+	return ""
 }
