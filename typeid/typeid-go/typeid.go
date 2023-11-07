@@ -11,7 +11,6 @@ import (
 
 // TypeID is a unique identifier with a given type as defined by the TypeID spec
 type TypeID struct {
-	Copier
 	prefix string
 	suffix string
 }
@@ -19,6 +18,9 @@ type TypeID struct {
 type Copier interface {
 	CopyFrom(other TypeID)
 }
+
+// Enforce that TypeID pointer implements the Copier interface
+var _ Copier = &TypeID{}
 
 // Nil represents an the null TypeID
 var Nil = TypeID{
