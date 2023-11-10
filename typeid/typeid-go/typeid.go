@@ -173,12 +173,12 @@ func validateSuffix(suffix string) error {
 	return nil
 }
 
-type TypeIDPointer[T any] interface {
+type typeIDPointer[T any] interface {
 	*T
 	CopyFrom(other TypeID)
 }
 
-func New2[T any, P TypeIDPointer[T]]() (T, error) {
+func New2[T any, P typeIDPointer[T]]() (T, error) {
 	var newID T
 	tid, err := New(typeFromTag(newID))
 	if err != nil {
@@ -191,8 +191,6 @@ func New2[T any, P TypeIDPointer[T]]() (T, error) {
 
 var prefixMap = map[reflect.Type]string{}
 
-// tp could be a untyped.TypeID type, but I don't want to check type inside
-// the typeOf function.
 func typeFromTag(tp any) string {
 	t := reflect.TypeOf(tp)
 	if prefix, ok := prefixMap[t]; ok {
