@@ -27,12 +27,10 @@ type OrgID struct {
 func Example() {
 	userID, _ := typeid.New[UserID]()
 	accountID, _ := typeid.New[AccountID]()
-	orgID, _ := typeid.New[OrgID]()
 	orgID2, _ := untyped.New2[OrgID]()
 	// Each ID should have the correct type prefix:
 	fmt.Printf("User ID prefix: %s\n", userID.Type())
 	fmt.Printf("Account ID prefix: %s\n", accountID.Type())
-	fmt.Printf("Org ID prefix: %s\n", orgID.Type())
 	fmt.Printf("Org2 ID prefix: %s\n", orgID2.Type())
 	// The compiler considers their go types to be different:
 	fmt.Printf("%T != %T\n", userID, accountID)
@@ -43,13 +41,6 @@ func Example() {
 		_ = id.Type()
 	}
 	fmt.Printf("1000000 New[UserID] calls took %v\n", time.Since(start))
-
-	start = time.Now()
-	for i := 0; i < 1000000; i++ {
-		id, _ := typeid.New[OrgID]()
-		_ = id.Type()
-	}
-	fmt.Printf("1000000 New[OrgID] calls took %v\n", time.Since(start))
 
 	start = time.Now()
 	for i := 0; i < 1000000; i++ {
