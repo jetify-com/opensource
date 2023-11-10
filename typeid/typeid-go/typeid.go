@@ -67,7 +67,7 @@ func (tid TypeID) UUID() string {
 	return uuid.FromBytesOrNil(tid.UUIDBytes()).String()
 }
 
-func (tid *TypeID) CopyFrom(other TypeID) {
+func (tid *TypeID) copyFrom(other TypeID) {
 	tid.prefix = other.prefix
 	tid.suffix = other.suffix
 }
@@ -175,7 +175,7 @@ func validateSuffix(suffix string) error {
 
 type typeIDPointer[T any] interface {
 	*T
-	CopyFrom(other TypeID)
+	copyFrom(other TypeID)
 }
 
 func New2[T any, P typeIDPointer[T]]() (T, error) {
@@ -184,9 +184,8 @@ func New2[T any, P typeIDPointer[T]]() (T, error) {
 	if err != nil {
 		return newID, err
 	}
-	var newIDPtr P = &newID
-	newIDPtr.CopyFrom(tid)
-	return *newIDPtr, nil
+	P(&newID).copyFrom(tid)
+	return newID, nil
 }
 
 var prefixMap = map[reflect.Type]string{}
