@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"go.jetpack.io/pkg/jetcloud"
 	"go.jetpack.io/pkg/sandbox/auth"
 	"go.jetpack.io/pkg/sandbox/auth/session"
-	"go.jetpack.io/pkg/sandbox/jetcloud"
 )
 
 func NewClient(issuer, clientID string) (*auth.Client, error) {
