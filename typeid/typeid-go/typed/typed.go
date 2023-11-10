@@ -33,22 +33,6 @@ func New[T TypePrefix]() (TypeID[T], error) {
 	return (TypeID[T])(tid), nil
 }
 
-// New2 creates a new ID which is same type as the struct passed in as the type
-// param. The purpose of untyped.Unimplementable[untyped.TypeID] is to limit
-// to only structs that embed untyped.TypeID.
-// untyped.Copier is only implemented by *untyped.TypeID but we don't want the
-// interface of this function to be `typeid.New2[*OrgID]()` which is ugly
-func New2[T untyped.Unimplementable[untyped.TypeID]]() (T, error) {
-	var newID T
-	tid, err := untyped.New(typeFromTag(newID))
-	if err != nil {
-		return newID, err
-	}
-	var newID2 any = &newID
-	newID2.(untyped.Copier).CopyFrom(tid)
-	return newID, nil
-}
-
 func Type[T TypePrefix]() string {
 	var prefix T
 	return typeOf(prefix)

@@ -3,6 +3,7 @@ package typeid
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/gofrs/uuid/v5"
@@ -14,13 +15,6 @@ type TypeID struct {
 	prefix string
 	suffix string
 }
-
-type Copier interface {
-	CopyFrom(other TypeID)
-}
-
-// Enforce that TypeID pointer implements the Copier interface
-var _ Copier = &TypeID{}
 
 // Nil represents an the null TypeID
 var Nil = TypeID{
@@ -179,12 +173,37 @@ func validateSuffix(suffix string) error {
 	return nil
 }
 
-type Unimplementable[T any] interface {
-	unimplementable(T) unimplementable
+type TypeIDPointer[T any] interface {
+	*T
+	CopyFrom(other TypeID)
 }
-type unimplementable any
 
-// nolint: unused
-func (tid TypeID) unimplementable(TypeID) unimplementable {
-	return nil
+func New2[T any, P TypeIDPointer[T]]() (T, error) {
+	var newID T
+	tid, err := New(typeFromTag(newID))
+	if err != nil {
+		return newID, err
+	}
+	var newIDPtr P = &newID
+	newIDPtr.CopyFrom(tid)
+	return *newIDPtr, nil
+}
+
+var prefixMap = map[reflect.Type]string{}
+
+// tp could be a untyped.TypeID type, but I don't want to check type inside
+// the typeOf function.
+func typeFromTag(tp any) string {
+	t := reflect.TypeOf(tp)
+	if prefix, ok := prefixMap[t]; ok {
+		return prefix
+	}
+
+	for i := 0; i < t.NumField(); i++ {
+		if t.Field(i).Name == "TypeID" {
+			prefixMap[t] = t.Field(i).Tag.Get("prefix")
+			return t.Field(i).Tag.Get("prefix")
+		}
+	}
+	return ""
 }

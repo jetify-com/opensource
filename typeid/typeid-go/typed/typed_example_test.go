@@ -28,7 +28,7 @@ func Example() {
 	userID, _ := typeid.New[UserID]()
 	accountID, _ := typeid.New[AccountID]()
 	orgID, _ := typeid.New[OrgID]()
-	orgID2, _ := typeid.New2[OrgID]()
+	orgID2, _ := untyped.New2[OrgID]()
 	// Each ID should have the correct type prefix:
 	fmt.Printf("User ID prefix: %s\n", userID.Type())
 	fmt.Printf("Account ID prefix: %s\n", accountID.Type())
@@ -53,7 +53,7 @@ func Example() {
 
 	start = time.Now()
 	for i := 0; i < 1000000; i++ {
-		id, _ := typeid.New2[OrgID]()
+		id, _ := untyped.New2[OrgID]()
 		_ = id.Type()
 	}
 	fmt.Printf("1000000 New2[OrgID] calls took %v\n", time.Since(start))
