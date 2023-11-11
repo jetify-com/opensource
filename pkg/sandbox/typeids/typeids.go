@@ -1,26 +1,23 @@
 package typeids
 
-import typeid "go.jetpack.io/typeid/typed"
+import "go.jetpack.io/typeid"
 
-type projectPrefix struct{}
-
-func (projectPrefix) Type() string { return "proj" }
-
-type ProjectID struct{ typeid.TypeID[projectPrefix] }
-
-var NilProjectID = ProjectID{typeid.Nil[projectPrefix]()}
-
-type organizationPrefix struct{}
-
-func (organizationPrefix) Type() string { return "org" }
-
-type OrganizationID struct {
-	typeid.TypeID[organizationPrefix]
+type ProjectID struct {
+	typeid.TypeID
 }
 
-var NilOrganizationID = OrganizationID{typeid.Nil[organizationPrefix]()}
+var _ typeid.Subtype = (*ProjectID)(nil)
 
-func OrganizationIDFromString(s string) (OrganizationID, error) {
-	id, err := typeid.FromString[organizationPrefix](s)
-	return OrganizationID{id}, err
+func (ProjectID) AllowedPrefix() string {
+	return "proj"
+}
+
+type OrgID struct {
+	typeid.TypeID
+}
+
+var _ typeid.Subtype = (*OrgID)(nil)
+
+func (OrgID) AllowedPrefix() string {
+	return "org"
 }
