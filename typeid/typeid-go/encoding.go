@@ -28,8 +28,7 @@ func (tid *TypeID) Scan(src any) error {
 	case nil:
 		return nil
 	case string:
-		tid.UnmarshalText([]byte(obj))
-		return nil
+		return tid.UnmarshalText([]byte(obj))
 	// TODO: add supporte for []byte
 	// we don't just want to store the full string as a byte array. Instead
 	// we should encode using the UUID bytes. We could add support for
