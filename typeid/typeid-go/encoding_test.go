@@ -24,3 +24,15 @@ func TestJSON(t *testing.T) {
 	assert.Equal(t, tid, decoded)
 	assert.Equal(t, str, decoded.String())
 }
+
+func TestScan(t *testing.T) {
+	str := "prefix_00041061050r3gg28a1c60t3gf"
+	tid := typeid.Must(typeid.FromString(str))
+
+	var scanned typeid.TypeID
+	err := scanned.Scan(str)
+	assert.NoError(t, err)
+
+	assert.Equal(t, tid, scanned)
+	assert.Equal(t, str, scanned.String())
+}
