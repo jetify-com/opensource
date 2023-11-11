@@ -18,37 +18,13 @@ go get go.jetpack.io/typeid
 ```
 
 ## Usage
-This library provides both a statically typed and a dynamically typed version of TypeIDs.
+This library provides a go implementation of TypeID that optionally allows you
+to define your own custom id types for added compile-time safety.
 
 The statically typed version lives under the `typed` package. It makes it possible for
 the go compiler itself to enforce type safety.
 
-To use it, first define your TypeID types:
-
-```go
-import (
-  typeid "go.jetpack.io/typeid/typed"
-)
-
-type userPrefix struct{}
-func (userPrefix) Type() string { return "user" }
-type UserID struct { typeid.TypeID[userPrefix] }
-```
-
-And now use those types to generate TypeIDs:
-
-```go
-import (
-  typeid "go.jetpack.io/typeid/typed"
-)
-
-func example() {
-  tid, _ := typeid.New[UserID]()
-  fmt.Println(tid)
-}
-```
-
-If you don't want static types, you can use the dynamic version instead:
+If you don't need compile-time safety, you can use the provided `typeid.TypeID` directly:
   
 ```go
 import (
@@ -56,7 +32,46 @@ import (
 )
 
 func example() {
-  tid, _ := typeid.New("user")
+  tid, _ := typeid.WithPrefix("user")
+  fmt.Println(tid)
+}
+```
+
+If you want compile-time safety, first define your own custom types with two steps:
+1. Define your own struct and have it embed `typeid.TypeID`
+2. Define an `AllowedPrefix` method.
+
+You can now start using your custom-types as TypeIDs:
+
+```go
+import (
+  "go.jetpack.io/typeid"
+)
+
+// To create a new id type, simply create a new struct, and have it embed TypeID:
+type UserID struct {
+	typeid.TypeID
+}
+
+// Then define AllowedPrefix(). In our case UserIDs use 'user' as a prefix
+func (UserID) AllowedPrefix() string {
+	return "user"
+}
+
+// That's it, you've now defined a subtype. Note that subtypes abide by the
+// Subtype interface:
+var _ typeid.Subtype = (*UserID)(nil)
+```
+
+And now use those types to generate TypeIDs:
+
+```go
+import (
+  "go.jetpack.io/typeid/typed"
+)
+
+func example() {
+  tid, _ := typeid.New[UserID]()
   fmt.Println(tid)
 }
 ```
