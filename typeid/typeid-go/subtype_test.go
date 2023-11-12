@@ -38,13 +38,22 @@ func TestSubtypeConstructors(t *testing.T) {
 }
 
 func TestSubtypeNil(t *testing.T) {
-	var emptyID UserID
-	nilID, err := typeid.Parse[UserID]("user_00000000000000000000000000")
+	var emptyUser UserID
+	nilUser, err := typeid.Parse[UserID]("user_00000000000000000000000000")
 	assert.NoError(t, err)
-	assert.Equal(t, nilID, emptyID)
-	assert.Equal(t, nilID.String(), emptyID.String())
-	assert.Equal(t, nilID.UUID(), emptyID.UUID())
-	assert.Equal(t, nilID.UUIDBytes(), emptyID.UUIDBytes())
+	assert.Equal(t, nilUser, emptyUser)
+	assert.Equal(t, nilUser.String(), emptyUser.String())
+	assert.Equal(t, nilUser.Prefix(), emptyUser.Prefix())
+	assert.Equal(t, nilUser.UUID(), emptyUser.UUID())
+	assert.Equal(t, nilUser.UUIDBytes(), emptyUser.UUIDBytes())
+	assert.Equal(t, "user_00000000000000000000000000", nilUser.String())
+	assert.Equal(t, "user", nilUser.Prefix())
+
+	parsed, err := typeid.Parse[typeid.TypeID]("user_00000000000000000000000000")
+	assert.NoError(t, err)
+	assert.Equal(t, "user_00000000000000000000000000", parsed.String())
+	assert.Equal(t, "user", parsed.Prefix())
+	assert.Equal(t, "00000000000000000000000000", parsed.Suffix())
 }
 
 func TestParse(t *testing.T) {
