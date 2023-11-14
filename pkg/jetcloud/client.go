@@ -51,7 +51,7 @@ func (c *client) newProjectID(ctx context.Context, tok *session.Token, repo, sub
 		"subdir":   subdir,
 	})
 	if err != nil {
-		return typeids.NilProjectID, err
+		return typeids.ProjectID{}, err
 	}
 
 	return p.ID, nil
