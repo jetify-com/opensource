@@ -6,30 +6,28 @@ import (
 	"go.jetpack.io/typeid"
 )
 
-// To create a new id type, simply create a new struct, and have it embed TypeID:
-type UserID struct {
-	typeid.TypeID
-}
+// To create a new id type, first implement a custom PrefixType and ensure the
+// Prefix() method returns the correct prefix
+type UserPrefix struct{}
 
-// Then define AllowedPrefix(). In our case UserIDs use 'user' as a prefix
-func (UserID) AllowedPrefix() string {
+func (UserPrefix) Prefix() string {
 	return "user"
 }
 
-// That's it, you've now defined a subtype. Note that subtypes abide by the
-// Subtype interface:
-var _ typeid.Subtype = (*UserID)(nil)
-
-// Now do the same for AccountIDs
-
-type AccountID struct {
-	typeid.TypeID
+// And then define your custom id type by embedding TypeID:
+type UserID struct {
+	typeid.TypeID[UserPrefix]
 }
 
-var _ typeid.Subtype = (*AccountID)(nil)
+// Now do the same for AccountIDs
+type AccountPrefix struct{}
 
-func (AccountID) AllowedPrefix() string {
+func (AccountPrefix) Prefix() string {
 	return "account"
+}
+
+type AccountID struct {
+	typeid.TypeID[AccountPrefix]
 }
 
 func Example() {
@@ -41,8 +39,8 @@ func Example() {
 	// Other than that, your custom types should have the same methods as a
 	// regular TypeID.
 	// For example, we can check that each ID has the correct type prefix:
-	fmt.Printf("User ID prefix: %s\n", userID.Prefix())
-	fmt.Printf("Account ID prefix: %s\n", accountID.Prefix())
+	fmt.Printf("User ID prefix: %s\n", userID.Type())
+	fmt.Printf("Account ID prefix: %s\n", accountID.Type())
 
 	// Despite both of them being TypeIDs, you now get compile-time safety because
 	// the compiler considers their go types to be different:

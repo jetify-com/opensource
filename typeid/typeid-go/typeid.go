@@ -6,43 +6,23 @@ import (
 )
 
 // TypeID is a unique identifier with a given type as defined by the TypeID spec
-type TypeID struct {
+type TypeID[P PrefixType] struct {
 	prefix string
 	suffix string
 }
 
-// Nil represents the null TypeID: a type id with no prefix, and where the suffix
-// is all zeroes.
-var Nil = TypeID{
-	prefix: "",
-	suffix: "", // Will become "00000000000000000000000000" in string representation
+// Type returns the type prefix of the TypeID
+func (tid TypeID[P]) Type() string {
+	if isAnyPrefix[P]() {
+		return tid.prefix
+	}
+	return defaultPrefix[P]()
 }
 
 const nilSuffix = "00000000000000000000000000"
 
-// Type returns the type prefix of the TypeID
-// Deprecated: use Prefix() instead.
-func (tid TypeID) Type() string {
-	return tid.Prefix()
-}
-
-// Prefix returns the type prefix of the TypeID
-func (tid TypeID) Prefix() string {
-	// If we're dealing with a subtype, use the subtype's hardcoded prefix:
-	if tid.prefix == "" && tid.AllowedPrefix() != anyPrefix {
-		return tid.AllowedPrefix()
-	}
-	return tid.prefix
-}
-
-const anyPrefix = "*"
-
-func (tid TypeID) AllowedPrefix() string {
-	return anyPrefix
-}
-
 // Suffix returns the suffix of the TypeID in it's canonical base32 representation.
-func (tid TypeID) Suffix() string {
+func (tid TypeID[P]) Suffix() string {
 	// We want to treat the "empty" TypeID as equivalent to the Nil typeid
 	if tid.suffix == "" {
 		return nilSuffix
@@ -52,15 +32,15 @@ func (tid TypeID) Suffix() string {
 
 // String returns the TypeID in it's canonical string representation of the form:
 // <prefix>_<suffix> where <suffix> is the canonical base32 representation of the UUID
-func (tid TypeID) String() string {
-	if tid.Prefix() == "" {
+func (tid TypeID[P]) String() string {
+	if tid.Type() == "" {
 		return tid.Suffix()
 	}
-	return tid.Prefix() + "_" + tid.Suffix()
+	return tid.Type() + "_" + tid.Suffix()
 }
 
 // UUIDBytes decodes the TypeID's suffix as a UUID and returns it's bytes
-func (tid TypeID) UUIDBytes() []byte {
+func (tid TypeID[P]) UUIDBytes() []byte {
 	b, err := base32.Decode(tid.Suffix())
 
 	// Decode only fails if the suffix cannot be decoded for one of two reasons:
@@ -75,14 +55,14 @@ func (tid TypeID) UUIDBytes() []byte {
 }
 
 // UUID decodes the TypeID's suffix as a UUID and returns it as a hex string
-func (tid TypeID) UUID() string {
+func (tid TypeID[P]) UUID() string {
 	return uuid.FromBytesOrNil(tid.UUIDBytes()).String()
 }
 
 // Must returns a TypeID if the error is nil, otherwise panics.
 // Often used with New() to create a TypeID in a single line as follows:
 // tid := Must(New("prefix"))
-func Must[T Subtype](tid T, err error) T {
+func Must[T any](tid T, err error) T {
 	if err != nil {
 		panic(err)
 	}

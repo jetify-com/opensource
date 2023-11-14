@@ -18,9 +18,11 @@ func validatePrefix[T Subtype](prefix string) error {
 		}
 	}
 
-	allowedPrefix := subtypePrefix[T]()
-	if allowedPrefix != anyPrefix && allowedPrefix != prefix {
-		return fmt.Errorf("invalid prefix: '%s'. Subtype requires prefix to match '%s'", prefix, allowedPrefix)
+	if !isAnyID[T]() {
+		expected := defaultType[T]()
+		if expected != prefix {
+			return fmt.Errorf("invalid prefix: '%s'. Subtype requires prefix to match '%s'", prefix, expected)
+		}
 	}
 
 	return nil

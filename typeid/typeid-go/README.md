@@ -18,13 +18,10 @@ go get go.jetpack.io/typeid
 ```
 
 ## Usage
-This library provides a go implementation of TypeID that optionally allows you
+This library provides a go implementation of TypeID that allows you
 to define your own custom id types for added compile-time safety.
 
-The statically typed version lives under the `typed` package. It makes it possible for
-the go compiler itself to enforce type safety.
-
-If you don't need compile-time safety, you can use the provided `typeid.TypeID` directly:
+If you don't need compile-time safety, you can use the provided `typeid.AnyID` directly:
   
 ```go
 import (
@@ -37,37 +34,32 @@ func example() {
 }
 ```
 
-If you want compile-time safety, first define your own custom types with two steps:
-1. Define your own struct and have it embed `typeid.TypeID`
-2. Define an `AllowedPrefix` method.
+If you want compile-time safety, define your own custom types with two steps:
+1. Define a struct the implements the method `Prefix`. Prefix should return the
+   string that should be used as the prefix for your custom type.
+2. Define you own id type, by embedding `typeid.TypeID[CustomPrefix]`
 
-You can now start using your custom-types as TypeIDs:
-
+For example to define a UserID with prefix `user`:
 ```go
 import (
   "go.jetpack.io/typeid"
 )
 
-// To create a new id type, simply create a new struct, and have it embed TypeID:
+// Define the prefix:
+type UserPrefix struct {}
+func (UserPrefix) Prefix() string { return "user" }
+
+// Define UserID:
 type UserID struct {
-	typeid.TypeID
+	typeid.TypeID[UserPrefix]
 }
-
-// Then define AllowedPrefix(). In our case UserIDs use 'user' as a prefix
-func (UserID) AllowedPrefix() string {
-	return "user"
-}
-
-// That's it, you've now defined a subtype. Note that subtypes abide by the
-// Subtype interface:
-var _ typeid.Subtype = (*UserID)(nil)
 ```
 
-And now use those types to generate TypeIDs:
+Now you can use the UserID type to generate new ids:
 
 ```go
 import (
-  "go.jetpack.io/typeid/typed"
+  "go.jetpack.io/typeid"
 )
 
 func example() {

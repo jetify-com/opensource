@@ -10,14 +10,14 @@ import (
 
 func ExampleNew() {
 	tid := typeid.Must(typeid.New[AccountID]())
-	fmt.Println("Prefix:", tid.Prefix())
+	fmt.Println("Prefix:", tid.Type())
 	// Output:
 	// Prefix: account
 }
 
 func ExampleFromSuffix() {
 	tid := typeid.Must(typeid.FromSuffix[UserID]("00041061050r3gg28a1c60t3gf"))
-	fmt.Printf("Prefix: %s\nSuffix: %s\n", tid.Prefix(), tid.Suffix())
+	fmt.Printf("Prefix: %s\nSuffix: %s\n", tid.Type(), tid.Suffix())
 	// Output:
 	// Prefix: user
 	// Suffix: 00041061050r3gg28a1c60t3gf
@@ -30,10 +30,10 @@ func TestSubtypeConstructors(t *testing.T) {
 	_, err = typeid.FromSuffix[AccountID]("00041061050r3gg28a1c60t3gf")
 	assert.NoError(t, err)
 
-	// But error on TypeID:
-	_, err = typeid.New[typeid.TypeID]()
+	// But error on TypeID[typeid.Any]:
+	_, err = typeid.New[typeid.AnyID]()
 	assert.Error(t, err)
-	_, err = typeid.FromSuffix[typeid.TypeID]("00041061050r3gg28a1c60t3gf")
+	_, err = typeid.FromSuffix[typeid.AnyID]("00041061050r3gg28a1c60t3gf")
 	assert.Error(t, err)
 }
 
@@ -43,16 +43,16 @@ func TestSubtypeNil(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, nilUser, emptyUser)
 	assert.Equal(t, nilUser.String(), emptyUser.String())
-	assert.Equal(t, nilUser.Prefix(), emptyUser.Prefix())
+	assert.Equal(t, nilUser.Type(), emptyUser.Type())
 	assert.Equal(t, nilUser.UUID(), emptyUser.UUID())
 	assert.Equal(t, nilUser.UUIDBytes(), emptyUser.UUIDBytes())
 	assert.Equal(t, "user_00000000000000000000000000", nilUser.String())
-	assert.Equal(t, "user", nilUser.Prefix())
+	assert.Equal(t, "user", nilUser.Type())
 
-	parsed, err := typeid.Parse[typeid.TypeID]("user_00000000000000000000000000")
+	parsed, err := typeid.FromString("user_00000000000000000000000000")
 	assert.NoError(t, err)
 	assert.Equal(t, "user_00000000000000000000000000", parsed.String())
-	assert.Equal(t, "user", parsed.Prefix())
+	assert.Equal(t, "user", parsed.Type())
 	assert.Equal(t, "00000000000000000000000000", parsed.Suffix())
 }
 
@@ -71,7 +71,7 @@ func TestParse(t *testing.T) {
 		}
 
 		// They also parse as a generic TypeID
-		_, err = typeid.Parse[typeid.TypeID](tid.String())
+		_, err = typeid.FromString(tid.String())
 		if err != nil {
 			t.Error(err)
 		}
