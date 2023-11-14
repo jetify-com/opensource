@@ -44,7 +44,6 @@ func (c *client) endpoint(path string) string {
 }
 
 func (c *client) newProjectID(ctx context.Context, tok *session.Token, repo, subdir string) (typeids.ProjectID, error) {
-	var nilID typeids.ProjectID
 	p, err := post[struct {
 		ID typeids.ProjectID `json:"id"`
 	}](ctx, c, tok, "projects", map[string]string{
@@ -52,7 +51,7 @@ func (c *client) newProjectID(ctx context.Context, tok *session.Token, repo, sub
 		"subdir":   subdir,
 	})
 	if err != nil {
-		return nilID, err
+		return typeids.ProjectID{}, err
 	}
 
 	return p.ID, nil

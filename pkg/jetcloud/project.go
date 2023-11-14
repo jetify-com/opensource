@@ -23,51 +23,50 @@ type projectConfig struct {
 }
 
 func InitProject(ctx context.Context, tok *session.Token, dir string) (typeids.ProjectID, error) {
-	var nilID typeids.ProjectID
 	if tok == nil {
-		return nilID, errors.Errorf("Please login first")
+		return typeids.ProjectID{}, errors.Errorf("Please login first")
 	}
 	existing, err := ProjectID(dir)
 	if err == nil {
 		return existing, ErrProjectAlreadyInitialized
 	} else if !os.IsNotExist(err) {
-		return nilID, err
+		return typeids.ProjectID{}, err
 	}
 
 	dirPath := filepath.Join(dir, dirName)
 	if err = os.MkdirAll(dirPath, 0700); err != nil {
-		return nilID, err
+		return typeids.ProjectID{}, err
 	}
 
 	if err = createGitIgnore(dir); err != nil {
-		return nilID, err
+		return typeids.ProjectID{}, err
 	}
 
 	repoURL, err := gitRepoURL(dir)
 	if err != nil {
-		return nilID, err
+		return typeids.ProjectID{}, err
 	}
 	subdir, _ := gitSubdirectory(dir)
 
 	projectID, err := newClient().newProjectID(ctx, tok, repoURL, subdir)
 	if err != nil {
-		return nilID, err
+		return typeids.ProjectID{}, err
 	}
 
 	claims := tok.IDClaims()
 	if claims == nil {
-		return nilID, errors.Errorf("token did not contain an org")
+		return typeids.ProjectID{}, errors.Errorf("token did not contain an org")
 	}
 
 	orgID, err := typeid.Parse[typeids.OrgID](tok.IDClaims().OrgID)
 	if err != nil {
-		return nilID, err
+		return typeids.ProjectID{}, err
 	}
 
 	cfg := projectConfig{ProjectID: projectID, OrgID: orgID}
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
-		return nilID, err
+		return typeids.ProjectID{}, err
 	}
 	return projectID, os.WriteFile(filepath.Join(dirPath, configName), data, 0600)
 }
