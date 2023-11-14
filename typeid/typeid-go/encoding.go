@@ -2,7 +2,6 @@ package typeid
 
 import (
 	"encoding"
-	"fmt"
 )
 
 // TODO: Define a standardized binary encoding for typeids in the spec
@@ -20,22 +19,6 @@ func (tid *TypeID[P]) UnmarshalText(text []byte) error {
 	}
 	*tid = parsed
 	return nil
-}
-
-// Scan implements the sql.Scanner interface
-func (tid *TypeID[P]) Scan(src any) error {
-	switch obj := src.(type) {
-	case nil:
-		return nil
-	case string:
-		return tid.UnmarshalText([]byte(obj))
-	// TODO: add supporte for []byte
-	// we don't just want to store the full string as a byte array. Instead
-	// we should encode using the UUID bytes. We could add support for
-	// Binary Marshalling and Unmarshalling at the same time.
-	default:
-		return fmt.Errorf("unsupported scan type %T", obj)
-	}
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
