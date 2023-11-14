@@ -2,18 +2,22 @@ package typeids
 
 import "go.jetpack.io/typeid"
 
-type ProjectID struct {
-	typeid.TypeID
-}
+type ProjectPrefix struct{}
 
-func (ProjectID) AllowedPrefix() string {
+func (ProjectPrefix) Prefix() string {
 	return "proj"
 }
 
-type OrgID struct {
-	typeid.TypeID
+type ProjectID struct {
+	typeid.TypeID[ProjectPrefix]
 }
 
-func (OrgID) AllowedPrefix() string {
+type OrgPrefix struct{}
+
+func (OrgPrefix) Prefix() string {
 	return "org"
+}
+
+type OrgID struct {
+	typeid.TypeID[OrgPrefix]
 }

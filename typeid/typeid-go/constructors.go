@@ -117,23 +117,23 @@ func FromUUIDBytes[T Subtype, PT subtypePtr[T]](prefix string, bytes []byte) (T,
 }
 
 func from[T Subtype, PT subtypePtr[T]](prefix string, suffix string) (T, error) {
-	var id T
+	var tid T
 	if err := validatePrefix[T](prefix); err != nil {
-		return id, err
+		return tid, err
 	}
 
 	if suffix == "" {
 		uid, err := uuid.NewV7()
 		if err != nil {
-			return id, err
+			return tid, err
 		}
 		suffix = base32.Encode(uid)
 	}
 
 	if err := validateSuffix(suffix); err != nil {
-		return id, err
+		return tid, err
 	}
 
-	PT(&id).init(prefix, suffix)
-	return id, nil
+	PT(&tid).init(prefix, suffix)
+	return tid, nil
 }
