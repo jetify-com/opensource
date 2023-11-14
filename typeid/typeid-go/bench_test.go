@@ -336,6 +336,21 @@ func BenchmarkUUIDBytes(b *testing.B) {
 	})
 }
 
+func BenchmarkNewWithPrefix(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = typeid.Must(typeid.WithPrefix("prefix"))
+	}
+}
+
+func BenchmarkEncodeDecode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		tid := typeid.Must(typeid.WithPrefix("prefix"))
+		_ = typeid.Must(typeid.FromString(tid.String()))
+	}
+}
+
+// TODO: define these in a shared file if we're gonna use in several tests.
+
 type TestPrefix struct{}
 
 func (TestPrefix) Prefix() string { return "prefix" }
