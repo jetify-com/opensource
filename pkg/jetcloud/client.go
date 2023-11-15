@@ -12,7 +12,7 @@ import (
 
 	"go.jetpack.io/pkg/auth/session"
 	"go.jetpack.io/pkg/envvar"
-	"go.jetpack.io/pkg/typeids"
+	"go.jetpack.io/pkg/id"
 	"golang.org/x/oauth2"
 )
 
@@ -43,15 +43,15 @@ func (c *client) endpoint(path string) string {
 	return endpointURL
 }
 
-func (c *client) newProjectID(ctx context.Context, tok *session.Token, repo, subdir string) (typeids.ProjectID, error) {
+func (c *client) newProjectID(ctx context.Context, tok *session.Token, repo, subdir string) (id.ProjectID, error) {
 	p, err := post[struct {
-		ID typeids.ProjectID `json:"id"`
+		ID id.ProjectID `json:"id"`
 	}](ctx, c, tok, "projects", map[string]string{
 		"repo_url": repo,
 		"subdir":   subdir,
 	})
 	if err != nil {
-		return typeids.ProjectID{}, err
+		return id.ProjectID{}, err
 	}
 
 	return p.ID, nil

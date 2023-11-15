@@ -1,4 +1,4 @@
-package typeids
+package id
 
 import "go.jetpack.io/typeid"
 

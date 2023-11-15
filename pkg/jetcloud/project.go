@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"go.jetpack.io/pkg/auth/session"
-	"go.jetpack.io/pkg/typeids"
+	"go.jetpack.io/pkg/id"
 	"go.jetpack.io/typeid"
 )
 
@@ -18,55 +18,55 @@ const dirName = ".jetpack.io"
 const configName = "project.json"
 
 type projectConfig struct {
-	ProjectID typeids.ProjectID `json:"project_id"`
-	OrgID     typeids.OrgID     `json:"org_id"`
+	ProjectID id.ProjectID `json:"project_id"`
+	OrgID     id.OrgID     `json:"org_id"`
 }
 
-func InitProject(ctx context.Context, tok *session.Token, dir string) (typeids.ProjectID, error) {
+func InitProject(ctx context.Context, tok *session.Token, dir string) (id.ProjectID, error) {
 	if tok == nil {
-		return typeids.ProjectID{}, errors.Errorf("Please login first")
+		return id.ProjectID{}, errors.Errorf("Please login first")
 	}
 	existing, err := ProjectID(dir)
 	if err == nil {
 		return existing, ErrProjectAlreadyInitialized
 	} else if !os.IsNotExist(err) {
-		return typeids.ProjectID{}, err
+		return id.ProjectID{}, err
 	}
 
 	dirPath := filepath.Join(dir, dirName)
 	if err = os.MkdirAll(dirPath, 0700); err != nil {
-		return typeids.ProjectID{}, err
+		return id.ProjectID{}, err
 	}
 
 	if err = createGitIgnore(dir); err != nil {
-		return typeids.ProjectID{}, err
+		return id.ProjectID{}, err
 	}
 
 	repoURL, err := gitRepoURL(dir)
 	if err != nil {
-		return typeids.ProjectID{}, err
+		return id.ProjectID{}, err
 	}
 	subdir, _ := gitSubdirectory(dir)
 
 	projectID, err := newClient().newProjectID(ctx, tok, repoURL, subdir)
 	if err != nil {
-		return typeids.ProjectID{}, err
+		return id.ProjectID{}, err
 	}
 
 	claims := tok.IDClaims()
 	if claims == nil {
-		return typeids.ProjectID{}, errors.Errorf("token did not contain an org")
+		return id.ProjectID{}, errors.Errorf("token did not contain an org")
 	}
 
-	orgID, err := typeid.Parse[typeids.OrgID](tok.IDClaims().OrgID)
+	orgID, err := typeid.Parse[id.OrgID](tok.IDClaims().OrgID)
 	if err != nil {
-		return typeids.ProjectID{}, err
+		return id.ProjectID{}, err
 	}
 
 	cfg := projectConfig{ProjectID: projectID, OrgID: orgID}
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
-		return typeids.ProjectID{}, err
+		return id.ProjectID{}, err
 	}
 	return projectID, os.WriteFile(filepath.Join(dirPath, configName), data, 0600)
 }
@@ -83,10 +83,10 @@ func ProjectConfig(wd string) (*projectConfig, error) {
 	return &cfg, nil
 }
 
-func ProjectID(wd string) (typeids.ProjectID, error) {
+func ProjectID(wd string) (id.ProjectID, error) {
 	cfg, err := ProjectConfig(wd)
 	if err != nil {
-		return typeids.ProjectID{}, err
+		return id.ProjectID{}, err
 	}
 	return cfg.ProjectID, nil
 }
