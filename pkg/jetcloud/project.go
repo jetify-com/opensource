@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	"go.jetpack.io/pkg/sandbox/auth/session"
-	"go.jetpack.io/pkg/sandbox/typeids"
+	"go.jetpack.io/pkg/auth/session"
+	"go.jetpack.io/pkg/typeids"
 	"go.jetpack.io/typeid"
 )
 

@@ -3,7 +3,7 @@ package jetcloud
 import (
 	"context"
 
-	"go.jetpack.io/pkg/sandbox/auth/session"
+	"go.jetpack.io/pkg/auth/session"
 )
 
 func GetAccessToken(

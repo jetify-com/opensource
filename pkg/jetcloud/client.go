@@ -10,9 +10,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"go.jetpack.io/pkg/sandbox/auth/session"
-	"go.jetpack.io/pkg/sandbox/envvar"
-	"go.jetpack.io/pkg/sandbox/typeids"
+	"go.jetpack.io/pkg/auth/session"
+	"go.jetpack.io/pkg/envvar"
+	"go.jetpack.io/pkg/typeids"
 	"golang.org/x/oauth2"
 )
 
