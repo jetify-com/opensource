@@ -46,9 +46,9 @@ func (s *CallbackServer) Listen() error {
 	return nil
 }
 
-func (s *CallbackServer) URI() string {
+func URI() string {
 	// TODO: don't hardcode
-	return "http://localhost:4446/callback"
+	return "http://127.0.0.1:4446/callback"
 }
 
 func (s *CallbackServer) Port() int {
