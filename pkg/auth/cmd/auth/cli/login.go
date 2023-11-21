@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -41,17 +40,17 @@ func loginCmd(flags *loginFlags) func(cmd *cobra.Command, args []string) error {
 		if clientID == "" {
 			return fmt.Errorf("please provide a client id")
 		}
-		return login(cmd.Context(), issuer, clientID)
+		return login(issuer, clientID)
 	}
 }
 
-func login(ctx context.Context, issuer, clientID string) error {
-	client, err := auth.NewClient(issuer, clientID, nil, nil)
+func login(issuer, clientID string) error {
+	client, err := auth.NewClient(issuer, clientID)
 	if err != nil {
 		return err
 	}
 
-	tok, err := client.LoginFlow(ctx)
+	tok, err := client.LoginFlow()
 	if err != nil {
 		return err
 	}

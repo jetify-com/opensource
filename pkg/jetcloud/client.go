@@ -57,19 +57,6 @@ func (c *client) newProjectID(ctx context.Context, tok *session.Token, repo, sub
 	return p.ID, nil
 }
 
-func (c *client) getAccessToken(
-	ctx context.Context,
-	tok *session.Token,
-) (string, error) {
-	p, err := post[struct {
-		Token string `json:"token"`
-	}](ctx, c, tok, "oauth/token", map[string]string{})
-	if err != nil {
-		return "", err
-	}
-	return p.Token, nil
-}
-
 func post[T any](ctx context.Context, client *client, tok *session.Token, path string, data any) (*T, error) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
