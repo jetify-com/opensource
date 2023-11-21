@@ -51,7 +51,7 @@ func login(ctx context.Context, issuer, clientID string) error {
 		return err
 	}
 
-	tok, err := client.LoginFlow(ctx)
+	tok, err := client.LoginFlow()
 	if err != nil {
 		return err
 	}
