@@ -4,14 +4,12 @@
 package envcli
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"go.jetpack.io/envsec/internal/envvar"
-	"go.jetpack.io/envsec/internal/jetcloud"
-	"go.jetpack.io/pkg/sandbox/auth"
-	"go.jetpack.io/pkg/sandbox/auth/session"
+	"go.jetpack.io/pkg/auth"
+	"go.jetpack.io/pkg/envvar"
+	"go.jetpack.io/pkg/jetauth"
 )
 
 func authCmd() *cobra.Command {
@@ -134,22 +132,5 @@ func newAuthClient() (*auth.Client, error) {
 	// TODO: Consider making scopes and audience configurable:
 	// "ENVSEC_AUTH_SCOPE" = "openid offline_access email profile"
 	// "ENVSEC_AUTH_AUDIENCE" = "https://api.jetpack.io",
-	return auth.NewClient(
-		issuer,
-		clientID,
-		getShortTermAccessToken,
-		getShortTermAccessToken,
-	)
-}
-
-func getShortTermAccessToken(
-	ctx context.Context,
-	tok *session.Token,
-) (*session.Token, error) {
-	accessToken, err := jetcloud.GetAccessToken(ctx, tok)
-	if err != nil {
-		return nil, err
-	}
-	tok.AccessToken = accessToken
-	return tok, nil
+	return jetauth.NewClient(issuer, clientID)
 }

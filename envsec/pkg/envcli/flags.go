@@ -10,10 +10,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.jetpack.io/envsec"
-	"go.jetpack.io/envsec/internal/jetcloud"
-	"go.jetpack.io/envsec/internal/typeids"
 	"go.jetpack.io/envsec/pkg/awsfed"
-	"go.jetpack.io/pkg/sandbox/auth/session"
+	"go.jetpack.io/pkg/auth/session"
+	"go.jetpack.io/pkg/id"
+	"go.jetpack.io/pkg/jetcloud"
+	"go.jetpack.io/typeid"
 )
 
 // to be composed into xyzCmdFlags structs
@@ -46,7 +47,7 @@ func (f *configFlags) register(cmd *cobra.Command) {
 	)
 }
 
-func (f *configFlags) validateProjectID(orgID typeids.OrganizationID) (string, error) {
+func (f *configFlags) validateProjectID(orgID id.OrgID) (string, error) {
 	if f.projectID != "" {
 		return f.projectID, nil
 	}
@@ -118,7 +119,7 @@ func (f *configFlags) genConfig(cmd *cobra.Command) (*CmdConfig, error) {
 		f.orgID = tok.IDClaims().OrgID
 	}
 
-	orgID, err := typeids.OrganizationIDFromString(f.orgID)
+	orgID, err := typeid.Parse[id.OrgID](f.orgID)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

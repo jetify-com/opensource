@@ -32,10 +32,12 @@ jobs:
             ~/go/pkg
           key: ${{ runner.os }}-${{ hashFiles('go.work.sum') }}
 
-      - name: Go modules should be up-to-date
-        run: |
-          devbox run go-mod-sync
-          git diff --exit-code
+      # Disable this check until we figure out how to solve for
+      # the 'publish repos twice' problem
+      # - name: Go modules should be up-to-date
+      #   run: |
+      #     devbox run go-mod-sync
+      #     git diff --exit-code
           
       - name: Lint
         run: devbox run lint

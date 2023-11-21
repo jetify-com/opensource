@@ -10,9 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentity/types"
 	"github.com/pkg/errors"
 	"go.jetpack.io/envsec"
-	"go.jetpack.io/envsec/internal/envvar"
+	"go.jetpack.io/pkg/auth/session"
+	"go.jetpack.io/pkg/envvar"
 	"go.jetpack.io/pkg/filecache"
-	"go.jetpack.io/pkg/sandbox/auth/session"
 )
 
 const cacheKeyPrefix = "awsfed"

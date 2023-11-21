@@ -10,22 +10,32 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func ExampleNew() {
-	tid := typeid.Must(typeid.New("prefix"))
+func ExampleWithPrefix() {
+	tid := typeid.Must(typeid.WithPrefix("prefix"))
 	fmt.Printf("New typeid: %s\n", tid)
 }
 
-func ExampleNew_withoutPrefix() {
-	tid := typeid.Must(typeid.New(""))
+func ExampleWithPrefix_emptyPrefix() {
+	tid := typeid.Must(typeid.WithPrefix(""))
 	fmt.Printf("New typeid without prefix: %s\n", tid)
 }
 
 func ExampleFromString() {
 	tid := typeid.Must(typeid.FromString("prefix_00041061050r3gg28a1c60t3gf"))
-	fmt.Printf("Prefix: %s\nSuffix: %s\n", tid.Type(), tid.Suffix())
+	fmt.Printf("Prefix: %s\nSuffix: %s\n", tid.Prefix(), tid.Suffix())
 	// Output:
 	// Prefix: prefix
 	// Suffix: 00041061050r3gg28a1c60t3gf
+}
+
+func TestNilIsEmpty(t *testing.T) {
+	var emptyID typeid.AnyID
+	nilID, err := typeid.FromString("00000000000000000000000000")
+	assert.NoError(t, err)
+	assert.Equal(t, nilID, emptyID)
+	assert.Equal(t, nilID.String(), emptyID.String())
+	assert.Equal(t, nilID.UUID(), emptyID.UUID())
+	assert.Equal(t, nilID.UUIDBytes(), emptyID.UUIDBytes())
 }
 
 func TestInvalidPrefix(t *testing.T) {
@@ -42,7 +52,7 @@ func TestInvalidPrefix(t *testing.T) {
 
 	for _, td := range testdata {
 		t.Run(td.name, func(t *testing.T) {
-			_, err := typeid.New(td.input)
+			_, err := typeid.WithPrefix(td.input)
 			if err == nil {
 				t.Errorf("Expected error for invalid prefix: %s", td.input)
 			}
@@ -106,7 +116,7 @@ func TestEncodeDecode(t *testing.T) {
 	// Generate a bunch of random typeids, encode and decode from a string
 	// and make sure the result is the same as the original.
 	for i := 0; i < 1000; i++ {
-		tid := typeid.Must(typeid.New("prefix"))
+		tid := typeid.Must(typeid.WithPrefix("prefix"))
 		decoded, err := typeid.FromString(tid.String())
 		if err != nil {
 			t.Error(err)
@@ -118,7 +128,7 @@ func TestEncodeDecode(t *testing.T) {
 
 	// Repeat with the empty prefix:
 	for i := 0; i < 1000; i++ {
-		tid := typeid.Must(typeid.New(""))
+		tid := typeid.Must(typeid.WithPrefix(""))
 		decoded, err := typeid.FromString(tid.String())
 		if err != nil {
 			t.Error(err)
@@ -150,7 +160,7 @@ func TestSpecialValues(t *testing.T) {
 			}
 
 			// Values should be equal if we start by parsing the uuid
-			tid = typeid.Must(typeid.FromUUID("", data.uuid))
+			tid = typeid.Must(typeid.FromUUID[typeid.AnyID]("", data.uuid))
 			if data.tid != tid.String() {
 				t.Errorf("Expected %s, got %s", data.tid, tid.String())
 			}
@@ -183,22 +193,9 @@ func TestValidTestdata(t *testing.T) {
 			if td.UUID != tid.UUID() {
 				t.Errorf("Expected %s, got %s", td.UUID, tid.UUID())
 			}
-			if td.Prefix != tid.Type() {
-				t.Errorf("Expected %s, got %s", td.Prefix, tid.Type())
+			if td.Prefix != tid.Prefix() {
+				t.Errorf("Expected %s, got %s", td.Prefix, tid.Prefix())
 			}
 		})
-	}
-}
-
-func BenchmarkNew(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = typeid.Must(typeid.New("prefix"))
-	}
-}
-
-func BenchmarkEncodeDecode(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		tid := typeid.Must(typeid.New("prefix"))
-		_ = typeid.Must(typeid.FromString(tid.String()))
 	}
 }
