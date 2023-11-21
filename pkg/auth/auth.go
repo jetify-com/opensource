@@ -24,8 +24,6 @@ type Client struct {
 	store    *tokenstore.Store
 }
 
-type hook func(context.Context, *session.Token) (*session.Token, error)
-
 func NewClient(
 	issuer, clientID string,
 ) (*Client, error) {
