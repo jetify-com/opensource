@@ -5,9 +5,9 @@ go 1.20
 require (
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/codeclysm/extract/v3 v3.1.1
-	github.com/coreos/go-oidc/v3 v3.6.0
+	github.com/coreos/go-oidc/v3 v3.7.0
 	github.com/fatih/color v1.15.0
-	github.com/go-jose/go-jose/v3 v3.0.0
+	github.com/go-jose/go-jose/v3 v3.0.1
 	github.com/google/go-github/v53 v53.2.0
 	github.com/google/renameio/v2 v2.0.0
 	github.com/gosimple/slug v1.13.1
@@ -20,7 +20,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	go.jetpack.io/typeid v0.1.0
-	golang.org/x/oauth2 v0.12.0
+	golang.org/x/oauth2 v0.14.0
 )
 
 require (
