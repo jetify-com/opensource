@@ -5,7 +5,6 @@
 -- + Defines functions to generate and validate typeids in SQL.
 
 -- Create a `typeid` type.
--- Note that the "uuid" field should be a UUID v7.
 create type "typeid" as ("type" varchar(63), "uuid" uuid);
 
 -- Function that generates a random typeid of the given type.
