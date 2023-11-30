@@ -43,7 +43,7 @@ type Store interface {
 	SetAll(ctx context.Context, envID EnvID, values map[string]string) error
 	// Get the value of an environment variable.
 	Get(ctx context.Context, envID EnvID, name string) (string, error)
-	// Set the values of multiple environment variables.
+	// Get the values of multiple environment variables.
 	GetAll(ctx context.Context, envID EnvID, names []string) ([]EnvVar, error)
 	// Delete an environment variable.
 	Delete(ctx context.Context, envID EnvID, name string) error

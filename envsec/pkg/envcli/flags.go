@@ -137,7 +137,7 @@ func (f *configFlags) genConfig(cmd *cobra.Command) (*CmdConfig, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	envNames := []string{"dev", "prod", "staging"}
+	envNames := []string{"dev", "prod", "preview"}
 	if cmd.Flags().Changed(environmentFlagName) {
 		envNames = []string{envid.EnvName}
 	}
