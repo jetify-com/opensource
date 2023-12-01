@@ -47,4 +47,3 @@ jobs:
 
       - name: Test
         run: devbox run test
-  
