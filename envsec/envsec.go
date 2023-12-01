@@ -121,6 +121,9 @@ type JetpackAPIConfig struct {
 // prodJetpackAPIEndpoint is used for production.
 const prodJetpackAPIEndpoint = "https://api.jetpack.io"
 
+// devJetpackAPIEndpoint is used for development.
+const devJetpackAPIEndpoint = "https://apisvc-6no3bdensq-uk.a.run.app"
+
 // JetpackAPIStore implements interface Config (compile-time check)
 var _ Config = (*JetpackAPIConfig)(nil)
 
@@ -130,6 +133,9 @@ func (c *JetpackAPIConfig) IsEnvStoreConfig() bool {
 
 func NewJetpackAPIConfig(token string) *JetpackAPIConfig {
 	endpoint := prodJetpackAPIEndpoint
+	if IsDevMode() {
+		endpoint = devJetpackAPIEndpoint
+	}
 	if e := os.Getenv("ENVSEC_JETPACK_API_ENDPOINT"); e != "" {
 		endpoint = e
 	}

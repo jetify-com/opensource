@@ -4,8 +4,10 @@
 package envcli
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -105,15 +107,7 @@ func (f *configFlags) genConfig(cmd *cobra.Command) (*CmdConfig, error) {
 		}
 	}
 
-	ssmConfig, err := awsfed.GenSSMConfigFromToken(ctx, tok, true /*useCache*/)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	store, err := envsec.NewStore(ctx, ssmConfig)
-
-	// Uncomment this to use the Jetpack API instead of AWS SSM store
-	// store, err = envsec.NewStore(ctx, envsec.NewJetpackAPIConfig(tok.AccessToken))
-
+	store, err := getStore(ctx, tok)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -147,6 +141,36 @@ func (f *configFlags) genConfig(cmd *cobra.Command) (*CmdConfig, error) {
 		EnvID:    envid,
 		EnvNames: envNames,
 	}, nil
+}
+
+// getStore determines which envsec.Store to use. It will usually
+// use the JetpackAPI store, unless the ENVSEC_USE_AWS_STORAGE is truthy.
+func getStore(ctx context.Context, tok *session.Token) (envsec.Store, error) {
+	// TODO savil: set to `false` after we migrate Dashboard, etc.'s secrets to JetpackAPI
+	useAwsStore := true
+	if awsStore := os.Getenv("ENVSEC_USE_AWS_STORAGE"); awsStore != "" {
+		v, err := strconv.ParseBool(awsStore)
+		useAwsStore = err == nil && v
+	}
+	var store envsec.Store
+
+	if useAwsStore {
+		ssmConfig, err := awsfed.GenSSMConfigFromToken(ctx, tok, true /*useCache*/)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		store, err = envsec.NewStore(ctx, ssmConfig)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		return store, nil
+	}
+
+	store, err := envsec.NewStore(ctx, envsec.NewJetpackAPIConfig(tok.AccessToken))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return store, nil
 }
 
 var bootstrappedConfig *CmdConfig

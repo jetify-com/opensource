@@ -12,9 +12,11 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
+	"go.jetpack.io/envsec"
 )
 
 type rootCmdFlags struct {
+	isDev      bool
 	jsonErrors bool
 }
 
@@ -22,18 +24,22 @@ func RootCmd(flags *rootCmdFlags) *cobra.Command {
 	command := &cobra.Command{
 		Use:   "envsec",
 		Short: "Manage environment variables and secrets",
-		Long: heredoc.Doc(`
+		Long: heredoc.Doc(
+			`
 			Manage environment variables and secrets
 
 			Securely stores and retrieves environment variables on the cloud.
 			Environment variables are always encrypted, which makes it possible to
 			store values that contain passwords and other secrets.
-		`),
+		`,
+		),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			if flags.jsonErrors {
 				// Don't print anything to stderr so we can print the error in json
 				cmd.SetErr(io.Discard)
 			}
+
+			envsec.SetDevMode(flags.isDev)
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -50,6 +56,14 @@ func RootCmd(flags *rootCmdFlags) *cobra.Command {
 		"json-errors", false, "Print errors in json format",
 	)
 	command.Flag("json-errors").Hidden = true
+
+	command.PersistentFlags().BoolVar(
+		&flags.isDev,
+		"dev",
+		false,
+		"Use dev mode",
+	)
+	_ = command.PersistentFlags().MarkHidden("dev")
 
 	command.AddCommand(authCmd())
 	command.AddCommand(DownloadCmd())
