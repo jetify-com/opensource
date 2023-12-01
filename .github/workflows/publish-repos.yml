@@ -86,3 +86,4 @@ jobs:
           title: 'Update Internal Golang Dependencies'
           body: 'This PR updates internal Golang dependencies.'
           branch: 'update-dependencies-${{ github.sha }}'
+          base: 'main'
