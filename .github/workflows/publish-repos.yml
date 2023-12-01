@@ -52,7 +52,7 @@ jobs:
             typeid/typeid-sql
             typeid/typeid-js
             tyson
-            
+
   create-dependency-update-pr:
     needs: publish-repos
     runs-on: ubuntu-latest
@@ -72,11 +72,13 @@ jobs:
             ~/.cache/golangci-lint
             ~/.cache/go-build
             ~/go/pkg
-          key: ${{ runner.os }}-${{ hashFiles('go.work.sum') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/*.sum') }}
 
       - name: Update Dependencies
         run: devbox run update-internal-deps
+
       - name: Create Pull Request
+        if: '! git diff --exit-code'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
