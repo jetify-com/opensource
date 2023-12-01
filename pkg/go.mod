@@ -20,7 +20,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
-	go.jetpack.io/typeid v0.1.0
+	go.jetpack.io/typeid v1.0.0
 	golang.org/x/oauth2 v0.14.0
 	google.golang.org/protobuf v1.31.0
 )
