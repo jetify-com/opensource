@@ -16,8 +16,8 @@ on:
       - "**" # If we added a tag (used for releases)
 
 permissions:
-  contents: read
-  pull-requests: read
+  contents: write
+  pull-requests: write
 
 jobs:
   go-tests:
@@ -76,14 +76,10 @@ jobs:
 
       - name: Update Dependencies
         run: devbox run update-internal-deps
-
+  
       - name: Create Pull Request
-        if: '! git diff --exit-code'
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: Update internal dependencies
-          title: 'Update Internal Golang Dependencies'
-          body: 'This PR updates internal Golang dependencies.'
-          branch: 'update-dependencies-${{ github.sha }}'
-          base: 'main'
+          title: Update Internal Dependencies
+          reviewers: 'loreto,mikeland73'
+          base: main

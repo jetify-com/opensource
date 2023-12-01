@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
 
 jobs:
   monorepo-go:
@@ -67,11 +67,3 @@ jobs:
             ~/.cache/go-build
             ~/go/pkg
           key: ${{ runner.os }}-${{ hashFiles('**/*.sum') }}
-
-      - name: Update Dependencies
-        run: devbox run update-internal-deps
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          base: main
