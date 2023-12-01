@@ -70,21 +70,6 @@ jobs:
 
       - name: Update Dependencies
         run: devbox run update-internal-deps
-      
-      - name: Check for changes
-        id: git-check
-        run: |
-          if ! git diff --exit-code; then
-            echo "changes=true" >> $GITHUB_OUTPUT
-          fi
 
       - name: Create Pull Request
-        if: ${{ steps.git-check.outputs.changes == 'true' }}
         uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: Update internal dependencies
-          title: 'Update Internal Golang Dependencies'
-          body: 'This PR updates internal Golang dependencies.'
-          branch: 'update-dependencies-${{ github.sha }}'
-          base: 'main'
