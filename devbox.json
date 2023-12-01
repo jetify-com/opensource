@@ -15,7 +15,11 @@
       "build": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo build '{}' && go build -v ./...\"",
       "lint": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo lint '{}' && golangci-lint run --fix --timeout 300s\"",
       "fmt": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo fmt '{}' && go fmt ./...\"",
-      "test": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo test '{}' && go test -race -cover -v ./...\""
+      "test": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo test '{}' && go test -race -cover -v ./...\"",
+      "update-internal-deps": [
+        "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo update-internal-deps '{}' && go get -u go.jetpack.io/pkg@latest go.jetpack.io/typeid@latest || true\"",
+        "devbox run go-mod-sync"
+      ]
     }
   }
 }

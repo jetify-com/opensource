@@ -30,7 +30,7 @@ jobs:
             ~/.cache/golangci-lint
             ~/.cache/go-build
             ~/go/pkg
-          key: ${{ runner.os }}-${{ hashFiles('go.work.sum') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/*.sum') }}
 
       # Disable this check until we figure out how to solve for
       # the 'publish repos twice' problem

@@ -52,3 +52,35 @@ jobs:
             typeid/typeid-sql
             typeid/typeid-js
             tyson
+            
+  create-dependency-update-pr:
+    needs: publish-repos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Monorepo
+        uses: actions/checkout@v3
+
+      - name: Install devbox
+        uses: jetpack-io/devbox-install-action@v0.7.0
+        with:
+          enable-cache: true
+
+      - name: Mount golang cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/golangci-lint
+            ~/.cache/go-build
+            ~/go/pkg
+          key: ${{ runner.os }}-${{ hashFiles('go.work.sum') }}
+
+      - name: Update Dependencies
+        run: devbox run update-internal-deps
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Update internal dependencies
+          title: 'Update Internal Golang Dependencies'
+          body: 'This PR updates internal Golang dependencies.'
+          branch: 'update-dependencies-${{ github.sha }}'
