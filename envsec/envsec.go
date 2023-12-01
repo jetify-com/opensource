@@ -5,6 +5,7 @@ package envsec
 
 import (
 	"context"
+	"os"
 	"path"
 
 	"github.com/pkg/errors"
@@ -43,7 +44,7 @@ type Store interface {
 	SetAll(ctx context.Context, envID EnvID, values map[string]string) error
 	// Get the value of an environment variable.
 	Get(ctx context.Context, envID EnvID, name string) (string, error)
-	// Set the values of multiple environment variables.
+	// Get the values of multiple environment variables.
 	GetAll(ctx context.Context, envID EnvID, names []string) ([]EnvVar, error)
 	// Delete an environment variable.
 	Delete(ctx context.Context, envID EnvID, name string) error
@@ -60,6 +61,8 @@ func NewStore(ctx context.Context, config Config) (Store, error) {
 	switch config := config.(type) {
 	case *SSMConfig:
 		return newSSMStore(ctx, config)
+	case *JetpackAPIConfig:
+		return newJetpackAPIStore(config), nil
 	default:
 		return nil, errors.Errorf("unsupported store type: %T", config)
 	}
@@ -108,4 +111,27 @@ func (c *SSMConfig) pathNamespace(envID EnvID) string {
 
 func (c *SSMConfig) hasDefaultPaths() bool {
 	return c.VarPathFn == nil && c.PathNamespaceFn == nil
+}
+
+type JetpackAPIConfig struct {
+	endpoint string
+	token    string
+}
+
+// prodJetpackAPIEndpoint is used for production.
+const prodJetpackAPIEndpoint = "https://api.jetpack.io"
+
+// JetpackAPIStore implements interface Config (compile-time check)
+var _ Config = (*JetpackAPIConfig)(nil)
+
+func (c *JetpackAPIConfig) IsEnvStoreConfig() bool {
+	return true
+}
+
+func NewJetpackAPIConfig(token string) *JetpackAPIConfig {
+	endpoint := prodJetpackAPIEndpoint
+	if e := os.Getenv("ENVSEC_JETPACK_API_ENDPOINT"); e != "" {
+		endpoint = e
+	}
+	return &JetpackAPIConfig{endpoint, token}
 }

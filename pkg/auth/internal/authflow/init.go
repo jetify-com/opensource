@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	"go.jetpack.io/pkg/auth/internal/callbackserver"
 	"golang.org/x/oauth2"
 )
 
@@ -46,8 +47,9 @@ func (f *AuthFlow) initOauth2Conf() error {
 		ClientID: f.clientID,
 		// TODO: should the scopes be configurable?
 		// TODO: Add 'email' and 'profile'
-		Scopes:   []string{"openid", "offline_access"},
-		Endpoint: provider.Endpoint(),
+		Scopes:      []string{"openid", "offline_access"},
+		Endpoint:    provider.Endpoint(),
+		RedirectURL: callbackserver.URI(),
 	}
 	f.oauth2Conf = conf
 	return nil
