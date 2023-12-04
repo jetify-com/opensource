@@ -11,7 +11,6 @@ import (
 	"net/url"
 
 	"go.jetpack.io/pkg/auth/session"
-	"go.jetpack.io/pkg/envvar"
 	"go.jetpack.io/pkg/id"
 	"golang.org/x/oauth2"
 )
@@ -26,12 +25,13 @@ type errorResponse struct {
 	} `json:"error"`
 }
 
-func newClient() *client {
+func (s *JetCloud) newClient() *client {
+	if s.APIHost == "" {
+		// This is the dev api.jetpack.io URL
+		s.APIHost = "https://apisvc-6no3bdensq-uk.a.run.app"
+	}
 	return &client{
-		apiHost: envvar.Get(
-			"ENVSEC_API_HOST",
-			"https://envsec-service-prod.cloud.jetpack.dev",
-		),
+		apiHost: s.APIHost,
 	}
 }
 
@@ -46,10 +46,12 @@ func (c *client) endpoint(path string) string {
 func (c *client) newProjectID(ctx context.Context, tok *session.Token, repo, subdir string) (id.ProjectID, error) {
 	p, err := post[struct {
 		ID id.ProjectID `json:"id"`
-	}](ctx, c, tok, "projects", map[string]string{
-		"repo_url": repo,
-		"subdir":   subdir,
-	})
+	}](
+		ctx, c, tok, "projects", map[string]string{
+			"repo_url": repo,
+			"subdir":   subdir,
+		},
+	)
 	if err != nil {
 		return id.ProjectID{}, err
 	}

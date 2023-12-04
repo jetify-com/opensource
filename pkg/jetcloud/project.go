@@ -16,17 +16,25 @@ var ErrProjectAlreadyInitialized = errors.New("project already initialized")
 
 const dirName = ".jetpack.io"
 const configName = "project.json"
+const devConfigName = "dev.project.json"
 
 type projectConfig struct {
 	ProjectID id.ProjectID `json:"project_id"`
 	OrgID     id.OrgID     `json:"org_id"`
 }
 
-func InitProject(ctx context.Context, tok *session.Token, dir string) (id.ProjectID, error) {
+// JetCloud keeps configuration for the JetCloud API.
+// Could use a less stuttery name.
+type JetCloud struct {
+	APIHost string
+	IsDev   bool
+}
+
+func (jc *JetCloud) InitProject(ctx context.Context, tok *session.Token, dir string) (id.ProjectID, error) {
 	if tok == nil {
 		return id.ProjectID{}, errors.Errorf("Please login first")
 	}
-	existing, err := ProjectID(dir)
+	existing, err := jc.projectID(dir)
 	if err == nil {
 		return existing, ErrProjectAlreadyInitialized
 	} else if !os.IsNotExist(err) {
@@ -48,7 +56,7 @@ func InitProject(ctx context.Context, tok *session.Token, dir string) (id.Projec
 	}
 	subdir, _ := gitSubdirectory(dir)
 
-	projectID, err := newClient().newProjectID(ctx, tok, repoURL, subdir)
+	projectID, err := jc.newClient().newProjectID(ctx, tok, repoURL, subdir)
 	if err != nil {
 		return id.ProjectID{}, err
 	}
@@ -68,11 +76,11 @@ func InitProject(ctx context.Context, tok *session.Token, dir string) (id.Projec
 	if err != nil {
 		return id.ProjectID{}, err
 	}
-	return projectID, os.WriteFile(filepath.Join(dirPath, configName), data, 0600)
+	return projectID, os.WriteFile(filepath.Join(dirPath, jc.configName()), data, 0600)
 }
 
-func ProjectConfig(wd string) (*projectConfig, error) {
-	data, err := os.ReadFile(filepath.Join(wd, dirName, configName))
+func (jc *JetCloud) ProjectConfig(wd string) (*projectConfig, error) {
+	data, err := os.ReadFile(filepath.Join(wd, dirName, jc.configName()))
 	if err != nil {
 		return nil, err
 	}
@@ -83,10 +91,17 @@ func ProjectConfig(wd string) (*projectConfig, error) {
 	return &cfg, nil
 }
 
-func ProjectID(wd string) (id.ProjectID, error) {
-	cfg, err := ProjectConfig(wd)
+func (jc *JetCloud) projectID(wd string) (id.ProjectID, error) {
+	cfg, err := jc.ProjectConfig(wd)
 	if err != nil {
 		return id.ProjectID{}, err
 	}
 	return cfg.ProjectID, nil
+}
+
+func (jc *JetCloud) configName() string {
+	if jc.IsDev {
+		return devConfigName
+	}
+	return configName
 }
