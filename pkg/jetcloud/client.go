@@ -18,7 +18,7 @@ import (
 // Client manages state for interacting with the JetCloud API, as well as
 // communicating with the JetCloud API.
 type Client struct {
-	ApiHost string
+	APIHost string
 	IsDev   bool
 }
 
@@ -29,7 +29,7 @@ type errorResponse struct {
 }
 
 func (c *Client) endpoint(path string) string {
-	endpointURL, err := url.JoinPath(c.ApiHost, path)
+	endpointURL, err := url.JoinPath(c.APIHost, path)
 	if err != nil {
 		panic(err)
 	}

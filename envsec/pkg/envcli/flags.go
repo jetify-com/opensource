@@ -56,7 +56,7 @@ func (f *configFlags) validateProjectID(orgID id.OrgID) (string, error) {
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
-	c := jetcloud.Client{ApiHost: build.JetpackAPIHost(), IsDev: build.IsDev}
+	c := jetcloud.Client{APIHost: build.JetpackAPIHost(), IsDev: build.IsDev}
 	config, err := c.ProjectConfig(wd)
 	if errors.Is(err, os.ErrNotExist) {
 		return "", fmt.Errorf(
