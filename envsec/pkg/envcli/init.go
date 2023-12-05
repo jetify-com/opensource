@@ -37,7 +37,7 @@ func initCmd() *cobra.Command {
 				apiHost = "https://envsec-service-prod.cloud.jetpack.dev"
 			}
 
-			c := jetcloud.JetCloud{APIHost: apiHost, IsDev: build.IsDev}
+			c := jetcloud.Client{ApiHost: apiHost, IsDev: build.IsDev}
 			projectID, err := c.InitProject(cmd.Context(), tok, workdir)
 			if errors.Is(err, jetcloud.ErrProjectAlreadyInitialized) {
 				fmt.Fprintf(

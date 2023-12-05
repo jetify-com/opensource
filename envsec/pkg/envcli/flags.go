@@ -56,8 +56,8 @@ func (f *configFlags) validateProjectID(orgID id.OrgID) (string, error) {
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
-	jc := jetcloud.JetCloud{APIHost: build.JetpackAPIHost(), IsDev: build.IsDev}
-	config, err := jc.ProjectConfig(wd)
+	c := jetcloud.Client{ApiHost: build.JetpackAPIHost(), IsDev: build.IsDev}
+	config, err := c.ProjectConfig(wd)
 	if errors.Is(err, os.ErrNotExist) {
 		return "", fmt.Errorf(
 			"project ID not specified. You must run `envsec init` or specify --project-id in this directory",
