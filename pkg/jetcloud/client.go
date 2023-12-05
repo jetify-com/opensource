@@ -25,13 +25,13 @@ type errorResponse struct {
 	} `json:"error"`
 }
 
-func (s *JetCloud) newClient() *client {
-	if s.APIHost == "" {
+func (jc *JetCloud) newClient() *client {
+	if jc.APIHost == "" {
 		// This is the dev api.jetpack.io URL
-		s.APIHost = "https://apisvc-6no3bdensq-uk.a.run.app"
+		jc.APIHost = "https://apisvc-6no3bdensq-uk.a.run.app"
 	}
 	return &client{
-		apiHost: s.APIHost,
+		apiHost: jc.APIHost,
 	}
 }
 
@@ -46,12 +46,10 @@ func (c *client) endpoint(path string) string {
 func (c *client) newProjectID(ctx context.Context, tok *session.Token, repo, subdir string) (id.ProjectID, error) {
 	p, err := post[struct {
 		ID id.ProjectID `json:"id"`
-	}](
-		ctx, c, tok, "projects", map[string]string{
-			"repo_url": repo,
-			"subdir":   subdir,
-		},
-	)
+	}](ctx, c, tok, "projects", map[string]string{
+		"repo_url": repo,
+		"subdir":   subdir,
+	})
 	if err != nil {
 		return id.ProjectID{}, err
 	}
