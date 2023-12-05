@@ -11,13 +11,15 @@ import (
 	"net/url"
 
 	"go.jetpack.io/pkg/auth/session"
-	"go.jetpack.io/pkg/envvar"
 	"go.jetpack.io/pkg/id"
 	"golang.org/x/oauth2"
 )
 
-type client struct {
-	apiHost string
+// Client manages state for interacting with the JetCloud API, as well as
+// communicating with the JetCloud API.
+type Client struct {
+	APIHost string
+	IsDev   bool
 }
 
 type errorResponse struct {
@@ -26,24 +28,15 @@ type errorResponse struct {
 	} `json:"error"`
 }
 
-func newClient() *client {
-	return &client{
-		apiHost: envvar.Get(
-			"ENVSEC_API_HOST",
-			"https://envsec-service-prod.cloud.jetpack.dev",
-		),
-	}
-}
-
-func (c *client) endpoint(path string) string {
-	endpointURL, err := url.JoinPath(c.apiHost, path)
+func (c *Client) endpoint(path string) string {
+	endpointURL, err := url.JoinPath(c.APIHost, path)
 	if err != nil {
 		panic(err)
 	}
 	return endpointURL
 }
 
-func (c *client) newProjectID(ctx context.Context, tok *session.Token, repo, subdir string) (id.ProjectID, error) {
+func (c *Client) newProjectID(ctx context.Context, tok *session.Token, repo, subdir string) (id.ProjectID, error) {
 	p, err := post[struct {
 		ID id.ProjectID `json:"id"`
 	}](ctx, c, tok, "projects", map[string]string{
@@ -57,7 +50,7 @@ func (c *client) newProjectID(ctx context.Context, tok *session.Token, repo, sub
 	return p.ID, nil
 }
 
-func post[T any](ctx context.Context, client *client, tok *session.Token, path string, data any) (*T, error) {
+func post[T any](ctx context.Context, client *Client, tok *session.Token, path string, data any) (*T, error) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return nil, err

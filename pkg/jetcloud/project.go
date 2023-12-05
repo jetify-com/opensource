@@ -14,19 +14,22 @@ import (
 
 var ErrProjectAlreadyInitialized = errors.New("project already initialized")
 
-const dirName = ".jetpack.io"
-const configName = "project.json"
+const (
+	dirName       = ".jetpack.io"
+	configName    = "project.json"
+	devConfigName = "dev.project.json"
+)
 
 type projectConfig struct {
 	ProjectID id.ProjectID `json:"project_id"`
 	OrgID     id.OrgID     `json:"org_id"`
 }
 
-func InitProject(ctx context.Context, tok *session.Token, dir string) (id.ProjectID, error) {
+func (c *Client) InitProject(ctx context.Context, tok *session.Token, dir string) (id.ProjectID, error) {
 	if tok == nil {
 		return id.ProjectID{}, errors.Errorf("Please login first")
 	}
-	existing, err := ProjectID(dir)
+	existing, err := c.projectID(dir)
 	if err == nil {
 		return existing, ErrProjectAlreadyInitialized
 	} else if !os.IsNotExist(err) {
@@ -48,7 +51,7 @@ func InitProject(ctx context.Context, tok *session.Token, dir string) (id.Projec
 	}
 	subdir, _ := gitSubdirectory(dir)
 
-	projectID, err := newClient().newProjectID(ctx, tok, repoURL, subdir)
+	projectID, err := c.newProjectID(ctx, tok, repoURL, subdir)
 	if err != nil {
 		return id.ProjectID{}, err
 	}
@@ -68,11 +71,11 @@ func InitProject(ctx context.Context, tok *session.Token, dir string) (id.Projec
 	if err != nil {
 		return id.ProjectID{}, err
 	}
-	return projectID, os.WriteFile(filepath.Join(dirPath, configName), data, 0600)
+	return projectID, os.WriteFile(filepath.Join(dirPath, c.configName()), data, 0600)
 }
 
-func ProjectConfig(wd string) (*projectConfig, error) {
-	data, err := os.ReadFile(filepath.Join(wd, dirName, configName))
+func (c *Client) ProjectConfig(wd string) (*projectConfig, error) {
+	data, err := os.ReadFile(filepath.Join(wd, dirName, c.configName()))
 	if err != nil {
 		return nil, err
 	}
@@ -83,10 +86,17 @@ func ProjectConfig(wd string) (*projectConfig, error) {
 	return &cfg, nil
 }
 
-func ProjectID(wd string) (id.ProjectID, error) {
-	cfg, err := ProjectConfig(wd)
+func (c *Client) projectID(wd string) (id.ProjectID, error) {
+	cfg, err := c.ProjectConfig(wd)
 	if err != nil {
 		return id.ProjectID{}, err
 	}
 	return cfg.ProjectID, nil
+}
+
+func (c *Client) configName() string {
+	if c.IsDev {
+		return devConfigName
+	}
+	return configName
 }
