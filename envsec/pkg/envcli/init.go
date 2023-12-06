@@ -30,14 +30,7 @@ func initCmd() *cobra.Command {
 				return err
 			}
 
-			apiHost := build.JetpackAPIHost()
-			if !build.IsDev {
-				// Temporarily continue to use envsec-service in prod
-				// until prod-apisvc is ready.
-				apiHost = "https://envsec-service-prod.cloud.jetpack.dev"
-			}
-
-			c := jetcloud.Client{APIHost: apiHost, IsDev: build.IsDev}
+			c := jetcloud.Client{APIHost: build.JetpackAPIHost(), IsDev: build.IsDev}
 			projectID, err := c.InitProject(cmd.Context(), tok, workdir)
 			if errors.Is(err, jetcloud.ErrProjectAlreadyInitialized) {
 				fmt.Fprintf(
