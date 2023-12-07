@@ -5,6 +5,7 @@ package envvar
 
 import (
 	"os"
+	"strconv"
 )
 
 // Get gets the value of an environment variable.
@@ -16,4 +17,14 @@ func Get(key, def string) string {
 	}
 
 	return val
+}
+
+func Bool(key string) bool {
+	val := os.Getenv(key)
+	if val == "" {
+		return false
+	}
+
+	b, err := strconv.ParseBool(val)
+	return err == nil && b
 }
