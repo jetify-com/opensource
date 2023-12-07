@@ -26,5 +26,5 @@ func Bool(key string) bool {
 	}
 
 	b, err := strconv.ParseBool(val)
-	return err != nil && b
+	return err == nil && b
 }
