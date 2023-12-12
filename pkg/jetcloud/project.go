@@ -25,43 +25,56 @@ type projectConfig struct {
 	OrgID     id.OrgID     `json:"org_id"`
 }
 
-func (c *Client) InitProject(ctx context.Context, tok *session.Token, dir string) (id.ProjectID, error) {
-	if tok == nil {
+type InitProjectArgs struct {
+	Dir   string
+	Force bool
+	Token *session.Token
+}
+
+func (c *Client) InitProject(
+	ctx context.Context,
+	args InitProjectArgs,
+) (id.ProjectID, error) {
+	if args.Token == nil {
 		return id.ProjectID{}, errors.Errorf("Please login first")
 	}
-	existing, err := c.projectID(dir)
-	if err == nil {
+	existing, err := c.projectID(args.Dir)
+	if err == nil && args.Force {
+		if err := c.removeConfig(args.Dir); err != nil {
+			return id.ProjectID{}, err
+		}
+	} else if err == nil {
 		return existing, ErrProjectAlreadyInitialized
 	} else if !os.IsNotExist(err) {
 		return id.ProjectID{}, err
 	}
 
-	dirPath := filepath.Join(dir, dirName)
+	dirPath := filepath.Join(args.Dir, dirName)
 	if err = os.MkdirAll(dirPath, 0700); err != nil {
 		return id.ProjectID{}, err
 	}
 
-	if err = createGitIgnore(dir); err != nil {
+	if err = createGitIgnore(args.Dir); err != nil {
 		return id.ProjectID{}, err
 	}
 
-	repoURL, err := gitRepoURL(dir)
+	repoURL, err := gitRepoURL(args.Dir)
 	if err != nil {
 		return id.ProjectID{}, err
 	}
-	subdir, _ := gitSubdirectory(dir)
+	subdir, _ := gitSubdirectory(args.Dir)
 
-	projectID, err := c.newProjectID(ctx, tok, repoURL, subdir)
+	projectID, err := c.newProjectID(ctx, args.Token, repoURL, subdir)
 	if err != nil {
 		return id.ProjectID{}, err
 	}
 
-	claims := tok.IDClaims()
+	claims := args.Token.IDClaims()
 	if claims == nil {
 		return id.ProjectID{}, errors.Errorf("token did not contain an org")
 	}
 
-	orgID, err := typeid.Parse[id.OrgID](tok.IDClaims().OrgID)
+	orgID, err := typeid.Parse[id.OrgID](args.Token.IDClaims().OrgID)
 	if err != nil {
 		return id.ProjectID{}, err
 	}
@@ -75,7 +88,7 @@ func (c *Client) InitProject(ctx context.Context, tok *session.Token, dir string
 }
 
 func (c *Client) ProjectConfig(wd string) (*projectConfig, error) {
-	data, err := os.ReadFile(filepath.Join(wd, dirName, c.configName()))
+	data, err := os.ReadFile(c.configPath(wd))
 	if err != nil {
 		return nil, err
 	}
@@ -99,4 +112,12 @@ func (c *Client) configName() string {
 		return devConfigName
 	}
 	return configName
+}
+
+func (c *Client) configPath(wd string) string {
+	return filepath.Join(wd, dirName, c.configName())
+}
+
+func (c *Client) removeConfig(wd string) error {
+	return os.Remove(c.configPath(wd))
 }
