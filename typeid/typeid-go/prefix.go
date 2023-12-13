@@ -22,12 +22,6 @@ type AnyID struct {
 	TypeID[AnyPrefix]
 }
 
-type DynamicPrefix string
-
-func (a DynamicPrefix) Prefix() string {
-	return string(a)
-}
-
 func isAnyPrefix[P PrefixType]() bool {
 	var prefixType P
 	switch any(prefixType).(type) {

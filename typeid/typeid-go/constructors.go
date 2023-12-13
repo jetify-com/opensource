@@ -100,14 +100,7 @@ func split(id string) (string, string, error) {
 
 // FromUUID encodes the given UUID (in hex string form) as a TypeID
 func FromUUID[T Subtype, PT SubtypePtr[T]](uidStr string) (T, error) {
-	uid, err := uuid.FromString(uidStr)
-	var nilID T
-
-	if err != nil {
-		return nilID, err
-	}
-	suffix := base32.Encode(uid)
-	return from[T, PT](nilID.Prefix(), suffix)
+	return fromUUID[T, PT](defaultPrefix[T](), uidStr)
 }
 
 // FromUUIDBytes encodes the given UUID (in byte form) as a TypeID
@@ -116,21 +109,28 @@ func FromUUIDBytes[T Subtype, PT SubtypePtr[T]](bytes []byte) (T, error) {
 	return FromUUID[T, PT](uidStr)
 }
 
-// AnyPrefixFromUUID encodes the given UUID (in hex string form) as a TypeID with the given prefix.
-func AnyPrefixFromUUID(prefix string, uidStr string) (AnyID, error) {
-	uid, err := uuid.FromString(uidStr)
-
-	if err != nil {
-		return AnyID{}, err
-	}
-	suffix := base32.Encode(uid)
-	return from[AnyID, *AnyID](prefix, suffix)
+// FromUUIDWithPrefix encodes the given UUID (in hex string form) as a TypeID
+// with the given prefix.
+func FromUUIDWithPrefix(prefix string, uidStr string) (AnyID, error) {
+	return fromUUID[AnyID](prefix, uidStr)
 }
 
-// FromUUID encodes the given UUID (in byte form) as a TypeID with the given prefix.
-func AnyPrefixFromUUIDBytes(prefix string, bytes []byte) (AnyID, error) {
+// FromUUID encodes the given UUID (in byte form) as a TypeID with the given
+// prefix.
+func FromUUIDBytesWithPrefix(prefix string, bytes []byte) (AnyID, error) {
 	uidStr := uuid.FromBytesOrNil(bytes).String()
-	return AnyPrefixFromUUID(prefix, uidStr)
+	return FromUUIDWithPrefix(prefix, uidStr)
+}
+
+func fromUUID[T Subtype, PT SubtypePtr[T]](prefix, uidStr string) (T, error) {
+	uid, err := uuid.FromString(uidStr)
+	var nilID T
+
+	if err != nil {
+		return nilID, err
+	}
+	suffix := base32.Encode(uid)
+	return from[T, PT](prefix, suffix)
 }
 
 func from[T Subtype, PT SubtypePtr[T]](prefix string, suffix string) (T, error) {
