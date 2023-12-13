@@ -1,4 +1,4 @@
-module go.jetpack.io/typeid
+module go.jetpack.io/typeid/v2
 
 go 1.20
 
