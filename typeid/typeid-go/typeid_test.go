@@ -2,6 +2,7 @@ package typeid_test
 
 import (
 	_ "embed"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -198,4 +199,14 @@ func TestValidTestdata(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestConstructorError(t *testing.T) {
+	_, err := typeid.FromUUID[typeid.AnyID]("00000000-0000-0000-0000-000000000000")
+	assert.Error(t, err)
+	assert.True(t, errors.Is(err, typeid.ErrConstructor))
+
+	_, err = typeid.FromUUIDBytes[typeid.AnyID]([]byte{0, 0, 0, 0, 0, 0, 0, 0})
+	assert.Error(t, err)
+	assert.True(t, errors.Is(err, typeid.ErrConstructor))
 }
