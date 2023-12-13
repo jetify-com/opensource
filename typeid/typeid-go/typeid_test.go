@@ -160,7 +160,7 @@ func TestSpecialValues(t *testing.T) {
 			}
 
 			// Values should be equal if we start by parsing the uuid
-			tid = typeid.Must(typeid.FromUUID[typeid.AnyID]("", data.uuid))
+			tid = typeid.Must(typeid.AnyPrefixFromUUID("", data.uuid))
 			if data.tid != tid.String() {
 				t.Errorf("Expected %s, got %s", data.tid, tid.String())
 			}
