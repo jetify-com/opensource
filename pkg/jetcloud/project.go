@@ -3,8 +3,11 @@ package jetcloud
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 	"go.jetpack.io/pkg/auth/session"
@@ -13,6 +16,7 @@ import (
 )
 
 var ErrProjectAlreadyInitialized = errors.New("project already initialized")
+var errAborted = errors.New("aborted")
 
 const (
 	dirName       = ".jetpack.io"
@@ -26,9 +30,10 @@ type projectConfig struct {
 }
 
 type InitProjectArgs struct {
-	Dir   string
-	Force bool
-	Token *session.Token
+	Dir    string
+	Force  bool
+	Token  *session.Token
+	Stderr io.Writer
 }
 
 func (c *Client) InitProject(
@@ -47,6 +52,12 @@ func (c *Client) InitProject(
 		return existing, ErrProjectAlreadyInitialized
 	} else if !os.IsNotExist(err) {
 		return id.ProjectID{}, err
+	}
+
+	if !args.Force {
+		if err := c.confirmProjectInit(ctx, args); err != nil {
+			return id.ProjectID{}, err
+		}
 	}
 
 	dirPath := filepath.Join(args.Dir, dirName)
@@ -120,4 +131,23 @@ func (c *Client) configPath(wd string) string {
 
 func (c *Client) removeConfig(wd string) error {
 	return os.Remove(c.configPath(wd))
+}
+
+func (c *Client) confirmProjectInit(ctx context.Context, args InitProjectArgs) error {
+	tok := args.Token
+	member, err := c.GetMember(ctx, tok, tok.IDClaims().Subject)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(
+		args.Stderr,
+		"Initializing project for %s. Do you want to continue? [Y/n]\n",
+		member.Organization.Name,
+	)
+	result := ""
+	fmt.Scanln(&result)
+	if r := strings.ToLower(result); r == "" || r == "y" || r == "yes" {
+		return nil
+	}
+	return errAborted
 }

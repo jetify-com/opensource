@@ -47,7 +47,7 @@ func (f *AuthFlow) initOauth2Conf() error {
 		ClientID: f.clientID,
 		// TODO: should the scopes be configurable?
 		// TODO: Add 'email' and 'profile'
-		Scopes:      []string{"openid", "offline_access"},
+		Scopes:      f.scopes,
 		Endpoint:    provider.Endpoint(),
 		RedirectURL: callbackserver.URI(),
 	}

@@ -15,6 +15,7 @@ type AuthFlow struct {
 
 	issuer   string
 	clientID string
+	scopes   []string
 
 	pkceCodeVerifier string
 	xsrfState        string
@@ -24,13 +25,14 @@ type AuthFlow struct {
 	oidcProvider *oidc.Provider
 }
 
-func New(issuer string, clientID string) (*AuthFlow, error) {
+func New(issuer string, clientID string, scopes []string) (*AuthFlow, error) {
 	// TODO: We currently default to using the Auth flow with PCKE
 	// we could instead check if the issuer supports the device flow, if
 	// it does, use that, otherwise use the PKCE flow.
 	flow := &AuthFlow{
 		issuer:   issuer,
 		clientID: clientID,
+		scopes:   scopes,
 
 		pkceCodeVerifier: pkce.GenerateVerifier(),
 		xsrfState:        pkce.GenerateVerifier(),

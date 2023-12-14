@@ -45,7 +45,11 @@ func loginCmd(flags *loginFlags) func(cmd *cobra.Command, args []string) error {
 }
 
 func login(issuer, clientID string) error {
-	client, err := auth.NewClient(issuer, clientID)
+	client, err := auth.NewClient(
+		issuer,
+		clientID,
+		[]string{"openid", "offline_access", "email", "profile"},
+	)
 	if err != nil {
 		return err
 	}
