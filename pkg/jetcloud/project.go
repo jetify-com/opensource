@@ -3,6 +3,7 @@ package jetcloud
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -13,6 +14,7 @@ import (
 )
 
 var ErrProjectAlreadyInitialized = errors.New("project already initialized")
+var errAborted = errors.New("aborted")
 
 const (
 	dirName       = ".jetpack.io"
@@ -47,6 +49,12 @@ func (c *Client) InitProject(
 		return existing, ErrProjectAlreadyInitialized
 	} else if !os.IsNotExist(err) {
 		return id.ProjectID{}, err
+	}
+
+	if !args.Force {
+		if err := c.confirmProjectInit(ctx, args.Token); err != nil {
+			return id.ProjectID{}, err
+		}
 	}
 
 	dirPath := filepath.Join(args.Dir, dirName)
@@ -120,4 +128,22 @@ func (c *Client) configPath(wd string) string {
 
 func (c *Client) removeConfig(wd string) error {
 	return os.Remove(c.configPath(wd))
+}
+
+func (c *Client) confirmProjectInit(ctx context.Context, tok *session.Token) error {
+	member, err := c.GetMember(ctx, tok, tok.IDClaims().Subject)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(
+		os.Stderr,
+		"Initializing project for %s. Enter y/yes to continue\n",
+		member.Organization.Name,
+	)
+	result := ""
+	fmt.Scanln(&result)
+	if result != "y" && result != "yes" {
+		return errAborted
+	}
+	return nil
 }

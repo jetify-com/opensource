@@ -34,7 +34,7 @@ func (e *Envsec) NewProject(ctx context.Context, force bool) error {
 	if errors.Is(err, jetcloud.ErrProjectAlreadyInitialized) {
 		fmt.Fprintf(
 			e.Stderr,
-			"Warning: project already initialized ID=%s\n",
+			"Warning: project already initialized ID=%s. Use --force to overwrite\n",
 			projectID,
 		)
 	} else if err != nil {
