@@ -8,7 +8,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"go.jetpack.io/envsec/internal/build"
-	"go.jetpack.io/envsec/pkg/envsec"
 	"go.jetpack.io/pkg/auth"
 	"go.jetpack.io/pkg/envvar"
 )
@@ -81,15 +80,8 @@ func whoAmICmd() *cobra.Command {
 		Short: "Show the current user",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return (&envsec.Envsec{
-				APIHost: build.JetpackAPIHost(),
-				Auth: envsec.AuthConfig{
-					ClientID: envvar.Get("ENVSEC_CLIENT_ID", build.ClientID()),
-					Issuer:   envvar.Get("ENVSEC_ISSUER", build.Issuer()),
-				},
-				IsDev:  build.IsDev,
-				Stderr: cmd.ErrOrStderr(),
-			}).WhoAmI(cmd.Context(), cmd.OutOrStdout(), flags.showTokens)
+			return defaultEnvsec(cmd).
+				WhoAmI(cmd.Context(), cmd.OutOrStdout(), flags.showTokens)
 		},
 	}
 

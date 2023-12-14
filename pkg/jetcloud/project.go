@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 	"go.jetpack.io/pkg/auth/session"
@@ -140,13 +141,13 @@ func (c *Client) confirmProjectInit(ctx context.Context, args InitProjectArgs) e
 	}
 	fmt.Fprintf(
 		args.Stderr,
-		"Initializing project for %s. Enter y/yes to continue\n",
+		"Initializing project for %s. Do you want to continue? [Y/n]\n",
 		member.Organization.Name,
 	)
 	result := ""
 	fmt.Scanln(&result)
-	if result != "y" && result != "yes" {
-		return errAborted
+	if r := strings.ToLower(result); r == "" || r == "y" || r == "yes" {
+		return nil
 	}
-	return nil
+	return errAborted
 }
