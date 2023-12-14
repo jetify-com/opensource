@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -28,9 +29,10 @@ type projectConfig struct {
 }
 
 type InitProjectArgs struct {
-	Dir   string
-	Force bool
-	Token *session.Token
+	Dir    string
+	Force  bool
+	Token  *session.Token
+	Stderr io.Writer
 }
 
 func (c *Client) InitProject(
@@ -52,7 +54,7 @@ func (c *Client) InitProject(
 	}
 
 	if !args.Force {
-		if err := c.confirmProjectInit(ctx, args.Token); err != nil {
+		if err := c.confirmProjectInit(ctx, args); err != nil {
 			return id.ProjectID{}, err
 		}
 	}
@@ -130,13 +132,14 @@ func (c *Client) removeConfig(wd string) error {
 	return os.Remove(c.configPath(wd))
 }
 
-func (c *Client) confirmProjectInit(ctx context.Context, tok *session.Token) error {
+func (c *Client) confirmProjectInit(ctx context.Context, args InitProjectArgs) error {
+	tok := args.Token
 	member, err := c.GetMember(ctx, tok, tok.IDClaims().Subject)
 	if err != nil {
 		return err
 	}
 	fmt.Fprintf(
-		os.Stderr,
+		args.Stderr,
 		"Initializing project for %s. Enter y/yes to continue\n",
 		member.Organization.Name,
 	)

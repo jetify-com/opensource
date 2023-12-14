@@ -27,9 +27,10 @@ func (e *Envsec) NewProject(ctx context.Context, force bool) error {
 
 	c := jetcloud.Client{APIHost: e.APIHost, IsDev: e.IsDev}
 	projectID, err := c.InitProject(ctx, jetcloud.InitProjectArgs{
-		Dir:   e.WorkingDir,
-		Force: force,
-		Token: tok,
+		Dir:    e.WorkingDir,
+		Force:  force,
+		Token:  tok,
+		Stderr: e.Stderr,
 	})
 	if errors.Is(err, jetcloud.ErrProjectAlreadyInitialized) {
 		fmt.Fprintf(
