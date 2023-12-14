@@ -22,10 +22,12 @@ type Client struct {
 	issuer   string
 	clientID string
 	store    *tokenstore.Store
+	scopes   []string
 }
 
 func NewClient(
 	issuer, clientID string,
+	scopes []string,
 ) (*Client, error) {
 	store, err := tokenstore.New(storeDir())
 	if err != nil {
@@ -35,6 +37,7 @@ func NewClient(
 	return &Client{
 		issuer:   issuer,
 		clientID: clientID,
+		scopes:   scopes,
 		store:    store,
 	}, nil
 }
@@ -48,7 +51,7 @@ func storeDir() string {
 }
 
 func (c *Client) LoginFlow() (*session.Token, error) {
-	tok, err := login(c.issuer, c.clientID)
+	tok, err := login(c.issuer, c.clientID, c.scopes)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +102,7 @@ func (c *Client) refresh(
 	conf := oauth2.Config{
 		ClientID: c.clientID,
 		Endpoint: provider.Endpoint(),
-		Scopes:   []string{"openid", "offline_access"},
+		Scopes:   c.scopes,
 	}
 
 	// Refresh logic:
@@ -125,8 +128,8 @@ func (c *Client) RevokeSession() error {
 	return c.store.DeleteToken(c.issuer, c.clientID)
 }
 
-func login(issuer string, clientID string) (*session.Token, error) {
-	flow, err := authflow.New(issuer, clientID)
+func login(issuer string, clientID string, scopes []string) (*session.Token, error) {
+	flow, err := authflow.New(issuer, clientID, scopes)
 	if err != nil {
 		return nil, err
 	}

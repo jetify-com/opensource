@@ -10,7 +10,11 @@ import (
 )
 
 func (e *Envsec) authClient() (*auth.Client, error) {
-	return auth.NewClient(e.Auth.Issuer, e.Auth.ClientID)
+	return auth.NewClient(
+		e.Auth.Issuer,
+		e.Auth.ClientID,
+		[]string{"openid", "offline_access", "email", "profile"},
+	)
 }
 
 func (e *Envsec) WhoAmI(
