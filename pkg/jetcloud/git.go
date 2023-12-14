@@ -20,7 +20,7 @@ func gitRepoURL(wd string) (string, error) {
 	if err != nil {
 		// Only check this if first call errors to avoid the extra call.
 		if !isInGitRepo(wd) {
-			return "", fmt.Errorf("you are not in a git repo. envsec is currently only supported in git repos")
+			return "", nil
 		}
 		return "", fmt.Errorf("failed to get git remote origin url: %w", err)
 	}
