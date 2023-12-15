@@ -60,6 +60,15 @@ func (c *Client) LoginFlow() (*session.Token, error) {
 	return tok, nil
 }
 
+func (c *Client) LoginFlowIfNeeded(ctx context.Context) (*session.Token, error) {
+	tok, err := c.GetSession(ctx)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "You are not logged in.")
+		tok, err = c.LoginFlow()
+	}
+	return tok, err
+}
+
 func (c *Client) LogoutFlow() error {
 	// For now we just delete the token from the store.
 	// But in the future we might want to revoke the token with the server, and do the oauth logout flow.
