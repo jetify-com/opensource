@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -135,7 +136,14 @@ func (i *Init) showExistingListPrompt(
 
 func (i *Init) createNewPrompt(ctx context.Context) (id.ProjectID, error) {
 	prompt := promptui.Prompt{
-		Label: "What’s the name of your new project",
+		Label:   "What’s the name of your new project",
+		Default: filepath.Base(i.WorkingDir),
+		Validate: func(name string) error {
+			if name == "" {
+				return errors.New("project name cannot be empty")
+			}
+			return nil
+		},
 	}
 
 	name, err := prompt.Run()
@@ -179,7 +187,8 @@ func boolPrompt(label, defaultResult string) (bool, error) {
 	}
 
 	result, err := prompt.Run()
-	if err != nil {
+	// promptui.ErrAbort is returned when user enters "n" which is valid.
+	if err != nil && !errors.Is(err, promptui.ErrAbort) {
 		return false, err
 	}
 	if result == "" {
