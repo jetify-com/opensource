@@ -1,4 +1,4 @@
-package jetcloud
+package git
 
 import (
 	"testing"
