@@ -1,4 +1,4 @@
-package jetcloud
+package git
 
 import (
 	"fmt"
@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-func createGitIgnore(wd string) error {
-	gitIgnorePath := filepath.Join(wd, dirName, ".gitignore")
-	return os.WriteFile(gitIgnorePath, []byte("*"), 0600)
+func CreateGitIgnore(path string) error {
+	gitIgnorePath := filepath.Join(path, ".gitignore")
+	return os.WriteFile(gitIgnorePath, []byte("*"), 0o600)
 }
 
-func gitRepoURL(wd string) (string, error) {
+func GitRepoURL(wd string) (string, error) {
 	cmd := exec.Command("git", "config", "--get", "remote.origin.url")
 	cmd.Dir = wd
 	output, err := cmd.CombinedOutput()
@@ -27,7 +27,7 @@ func gitRepoURL(wd string) (string, error) {
 	return normalizeGitRepoURL(string(output)), nil
 }
 
-func gitSubdirectory(wd string) (string, error) {
+func GitSubdirectory(wd string) (string, error) {
 	cmd := exec.Command("git", "rev-parse", "--show-prefix")
 	cmd.Dir = wd
 	output, err := cmd.CombinedOutput()
