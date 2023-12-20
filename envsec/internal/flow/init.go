@@ -12,7 +12,8 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/samber/lo"
 	"go.jetpack.io/envsec/internal/git"
-	"go.jetpack.io/pkg/api/api"
+	"go.jetpack.io/pkg/api"
+	membersv1alpha1 "go.jetpack.io/pkg/api/gen/priv/members/v1alpha1"
 	projectsv1alpha1 "go.jetpack.io/pkg/api/gen/priv/projects/v1alpha1"
 	"go.jetpack.io/pkg/auth/session"
 	"go.jetpack.io/pkg/id"
@@ -33,20 +34,21 @@ type Init struct {
 }
 
 func (i *Init) Run(ctx context.Context) (id.ProjectID, error) {
-	if i.PromptOverwriteConfig {
-		overwrite, err := i.overwriteConfigPrompt()
-		if err != nil {
-			return id.ProjectID{}, err
-		}
-		if !overwrite {
-			return id.ProjectID{}, errors.New("aborted")
-		}
-	}
-
-	// TODO: printTeamNotice will be a team picker once that is implemented.
-	if err := i.printTeamNotice(ctx); err != nil {
+	createProject, err := i.confirmSetupProjectPrompt()
+	if err != nil {
 		return id.ProjectID{}, err
 	}
+	if !createProject {
+		return id.ProjectID{}, errors.New("aborted")
+	}
+
+	member, err := i.Client.GetMember(ctx, i.Token.IDClaims().Subject)
+	if err != nil {
+		return id.ProjectID{}, err
+	}
+
+	// TODO: printOrgNotice will be a team picker once that is implemented.
+	i.printOrgNotice(member)
 	linkToExisting, err := i.linkToExistingPrompt()
 	if err != nil {
 		return id.ProjectID{}, err
@@ -54,27 +56,28 @@ func (i *Init) Run(ctx context.Context) (id.ProjectID, error) {
 	if linkToExisting {
 		return i.showExistingListPrompt(ctx)
 	}
-	return i.createNewPrompt(ctx)
+	return i.createNewPrompt(ctx, member)
 }
 
-func (i *Init) overwriteConfigPrompt() (bool, error) {
+func (i *Init) confirmSetupProjectPrompt() (bool, error) {
+	if i.PromptOverwriteConfig {
+		return boolPrompt(
+			fmt.Sprintf("Project already exists. Reset project in %s", i.WorkingDir),
+			"n",
+		)
+	}
 	return boolPrompt(
-		"Project already exists. Overwrite existing project config",
-		"n",
+		fmt.Sprintf("Setup project in %s", i.WorkingDir),
+		"y",
 	)
 }
 
-func (i *Init) printTeamNotice(ctx context.Context) error {
-	member, err := i.Client.GetMember(ctx, i.Token.IDClaims().Subject)
-	if err != nil {
-		return err
-	}
+func (i *Init) printOrgNotice(member *membersv1alpha1.Member) {
 	fmt.Fprintf(
 		os.Stderr,
-		"Initializing project for %s\n",
+		"Initializing project in org %s\n",
 		member.Organization.Name,
 	)
-	return nil
 }
 
 func (i *Init) linkToExistingPrompt() (bool, error) {
@@ -105,24 +108,27 @@ func (i *Init) showExistingListPrompt(
 	}
 
 	sort.SliceStable(projects, func(i, j int) bool {
-		return projects[i].GetRepo() == repo &&
-			projects[i].GetDirectory() == directory
+		if projects[i].GetRepo() == repo &&
+			projects[i].GetDirectory() == directory {
+			return true
+		}
+		return projects[i].GetRepo() == repo && projects[j].GetRepo() != repo
 	})
 
 	prompt := promptui.Select{
 		Label: "What project would you like to link to",
-		Items: lo.Map(projects, func(p *projectsv1alpha1.Project, _ int) string {
-			item := strings.TrimSpace(p.GetName())
+		Items: lo.Map(projects, func(proj *projectsv1alpha1.Project, _ int) string {
+			item := strings.TrimSpace(proj.GetName())
 			if item == "" {
-				item = "unnamed project"
+				item = "untitled"
 			}
-			if p.GetRepo() != "" {
-				item += " repo: " + p.GetRepo()
+			if proj.GetRepo() != "" {
+				item += " repo: " + proj.GetRepo()
 			}
-			if p.GetDirectory() != "" && p.GetDirectory() != "." {
-				item += " dir: " + p.GetDirectory()
+			if proj.GetDirectory() != "" && proj.GetDirectory() != "." {
+				item += " dir: " + proj.GetDirectory()
 			}
-			return item
+			return item + " id: " + proj.GetId()
 		}),
 	}
 
@@ -131,10 +137,19 @@ func (i *Init) showExistingListPrompt(
 		return id.ProjectID{}, err
 	}
 
-	return typeid.Parse[id.ProjectID](projects[idx].GetId())
+	projectID, err := typeid.Parse[id.ProjectID](projects[idx].GetId())
+	if err != nil {
+		return id.ProjectID{}, err
+	}
+
+	fmt.Fprintf(os.Stderr, "Linked to project %s\n", projects[idx].GetName())
+	return projectID, nil
 }
 
-func (i *Init) createNewPrompt(ctx context.Context) (id.ProjectID, error) {
+func (i *Init) createNewPrompt(
+	ctx context.Context,
+	member *membersv1alpha1.Member,
+) (id.ProjectID, error) {
 	prompt := promptui.Prompt{
 		Label:   "What’s the name of your new project",
 		Default: filepath.Base(i.WorkingDir),
@@ -176,7 +191,19 @@ func (i *Init) createNewPrompt(ctx context.Context) (id.ProjectID, error) {
 	if err != nil {
 		return id.ProjectID{}, err
 	}
-	return typeid.Parse[id.ProjectID](project.GetId())
+
+	projectID, err := typeid.Parse[id.ProjectID](project.GetId())
+	if err != nil {
+		return id.ProjectID{}, err
+	}
+
+	fmt.Fprintf(
+		os.Stderr,
+		"Created project %s in org %s\n",
+		project.GetName(),
+		member.GetOrganization().GetName(),
+	)
+	return projectID, nil
 }
 
 func boolPrompt(label, defaultResult string) (bool, error) {

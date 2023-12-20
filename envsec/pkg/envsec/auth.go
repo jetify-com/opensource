@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"go.jetpack.io/pkg/api/api"
+	"go.jetpack.io/pkg/api"
 	"go.jetpack.io/pkg/auth"
 )
 
@@ -49,7 +49,7 @@ func (e *Envsec) WhoAmI(
 		fmt.Fprintf(w, "Name: %s\n", idClaims.Name)
 	}
 
-	apiClient := api.NewClient(e.APIHost, tok)
+	apiClient := api.NewClient(ctx, e.APIHost, tok)
 
 	member, err := apiClient.GetMember(ctx, tok.IDClaims().Subject)
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 
 	"go.jetpack.io/envsec/internal/flow"
 	"go.jetpack.io/envsec/internal/git"
-	"go.jetpack.io/pkg/api/api"
+	"go.jetpack.io/pkg/api"
 	"go.jetpack.io/pkg/id"
 	"go.jetpack.io/typeid"
 )
@@ -41,7 +41,7 @@ func (e *Envsec) NewProject(ctx context.Context, force bool) error {
 	}
 
 	projectID, err := (&flow.Init{
-		Client:                api.NewClient(e.APIHost, tok),
+		Client:                api.NewClient(ctx, e.APIHost, tok),
 		PromptOverwriteConfig: !force && e.configExists(),
 		Token:                 tok,
 		WorkingDir:            e.WorkingDir,
