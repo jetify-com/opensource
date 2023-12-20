@@ -64,7 +64,7 @@ func (i *Init) Run(ctx context.Context) (id.ProjectID, error) {
 			return id.ProjectID{}, err
 		}
 		if linkToExisting {
-			return i.showExistingListPrompt(ctx, projects)
+			return i.showExistingListPrompt(projects)
 		}
 	}
 	return i.createNewPrompt(ctx, member)
@@ -96,7 +96,6 @@ func (i *Init) linkToExistingPrompt() (bool, error) {
 }
 
 func (i *Init) showExistingListPrompt(
-	ctx context.Context,
 	projects []*projectsv1alpha1.Project,
 ) (id.ProjectID, error) {
 	repo, err := git.GitRepoURL(i.WorkingDir)

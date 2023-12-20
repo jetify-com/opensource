@@ -8,7 +8,7 @@
       "echo 'Welcome to devbox!' > /dev/null"
     ],
     "scripts": {
-      "go-mod-sync": [
+      "tidy": [
         "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo mod '{}' && go mod tidy\"",
         "go work sync"
       ],
