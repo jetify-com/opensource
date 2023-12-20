@@ -64,7 +64,7 @@ func NewStore(ctx context.Context, config Config) (Store, error) {
 	case *SSMConfig:
 		return newSSMStore(ctx, config)
 	case *JetpackAPIConfig:
-		return newJetpackAPIStore(config), nil
+		return newJetpackAPIStore(ctx, config), nil
 	default:
 		return nil, errors.Errorf("unsupported store type: %T", config)
 	}

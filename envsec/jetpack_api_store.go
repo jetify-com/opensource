@@ -16,9 +16,9 @@ type JetpackAPIStore struct {
 // JetpackAPIStore implements interface Store (compile-time check)
 var _ Store = (*JetpackAPIStore)(nil)
 
-func newJetpackAPIStore(config *JetpackAPIConfig) *JetpackAPIStore {
+func newJetpackAPIStore(ctx context.Context, config *JetpackAPIConfig) *JetpackAPIStore {
 	return &JetpackAPIStore{
-		client: api.NewClient(context.Background(), config.host, config.token).SecretsService(),
+		client: api.NewClient(ctx, config.host, config.token).SecretsService(),
 	}
 }
 
