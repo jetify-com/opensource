@@ -97,6 +97,51 @@ func (c *Client) GetSession(ctx context.Context) (*session.Token, error) {
 	return tok, nil
 }
 
+// GetSessions returns all session tokens. It attempts to refresh any
+// expired tokens, and returns an error if any tokens are unable to be
+// refreshed. If there are errors, it still returns all tokens, some of which
+// may be expired.
+func (c *Client) GetSessions(ctx context.Context) ([]*session.Token, error) {
+	tokens, err := c.store.ReadTokens(c.issuer, c.clientID)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, ErrNotLoggedIn
+	} else if err != nil {
+		return nil, err
+	}
+
+	var refreshErrors []error
+	for idx, tok := range tokens {
+		if !tok.Valid() {
+			tokens[idx], err = c.refresh(ctx, tok)
+			refreshErrors = append(refreshErrors, err)
+		}
+	}
+
+	return tokens, errors.Join(refreshErrors...)
+}
+
+func (c *Client) FindSession(
+	ctx context.Context,
+	fn func(tok *session.Token) bool,
+) (*session.Token, error) {
+	tok, err := c.store.FindToken(c.issuer, c.clientID, fn)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, ErrNotLoggedIn
+	} else if err != nil {
+		return nil, err
+	}
+
+	// Refresh if the token is no longer valid:
+	if !tok.Valid() {
+		tok, err = c.refresh(ctx, tok)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return tok, nil
+}
+
 func (c *Client) refresh(
 	ctx context.Context,
 	tok *session.Token,
