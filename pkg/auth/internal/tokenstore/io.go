@@ -26,7 +26,7 @@ func ensureDir(path string) error {
 	return os.MkdirAll(dir, 0700)
 }
 
-func writeJSONFile(path string, value any) error {
+func writeJSONFile(path string, value storeData) error {
 	err := ensureDir(path)
 	if err != nil {
 		return err
@@ -39,7 +39,7 @@ func writeJSONFile(path string, value any) error {
 	return errors.WithStack(os.WriteFile(path, data, 0644))
 }
 
-func readJSONFile(path string, value any) error {
+func readJSONFile(path string, value *storeData) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return errors.WithStack(err)
