@@ -15,8 +15,7 @@ type Store struct {
 
 type storeData struct {
 	Version string `json:"version"`
-	// Token order is significant. The first token is the most recent and
-	// returned by ReadToken.
+	// Token order is significant. The first token is the default token.
 	Tokens []*session.Token `json:"tokens"`
 }
 
@@ -30,19 +29,6 @@ func New(rootDir string) (*Store, error) {
 	return &Store{
 		rootDir: rootDir,
 	}, nil
-}
-
-// ReadToken returns the top token for the given issuer and clientID.
-// Top token was the last token written to the store. (last login/refresh)
-func (s *Store) ReadToken(issuer string, clientID string) (*session.Token, error) {
-	data, err := s.readData(issuer, clientID)
-	if err != nil {
-		return nil, err
-	}
-	if len(data.Tokens) == 0 {
-		return nil, os.ErrNotExist
-	}
-	return data.Tokens[0], nil
 }
 
 func (s *Store) ReadTokens(issuer string, clientID string) ([]*session.Token, error) {

@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -79,41 +78,33 @@ func (c *Client) LogoutFlow() error {
 // expired, it will attempt to refresh it. If no token is found, or is unable
 // to be refreshed, it will return error.
 func (c *Client) GetSession(ctx context.Context) (*session.Token, error) {
-	tok, err := c.store.ReadToken(c.issuer, c.clientID)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, ErrNotLoggedIn
-	} else if err != nil {
+	sources, err := c.GetSessions()
+	if err != nil {
 		return nil, err
 	}
 
-	// Refresh if the token is no longer valid:
-	if !tok.Valid() {
-		tok, err = c.refresh(ctx, tok)
-		if err != nil {
-			return nil, err
-		}
+	if len(sources) == 0 || sources[0].Peek() == nil {
+		return nil, ErrNotLoggedIn
 	}
 
-	return tok, nil
+	return sources[0].Token(ctx)
 }
 
-// GetSessions returns all session tokens as refreshableTokens. This means that
-// they may not be valid or even refreshable. Callers can use Token() to
+// GetSessions returns all session tokens as refreshableTokenSource. This means
+// that they may not be valid or even refreshable. Callers can use Token() to
 // refresh the token if needed. Even if Token() fails to refresh, it still
 // returns the token, so callers can use the expired data if they want.
 // This allows callers to list all sessions, even if they are expired.
 // Callers can use Peek() to inspect token data without refreshing.
-func (c *Client) GetSessions(ctx context.Context) ([]refreshableToken, error) {
+func (c *Client) GetSessions() ([]refreshableTokenSource, error) {
 	tokens, err := c.store.ReadTokens(c.issuer, c.clientID)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, ErrNotLoggedIn
-	} else if err != nil {
+	if err != nil {
 		return nil, err
 	}
 
-	refreshableTokens := []refreshableToken{}
+	refreshableTokens := []refreshableTokenSource{}
 	for _, tok := range tokens {
-		refreshableTokens = append(refreshableTokens, refreshableToken{
+		refreshableTokens = append(refreshableTokens, refreshableTokenSource{
 			client: c,
 			token:  tok,
 		})
