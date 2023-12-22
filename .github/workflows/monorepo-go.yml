@@ -36,7 +36,7 @@ jobs:
       # the 'publish repos twice' problem
       # - name: Go modules should be up-to-date
       #   run: |
-      #     devbox run go-mod-sync
+      #     devbox run tidy
       #     git diff --exit-code
           
       - name: Lint
