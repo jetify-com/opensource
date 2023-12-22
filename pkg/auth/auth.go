@@ -56,7 +56,7 @@ func (c *Client) LoginFlow() (*session.Token, error) {
 		return nil, err
 	}
 
-	_ = c.store.WriteToken(c.issuer, c.clientID, tok)
+	_ = c.store.WriteToken(c.issuer, c.clientID, tok, true /*makeDefault*/)
 	return tok, nil
 }
 
@@ -97,11 +97,13 @@ func (c *Client) GetSession(ctx context.Context) (*session.Token, error) {
 	return tok, nil
 }
 
-// GetSessions returns all session tokens. It attempts to refresh any
-// expired tokens, and returns an error if any tokens are unable to be
-// refreshed. If there are errors, it still returns all tokens, some of which
-// may be expired.
-func (c *Client) GetSessions(ctx context.Context) ([]*session.Token, error) {
+// GetSessions returns all session tokens as refreshableTokens. This means that
+// they may not be valid or even refreshable. Callers can use Token() to
+// refresh the token if needed. Even if Token() fails to refresh, it still
+// returns the token, so callers can use the expired data if they want.
+// This allows callers to list all sessions, even if they are expired.
+// Callers can use Peek() to inspect token data without refreshing.
+func (c *Client) GetSessions(ctx context.Context) ([]refreshableToken, error) {
 	tokens, err := c.store.ReadTokens(c.issuer, c.clientID)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, ErrNotLoggedIn
@@ -109,37 +111,15 @@ func (c *Client) GetSessions(ctx context.Context) ([]*session.Token, error) {
 		return nil, err
 	}
 
-	var refreshErrors []error
-	for idx, tok := range tokens {
-		if !tok.Valid() {
-			tokens[idx], err = c.refresh(ctx, tok)
-			refreshErrors = append(refreshErrors, err)
-		}
+	refreshableTokens := []refreshableToken{}
+	for _, tok := range tokens {
+		refreshableTokens = append(refreshableTokens, refreshableToken{
+			client: c,
+			token:  tok,
+		})
 	}
 
-	return tokens, errors.Join(refreshErrors...)
-}
-
-func (c *Client) FindSession(
-	ctx context.Context,
-	fn func(tok *session.Token) bool,
-) (*session.Token, error) {
-	tok, err := c.store.FindToken(c.issuer, c.clientID, fn)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, ErrNotLoggedIn
-	} else if err != nil {
-		return nil, err
-	}
-
-	// Refresh if the token is no longer valid:
-	if !tok.Valid() {
-		tok, err = c.refresh(ctx, tok)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return tok, nil
+	return refreshableTokens, nil
 }
 
 func (c *Client) refresh(
@@ -169,7 +149,7 @@ func (c *Client) refresh(
 	if newToken.AccessToken != tok.AccessToken {
 		tok.Token = *newToken
 		tok.IDToken = newToken.Extra("id_token").(string)
-		err = c.store.WriteToken(c.issuer, c.clientID, tok)
+		err = c.store.WriteToken(c.issuer, c.clientID, tok, false /*makeDefault*/)
 		if err != nil {
 			return tok, err
 		}

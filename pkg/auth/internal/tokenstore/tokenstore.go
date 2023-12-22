@@ -14,8 +14,10 @@ type Store struct {
 }
 
 type storeData struct {
-	Version string           `json:"version"`
-	Tokens  []*session.Token `json:"tokens"`
+	Version string `json:"version"`
+	// Token order is significant. The first token is the most recent and
+	// returned by ReadToken.
+	Tokens []*session.Token `json:"tokens"`
 }
 
 func New(rootDir string) (*Store, error) {
@@ -51,34 +53,25 @@ func (s *Store) ReadTokens(issuer string, clientID string) ([]*session.Token, er
 	return data.Tokens, nil
 }
 
-// FindToken returns the first token for the given issuer and clientID where
-// fn returns true.
-func (s *Store) FindToken(
+func (s *Store) WriteToken(
 	issuer, clientID string,
-	fn func(tok *session.Token) bool,
-) (*session.Token, error) {
-	tokens, err := s.ReadTokens(issuer, clientID)
-	if err != nil {
-		return nil, err
-	}
-	for _, tok := range tokens {
-		if fn(tok) {
-			return tok, nil
-		}
-	}
-	return nil, os.ErrNotExist
-}
-
-func (s *Store) WriteToken(issuer string, clientID string, tok *session.Token) error {
+	tok *session.Token,
+	makeDefault bool,
+) error {
 	if tok == nil {
-		// A nil token is the same as deleting the token.
-		return s.DeleteToken(issuer, clientID)
+		return errors.New("token is nil")
 	}
 	data, err := s.readData(issuer, clientID)
 	if err != nil {
 		return err
 	}
-	data.addToken(tok)
+
+	if makeDefault {
+		data.addDefaultToken(tok)
+	} else {
+		data.replaceToken(tok)
+	}
+
 	path := s.path(issuer, clientID)
 	return writeJSONFile(
 		path,
@@ -100,17 +93,17 @@ func (s *Store) DeleteToken(issuer string, clientID string) error {
 
 func (s *Store) readData(issuer, clientID string) (storeData, error) {
 	path := s.path(issuer, clientID)
-	var data storeData
+	data := storeData{Version: storeDataVersion}
 	err := readJSONFile(path, &data)
 	if errors.Is(err, os.ErrNotExist) {
-		return storeData{Version: storeDataVersion}, nil
+		return data, nil
 	} else if err != nil {
-		return storeData{Version: storeDataVersion}, err
+		return data, err
 	}
 	return data, nil
 }
 
-func (sd *storeData) addToken(tok *session.Token) {
+func (sd *storeData) addDefaultToken(tok *session.Token) {
 	tokens := []*session.Token{tok}
 	for _, t := range sd.Tokens {
 		if t.IDClaims().Subject != tok.IDClaims().Subject {
@@ -118,4 +111,14 @@ func (sd *storeData) addToken(tok *session.Token) {
 		}
 	}
 	sd.Tokens = tokens
+}
+
+func (sd *storeData) replaceToken(tok *session.Token) {
+	for idx, t := range sd.Tokens {
+		if t.IDClaims().Subject == tok.IDClaims().Subject {
+			sd.Tokens[idx] = tok
+		}
+	}
+	// If we didn't find a match, should we add to end of list?
+	// It likely means the token file was modified concurrently.
 }
