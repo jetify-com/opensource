@@ -15,6 +15,7 @@ import (
 )
 
 var ErrProjectAlreadyInitialized = errors.New("project already initialized")
+var errProjectNotInitialized = errors.New("project not initialized")
 
 const (
 	dirName       = ".jetpack.io"
@@ -68,7 +69,9 @@ func (e *Envsec) NewProject(ctx context.Context, force bool) error {
 
 func (e *Envsec) ProjectConfig(wd string) (*projectConfig, error) {
 	data, err := os.ReadFile(e.configPath(wd))
-	if err != nil {
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, errProjectNotInitialized
+	} else if err != nil {
 		return nil, err
 	}
 	var cfg projectConfig
