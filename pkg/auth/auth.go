@@ -83,6 +83,7 @@ func (c *Client) LoginFlowIfNeededForOrg(
 			return session.Token(ctx)
 		}
 	}
+	// TODO, add org name to id token so we can show nicer message.
 	fmt.Fprintln(os.Stderr, "You are not logged in.")
 	return c.LoginFlow()
 }
