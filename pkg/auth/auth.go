@@ -68,7 +68,8 @@ func (c *Client) LoginFlowIfNeeded(ctx context.Context) (*session.Token, error) 
 	return tok, err
 }
 
-// LoginFlowIfNeededForOrg returns the current valid session token for a give org
+// LoginFlowIfNeededForOrg returns the current valid session token for a given
+// org and prompts to log in if needed.
 // Note: I'm not sure this is best API. Currently evolving
 func (c *Client) LoginFlowIfNeededForOrg(
 	ctx context.Context,
