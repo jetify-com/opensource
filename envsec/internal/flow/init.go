@@ -207,7 +207,6 @@ func formatProjectItems(projects []*projectsv1alpha1.Project) []string {
 		if name == "" {
 			name = "untitled"
 		}
-		fmt.Println(name, []byte(name), len(name), len(fmt.Sprintf("%-"+fmt.Sprintf("%d", longestNameLength)+"s", name)))
 
 		table[idx] = []string{
 			color.HiGreenString(
