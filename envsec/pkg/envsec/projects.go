@@ -14,7 +14,7 @@ func (e *Envsec) DescribeCurrentProject(
 	ctx context.Context,
 	w io.Writer,
 ) error {
-	project, err := e.ProjectConfig(e.WorkingDir)
+	project, err := e.ProjectConfig()
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,6 @@ func (e *Envsec) DescribeCurrentProject(
 		connect.NewRequest(&v1alpha1.GetProjectRequest{
 			Id: project.ProjectID.String(),
 		}))
-
 	if err != nil {
 		return err
 	}
