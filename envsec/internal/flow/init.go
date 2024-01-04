@@ -191,8 +191,6 @@ func boolPrompt(label string, defaultResult bool) (bool, error) {
 
 func formatProjectItems(projects []*projectsv1alpha1.Project) []string {
 	longestNameLength := 0
-	longestRepoLength := 0
-	longestDirLength := 0
 	for _, proj := range projects {
 		name := proj.GetName()
 		if name == "" {
@@ -200,12 +198,6 @@ func formatProjectItems(projects []*projectsv1alpha1.Project) []string {
 		}
 		if l := len(name); l > longestNameLength {
 			longestNameLength = l
-		}
-		if l := len(proj.GetRepo()); l > longestRepoLength {
-			longestRepoLength = l
-		}
-		if l := len(proj.GetDirectory()); l > longestDirLength {
-			longestDirLength = l
 		}
 	}
 	// Add padding
@@ -221,10 +213,6 @@ func formatProjectItems(projects []*projectsv1alpha1.Project) []string {
 			color.HiGreenString(
 				fmt.Sprintf("%-"+fmt.Sprintf("%d", longestNameLength)+"s", name),
 			),
-			color.HiBlueString("repo:"),
-			fmt.Sprintf("%-"+fmt.Sprintf("%d", longestRepoLength)+"s", proj.GetRepo()),
-			color.HiBlueString("dir:"),
-			fmt.Sprintf("%-"+fmt.Sprintf("%d", longestDirLength)+"s", proj.GetDirectory()),
 			color.HiBlueString("id:"),
 			proj.GetId(),
 		}
