@@ -68,6 +68,30 @@ func (c *Client) LoginFlowIfNeeded(ctx context.Context) (*session.Token, error) 
 	return tok, err
 }
 
+// LoginFlowIfNeededForOrg returns the current valid session token for a given
+// org and prompts to log in if needed.
+// Note: I'm not sure this is best API. Currently evolving
+func (c *Client) LoginFlowIfNeededForOrg(
+	ctx context.Context,
+	orgID string,
+) (*session.Token, error) {
+	sessions, err := c.GetSessions()
+	if err != nil {
+		return nil, err
+	}
+	for _, session := range sessions {
+		if session.Peek().IDClaims().OrgID == orgID {
+			return session.Token(ctx)
+		}
+	}
+	if len(sessions) > 0 {
+		fmt.Fprintln(os.Stderr, "You are not logged in to organization that owns this project. Please log in.")
+	} else {
+		fmt.Fprintln(os.Stderr, "You are not logged in.")
+	}
+	return c.LoginFlow()
+}
+
 func (c *Client) LogoutFlow() error {
 	// For now we just delete the token from the store.
 	// But in the future we might want to revoke the token with the server, and do the oauth logout flow.

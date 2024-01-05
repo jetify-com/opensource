@@ -12,7 +12,7 @@ func (c *Client) ListProjects(
 	ctx context.Context,
 	orgID id.OrgID,
 ) ([]*projectsv1alpha1.Project, error) {
-	memberResponse, err := c.projectsClient().ListProjects(
+	memberResponse, err := c.ProjectsClient().ListProjects(
 		ctx, connect.NewRequest(
 			&projectsv1alpha1.ListProjectsRequest{
 				OrgId: orgID.String(),
@@ -32,7 +32,7 @@ func (c *Client) CreateProject(
 	directory string,
 	name string,
 ) (*projectsv1alpha1.Project, error) {
-	memberResponse, err := c.projectsClient().CreateProject(
+	memberResponse, err := c.ProjectsClient().CreateProject(
 		ctx, connect.NewRequest(
 			&projectsv1alpha1.CreateProjectRequest{
 				OrgId: orgID.String(),

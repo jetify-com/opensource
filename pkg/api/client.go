@@ -15,7 +15,7 @@ import (
 // communicating with the JetCloud API.
 type Client struct {
 	membersClient        func() membersv1alpha1connect.MembersServiceClient
-	projectsClient       func() projectsv1alpha1connect.ProjectsServiceClient
+	ProjectsClient       func() projectsv1alpha1connect.ProjectsServiceClient
 	secretsServiceClient func() secretsv1alpha1connect.SecretsServiceClient
 }
 
@@ -30,7 +30,7 @@ func NewClient(ctx context.Context, host string, token *session.Token) *Client {
 				host,
 			)
 		}),
-		projectsClient: sync.OnceValue(func() projectsv1alpha1connect.ProjectsServiceClient {
+		ProjectsClient: sync.OnceValue(func() projectsv1alpha1connect.ProjectsServiceClient {
 			return projectsv1alpha1connect.NewProjectsServiceClient(
 				httpClient,
 				host,
