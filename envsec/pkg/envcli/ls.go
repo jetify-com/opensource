@@ -4,9 +4,11 @@
 package envcli
 
 import (
+	"os"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"go.jetpack.io/envsec"
+	"go.jetpack.io/envsec/pkg/envsec"
 )
 
 const environmentFlagName = "environment"
@@ -32,18 +34,30 @@ func ListCmd() *cobra.Command {
 				return err
 			}
 
-			// TODO: parallelize
+			envIDs := []envsec.EnvID{}
 			for _, envName := range cmdCfg.EnvNames {
-				envID := envsec.EnvID{
+				envIDs = append(envIDs, envsec.EnvID{
 					OrgID:     cmdCfg.EnvID.OrgID,
 					ProjectID: cmdCfg.EnvID.ProjectID,
 					EnvName:   envName,
-				}
-				envVars, err := cmdCfg.Store.List(cmd.Context(), envID)
-				if err != nil {
-					return errors.WithStack(err)
-				}
+				})
+			}
 
+			wd, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+
+			vars, err := defaultEnvsec(cmd, wd).List(
+				cmd.Context(),
+				cmdCfg.Store,
+				envIDs...,
+			)
+			if err != nil {
+				return err
+			}
+
+			for envID, envVars := range vars {
 				err = printEnv(cmd, envID, envVars, flags.ShowValues, flags.Format)
 				if err != nil {
 					return errors.WithStack(err)
