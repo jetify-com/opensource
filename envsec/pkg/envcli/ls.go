@@ -6,7 +6,6 @@ package envcli
 import (
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.jetpack.io/envsec/pkg/envsec"
 )
@@ -57,13 +56,8 @@ func ListCmd() *cobra.Command {
 				return err
 			}
 
-			for envID, envVars := range vars {
-				err = printEnv(cmd, envID, envVars, flags.ShowValues, flags.Format)
-				if err != nil {
-					return errors.WithStack(err)
-				}
-			}
-			return nil
+			return envsec.PrintEnvVars(
+				vars, cmd.OutOrStdout(), flags.ShowValues, flags.Format)
 		},
 	}
 
