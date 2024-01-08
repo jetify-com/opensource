@@ -73,7 +73,7 @@ func ListCmd() *cobra.Command {
 		"format",
 		"f",
 		"table",
-		"Display the key values in key=value format",
+		"Display the key values in key=value format. Must be one of: table | dotenv | json",
 	)
 	flags.configFlags.register(command)
 
