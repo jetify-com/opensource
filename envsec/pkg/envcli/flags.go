@@ -102,7 +102,7 @@ func (f *configFlags) genConfig(cmd *cobra.Command) (*CmdConfig, error) {
 		envsecInstance.Store = &jetstore.JetpackAPIStore{}
 	}
 
-	tok, err := envsecInstance.Identify(cmd.Context())
+	tok, err := envsecInstance.InitForUser(cmd.Context())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

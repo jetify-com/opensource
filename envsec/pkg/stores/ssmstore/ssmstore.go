@@ -23,7 +23,7 @@ type SSMStore struct {
 // SSMStore implements interface Store (compile-time check)
 var _ envsec.Store = (*SSMStore)(nil)
 
-func (s *SSMStore) Identify(ctx context.Context, e *envsec.Envsec) (*session.Token, error) {
+func (s *SSMStore) InitForUser(ctx context.Context, e *envsec.Envsec) (*session.Token, error) {
 	client, err := e.AuthClient()
 	if err != nil {
 		return nil, errors.WithStack(err)

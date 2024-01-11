@@ -18,7 +18,7 @@ type JetpackAPIStore struct {
 // JetpackAPIStore implements interface Store (compile-time check)
 var _ envsec.Store = (*JetpackAPIStore)(nil)
 
-func (j *JetpackAPIStore) Identify(
+func (j *JetpackAPIStore) InitForUser(
 	ctx context.Context,
 	envsec *envsec.Envsec,
 ) (*session.Token, error) {

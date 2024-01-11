@@ -23,6 +23,6 @@ type AuthConfig struct {
 	// TODO Audiences and Scopes
 }
 
-func (e *Envsec) Identify(ctx context.Context) (*session.Token, error) {
-	return e.Store.Identify(ctx, e)
+func (e *Envsec) InitForUser(ctx context.Context) (*session.Token, error) {
+	return e.Store.InitForUser(ctx, e)
 }
