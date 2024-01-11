@@ -31,6 +31,8 @@ jobs:
             ~/.cache/go-build
             ~/go/pkg
           key: ${{ runner.os }}-${{ hashFiles('**/*.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-
 
       # Disable this check until we figure out how to solve for
       # the 'publish repos twice' problem
