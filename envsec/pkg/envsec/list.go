@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
@@ -34,8 +35,9 @@ func PrintEnvVar(
 			Name:  envVar.Name,
 			Value: valueToPrint,
 		})
-
 	}
+
+	slices.SortFunc(envVarsMaskedValue, func(a EnvVar, b EnvVar) int { return strings.Compare(a.Name, b.Name) })
 
 	switch format {
 	case "table":
