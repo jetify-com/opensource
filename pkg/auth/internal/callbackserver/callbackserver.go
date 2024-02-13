@@ -25,9 +25,8 @@ type Response struct {
 
 func New(redirect string) *CallbackServer {
 	return &CallbackServer{
-		addr: "127.0.0.1:4446",
-		path: "/callback",
-		// TODO: don't hard code this so that we can make the library generic
+		addr:     "127.0.0.1:4446",
+		path:     "/callback",
 		redirect: redirect,
 		respCh:   make(chan (Response)),
 	}
