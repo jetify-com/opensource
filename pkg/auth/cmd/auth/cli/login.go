@@ -49,6 +49,7 @@ func login(issuer, clientID string) error {
 		issuer,
 		clientID,
 		[]string{"openid", "offline_access", "email", "profile"},
+		"",
 	)
 	if err != nil {
 		return err

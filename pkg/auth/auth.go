@@ -18,15 +18,17 @@ import (
 var ErrNotLoggedIn = fmt.Errorf("not logged in")
 
 type Client struct {
-	issuer   string
-	clientID string
-	store    *tokenstore.Store
-	scopes   []string
+	issuer          string
+	clientID        string
+	store           *tokenstore.Store
+	scopes          []string
+	successRedirect string
 }
 
 func NewClient(
 	issuer, clientID string,
 	scopes []string,
+	successRedirect string,
 ) (*Client, error) {
 	store, err := tokenstore.New(storeDir())
 	if err != nil {
@@ -34,10 +36,11 @@ func NewClient(
 	}
 
 	return &Client{
-		issuer:   issuer,
-		clientID: clientID,
-		scopes:   scopes,
-		store:    store,
+		issuer:          issuer,
+		clientID:        clientID,
+		scopes:          scopes,
+		store:           store,
+		successRedirect: successRedirect,
 	}, nil
 }
 
@@ -50,7 +53,7 @@ func storeDir() string {
 }
 
 func (c *Client) LoginFlow() (*session.Token, error) {
-	tok, err := login(c.issuer, c.clientID, c.scopes)
+	tok, err := c.login(c.issuer, c.clientID, c.scopes)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +180,7 @@ func (c *Client) RevokeSession() error {
 	return c.store.DeleteToken(c.issuer, c.clientID)
 }
 
-func login(issuer string, clientID string, scopes []string) (*session.Token, error) {
+func (c *Client) login(issuer string, clientID string, scopes []string) (*session.Token, error) {
 	flow, err := authflow.New(issuer, clientID, scopes)
 	if err != nil {
 		return nil, err
@@ -196,7 +199,7 @@ func login(issuer string, clientID string, scopes []string) (*session.Token, err
 
 	/////////
 	// TODO: technically we should start the callback server before opening the browser
-	srv := callbackserver.New()
+	srv := callbackserver.New(c.successRedirect)
 	err = srv.Listen()
 	if err != nil {
 		return nil, err
