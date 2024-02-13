@@ -23,12 +23,11 @@ type Response struct {
 	State string `json:"state"`
 }
 
-func New() *CallbackServer {
+func New(redirect string) *CallbackServer {
 	return &CallbackServer{
-		addr: "127.0.0.1:4446",
-		path: "/callback",
-		// TODO: don't hard code this so that we can make the library generic
-		redirect: "https://www.jetpack.io/account/login/success",
+		addr:     "127.0.0.1:4446",
+		path:     "/callback",
+		redirect: redirect,
 		respCh:   make(chan (Response)),
 	}
 }
@@ -78,8 +77,12 @@ func (s *CallbackServer) Start() error {
 			State: q.Get("state"),
 		}
 
-		// TODO: define a different redirect for success vs error
-		http.Redirect(w, r, s.redirect, http.StatusSeeOther)
+		if s.redirect != "" {
+			http.Redirect(w, r, s.redirect, http.StatusSeeOther)
+		} else {
+			_, _ = w.Write([]byte("OK"))
+			w.WriteHeader(http.StatusOK)
+		}
 		s.respCh <- resp
 	})
 

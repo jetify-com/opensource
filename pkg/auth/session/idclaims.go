@@ -1,6 +1,8 @@
 package session
 
-import "github.com/go-jose/go-jose/v3/jwt"
+import (
+	"github.com/go-jose/go-jose/v3/jwt"
+)
 
 // Standard claims:
 // oidc: https://openid.net/specs/openid-connect-basic-1_0.html#IDToken
