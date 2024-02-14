@@ -57,8 +57,8 @@ jobs:
     needs: publish-repos
     runs-on: ubuntu-latest
     steps:
-      - name: Sleep 10s to ensure latest repos get pulled
-        run: sleep 10s
+      - name: Sleep 20s to ensure latest repos get pulled
+        run: sleep 20s
 
       - name: Checkout Monorepo
         uses: actions/checkout@v3
