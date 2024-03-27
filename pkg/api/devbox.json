@@ -9,7 +9,7 @@
       // Generate the golang implementations of the whitelisted api protos
       // We need to manually whitelist using the --path flag. Buf will do a union
       // of multiple flag invocations.
-      "gen": "rm -rf gen && buf generate ../../../axiom/api/proto --path ../../../axiom/api/proto/priv/secrets --path ../../../axiom/api/proto/priv/members --path ../../../axiom/api/proto/priv/organizations  --path ../../../axiom/api/proto/priv/projects",
+      "gen": "rm -rf gen && buf generate ../../../axiom/api/proto --path ../../../axiom/api/proto/priv/secrets --path ../../../axiom/api/proto/priv/members --path ../../../axiom/api/proto/priv/organizations  --path ../../../axiom/api/proto/priv/projects --path ../../../axiom/api/proto/priv/projects --path ../../../axiom/api/proto/priv/nix",
     },
   },
 }

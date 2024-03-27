@@ -18,7 +18,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect.IsAtLeastVersion1_7_0
+const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// SecretsServiceName is the fully-qualified name of the SecretsService service.
@@ -46,6 +46,15 @@ const (
 	SecretsServicePatchSecretProcedure = "/priv.secrets.v1alpha1.SecretsService/PatchSecret"
 )
 
+// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
+var (
+	secretsServiceServiceDescriptor            = v1alpha1.File_priv_secrets_v1alpha1_secrets_proto.Services().ByName("SecretsService")
+	secretsServiceBatchMethodDescriptor        = secretsServiceServiceDescriptor.Methods().ByName("Batch")
+	secretsServiceDeleteSecretMethodDescriptor = secretsServiceServiceDescriptor.Methods().ByName("DeleteSecret")
+	secretsServiceListSecretsMethodDescriptor  = secretsServiceServiceDescriptor.Methods().ByName("ListSecrets")
+	secretsServicePatchSecretMethodDescriptor  = secretsServiceServiceDescriptor.Methods().ByName("PatchSecret")
+)
+
 // SecretsServiceClient is a client for the priv.secrets.v1alpha1.SecretsService service.
 type SecretsServiceClient interface {
 	// Batch composes multiple CRUD requests into a single request.
@@ -71,23 +80,27 @@ func NewSecretsServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 		batch: connect.NewClient[v1alpha1.BatchRequest, v1alpha1.BatchResponse](
 			httpClient,
 			baseURL+SecretsServiceBatchProcedure,
-			opts...,
+			connect.WithSchema(secretsServiceBatchMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		deleteSecret: connect.NewClient[v1alpha1.DeleteSecretRequest, v1alpha1.DeleteSecretResponse](
 			httpClient,
 			baseURL+SecretsServiceDeleteSecretProcedure,
-			opts...,
+			connect.WithSchema(secretsServiceDeleteSecretMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		listSecrets: connect.NewClient[v1alpha1.ListSecretsRequest, v1alpha1.ListSecretsResponse](
 			httpClient,
 			baseURL+SecretsServiceListSecretsProcedure,
+			connect.WithSchema(secretsServiceListSecretsMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		patchSecret: connect.NewClient[v1alpha1.PatchSecretRequest, v1alpha1.PatchSecretResponse](
 			httpClient,
 			baseURL+SecretsServicePatchSecretProcedure,
-			opts...,
+			connect.WithSchema(secretsServicePatchSecretMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
@@ -141,23 +154,27 @@ func NewSecretsServiceHandler(svc SecretsServiceHandler, opts ...connect.Handler
 	secretsServiceBatchHandler := connect.NewUnaryHandler(
 		SecretsServiceBatchProcedure,
 		svc.Batch,
-		opts...,
+		connect.WithSchema(secretsServiceBatchMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	secretsServiceDeleteSecretHandler := connect.NewUnaryHandler(
 		SecretsServiceDeleteSecretProcedure,
 		svc.DeleteSecret,
-		opts...,
+		connect.WithSchema(secretsServiceDeleteSecretMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	secretsServiceListSecretsHandler := connect.NewUnaryHandler(
 		SecretsServiceListSecretsProcedure,
 		svc.ListSecrets,
+		connect.WithSchema(secretsServiceListSecretsMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	secretsServicePatchSecretHandler := connect.NewUnaryHandler(
 		SecretsServicePatchSecretProcedure,
 		svc.PatchSecret,
-		opts...,
+		connect.WithSchema(secretsServicePatchSecretMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/priv.secrets.v1alpha1.SecretsService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
