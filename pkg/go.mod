@@ -3,12 +3,12 @@ module go.jetpack.io/pkg
 go 1.20
 
 require (
-	connectrpc.com/connect v1.12.0
+	connectrpc.com/connect v1.16.0
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/codeclysm/extract/v3 v3.1.1
 	github.com/coreos/go-oidc/v3 v3.7.0
 	github.com/fatih/color v1.15.0
-	github.com/go-jose/go-jose/v3 v3.0.1
+	github.com/go-jose/go-jose/v3 v3.0.3
 	github.com/google/go-github/v53 v53.2.0
 	github.com/google/renameio/v2 v2.0.0
 	github.com/gosimple/slug v1.13.1
@@ -21,8 +21,8 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	go.jetpack.io/typeid v1.0.0
-	golang.org/x/oauth2 v0.14.0
-	google.golang.org/protobuf v1.31.0
+	golang.org/x/oauth2 v0.18.0
+	google.golang.org/protobuf v1.33.0
 )
 
 require (
@@ -30,7 +30,7 @@ require (
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gofrs/uuid/v5 v5.0.0 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
@@ -44,8 +44,8 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/crypto v0.21.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
