@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"go.jetpack.io/pkg/api/gen/priv/members/v1alpha1/membersv1alpha1connect"
+	"go.jetpack.io/pkg/api/gen/priv/nix/v1alpha1/nixv1alpha1connect"
 	"go.jetpack.io/pkg/api/gen/priv/projects/v1alpha1/projectsv1alpha1connect"
 	"go.jetpack.io/pkg/api/gen/priv/secrets/v1alpha1/secretsv1alpha1connect"
 	"go.jetpack.io/pkg/auth/session"
@@ -15,6 +16,7 @@ import (
 // communicating with the JetCloud API.
 type Client struct {
 	membersClient        func() membersv1alpha1connect.MembersServiceClient
+	nixClient            func() nixv1alpha1connect.NixServiceClient
 	ProjectsClient       func() projectsv1alpha1connect.ProjectsServiceClient
 	secretsServiceClient func() secretsv1alpha1connect.SecretsServiceClient
 }
@@ -26,6 +28,12 @@ func NewClient(ctx context.Context, host string, token *session.Token) *Client {
 	return &Client{
 		membersClient: sync.OnceValue(func() membersv1alpha1connect.MembersServiceClient {
 			return membersv1alpha1connect.NewMembersServiceClient(
+				httpClient,
+				host,
+			)
+		}),
+		nixClient: sync.OnceValue(func() nixv1alpha1connect.NixServiceClient {
+			return nixv1alpha1connect.NewNixServiceClient(
 				httpClient,
 				host,
 			)

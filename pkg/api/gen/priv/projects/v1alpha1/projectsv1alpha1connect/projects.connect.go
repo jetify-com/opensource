@@ -27,7 +27,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect.IsAtLeastVersion1_7_0
+const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// ProjectsServiceName is the fully-qualified name of the ProjectsService service.
@@ -63,6 +63,18 @@ const (
 	// ProjectsServiceUpdateProjectProcedure is the fully-qualified name of the ProjectsService's
 	// UpdateProject RPC.
 	ProjectsServiceUpdateProjectProcedure = "/priv.projects.v1alpha1.ProjectsService/UpdateProject"
+)
+
+// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
+var (
+	projectsServiceServiceDescriptor              = v1alpha1.File_priv_projects_v1alpha1_projects_proto.Services().ByName("ProjectsService")
+	projectsServiceGetProjectMethodDescriptor     = projectsServiceServiceDescriptor.Methods().ByName("GetProject")
+	projectsServiceListProjectsMethodDescriptor   = projectsServiceServiceDescriptor.Methods().ByName("ListProjects")
+	projectsServiceSearchProjectsMethodDescriptor = projectsServiceServiceDescriptor.Methods().ByName("SearchProjects")
+	projectsServiceCreateProjectMethodDescriptor  = projectsServiceServiceDescriptor.Methods().ByName("CreateProject")
+	projectsServiceDeleteProjectMethodDescriptor  = projectsServiceServiceDescriptor.Methods().ByName("DeleteProject")
+	projectsServicePatchProjectMethodDescriptor   = projectsServiceServiceDescriptor.Methods().ByName("PatchProject")
+	projectsServiceUpdateProjectMethodDescriptor  = projectsServiceServiceDescriptor.Methods().ByName("UpdateProject")
 )
 
 // ProjectsServiceClient is a client for the priv.projects.v1alpha1.ProjectsService service.
@@ -119,40 +131,47 @@ func NewProjectsServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 		getProject: connect.NewClient[v1alpha1.GetProjectRequest, v1alpha1.GetProjectResponse](
 			httpClient,
 			baseURL+ProjectsServiceGetProjectProcedure,
+			connect.WithSchema(projectsServiceGetProjectMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		listProjects: connect.NewClient[v1alpha1.ListProjectsRequest, v1alpha1.ListProjectsResponse](
 			httpClient,
 			baseURL+ProjectsServiceListProjectsProcedure,
+			connect.WithSchema(projectsServiceListProjectsMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		searchProjects: connect.NewClient[v1alpha1.SearchProjectsRequest, v1alpha1.SearchProjectsResponse](
 			httpClient,
 			baseURL+ProjectsServiceSearchProjectsProcedure,
+			connect.WithSchema(projectsServiceSearchProjectsMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		createProject: connect.NewClient[v1alpha1.CreateProjectRequest, v1alpha1.CreateProjectResponse](
 			httpClient,
 			baseURL+ProjectsServiceCreateProjectProcedure,
-			opts...,
+			connect.WithSchema(projectsServiceCreateProjectMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		deleteProject: connect.NewClient[v1alpha1.DeleteProjectRequest, v1alpha1.DeleteProjectResponse](
 			httpClient,
 			baseURL+ProjectsServiceDeleteProjectProcedure,
-			opts...,
+			connect.WithSchema(projectsServiceDeleteProjectMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		patchProject: connect.NewClient[v1alpha1.PatchProjectRequest, v1alpha1.PatchProjectResponse](
 			httpClient,
 			baseURL+ProjectsServicePatchProjectProcedure,
-			opts...,
+			connect.WithSchema(projectsServicePatchProjectMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		updateProject: connect.NewClient[v1alpha1.UpdateProjectRequest, v1alpha1.UpdateProjectResponse](
 			httpClient,
 			baseURL+ProjectsServiceUpdateProjectProcedure,
-			opts...,
+			connect.WithSchema(projectsServiceUpdateProjectMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
@@ -254,40 +273,47 @@ func NewProjectsServiceHandler(svc ProjectsServiceHandler, opts ...connect.Handl
 	projectsServiceGetProjectHandler := connect.NewUnaryHandler(
 		ProjectsServiceGetProjectProcedure,
 		svc.GetProject,
+		connect.WithSchema(projectsServiceGetProjectMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	projectsServiceListProjectsHandler := connect.NewUnaryHandler(
 		ProjectsServiceListProjectsProcedure,
 		svc.ListProjects,
+		connect.WithSchema(projectsServiceListProjectsMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	projectsServiceSearchProjectsHandler := connect.NewUnaryHandler(
 		ProjectsServiceSearchProjectsProcedure,
 		svc.SearchProjects,
+		connect.WithSchema(projectsServiceSearchProjectsMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	projectsServiceCreateProjectHandler := connect.NewUnaryHandler(
 		ProjectsServiceCreateProjectProcedure,
 		svc.CreateProject,
-		opts...,
+		connect.WithSchema(projectsServiceCreateProjectMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	projectsServiceDeleteProjectHandler := connect.NewUnaryHandler(
 		ProjectsServiceDeleteProjectProcedure,
 		svc.DeleteProject,
-		opts...,
+		connect.WithSchema(projectsServiceDeleteProjectMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	projectsServicePatchProjectHandler := connect.NewUnaryHandler(
 		ProjectsServicePatchProjectProcedure,
 		svc.PatchProject,
-		opts...,
+		connect.WithSchema(projectsServicePatchProjectMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	projectsServiceUpdateProjectHandler := connect.NewUnaryHandler(
 		ProjectsServiceUpdateProjectProcedure,
 		svc.UpdateProject,
-		opts...,
+		connect.WithSchema(projectsServiceUpdateProjectMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/priv.projects.v1alpha1.ProjectsService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
