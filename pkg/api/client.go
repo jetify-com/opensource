@@ -8,6 +8,7 @@ import (
 	"go.jetpack.io/pkg/api/gen/priv/nix/v1alpha1/nixv1alpha1connect"
 	"go.jetpack.io/pkg/api/gen/priv/projects/v1alpha1/projectsv1alpha1connect"
 	"go.jetpack.io/pkg/api/gen/priv/secrets/v1alpha1/secretsv1alpha1connect"
+	"go.jetpack.io/pkg/api/gen/priv/tokenservice/v1alpha1/tokenservicev1alpha1connect"
 	"go.jetpack.io/pkg/auth/session"
 	"golang.org/x/oauth2"
 )
@@ -15,10 +16,11 @@ import (
 // Client manages state for interacting with the JetCloud API, as well as
 // communicating with the JetCloud API.
 type Client struct {
-	membersClient        func() membersv1alpha1connect.MembersServiceClient
-	nixClient            func() nixv1alpha1connect.NixServiceClient
-	ProjectsClient       func() projectsv1alpha1connect.ProjectsServiceClient
-	secretsServiceClient func() secretsv1alpha1connect.SecretsServiceClient
+	membersClient  func() membersv1alpha1connect.MembersServiceClient
+	nixClient      func() nixv1alpha1connect.NixServiceClient
+	ProjectsClient func() projectsv1alpha1connect.ProjectsServiceClient
+	secretsClient  func() secretsv1alpha1connect.SecretsServiceClient
+	tokenClient    func() tokenservicev1alpha1connect.TokenServiceClient
 }
 
 func NewClient(ctx context.Context, host string, token *session.Token) *Client {
@@ -44,8 +46,14 @@ func NewClient(ctx context.Context, host string, token *session.Token) *Client {
 				host,
 			)
 		}),
-		secretsServiceClient: sync.OnceValue(func() secretsv1alpha1connect.SecretsServiceClient {
+		secretsClient: sync.OnceValue(func() secretsv1alpha1connect.SecretsServiceClient {
 			return secretsv1alpha1connect.NewSecretsServiceClient(
+				httpClient,
+				host,
+			)
+		}),
+		tokenClient: sync.OnceValue(func() tokenservicev1alpha1connect.TokenServiceClient {
+			return tokenservicev1alpha1connect.NewTokenServiceClient(
 				httpClient,
 				host,
 			)

@@ -5,5 +5,5 @@ import (
 )
 
 func (c *Client) SecretsService() secretsv1alpha1connect.SecretsServiceClient {
-	return c.secretsServiceClient()
+	return c.secretsClient()
 }
