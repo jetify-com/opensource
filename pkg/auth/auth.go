@@ -18,6 +18,7 @@ import (
 var ErrNotLoggedIn = fmt.Errorf("not logged in")
 
 type Client struct {
+	audience        []string
 	issuer          string
 	clientID        string
 	store           *tokenstore.Store
@@ -29,6 +30,7 @@ func NewClient(
 	issuer, clientID string,
 	scopes []string,
 	successRedirect string,
+	audience []string,
 ) (*Client, error) {
 	store, err := tokenstore.New(storeDir())
 	if err != nil {
@@ -36,6 +38,7 @@ func NewClient(
 	}
 
 	return &Client{
+		audience:        audience,
 		issuer:          issuer,
 		clientID:        clientID,
 		scopes:          scopes,
@@ -53,7 +56,7 @@ func storeDir() string {
 }
 
 func (c *Client) LoginFlow() (*session.Token, error) {
-	tok, err := c.login(c.issuer, c.clientID, c.scopes)
+	tok, err := c.login()
 	if err != nil {
 		return nil, err
 	}
@@ -180,8 +183,8 @@ func (c *Client) RevokeSession() error {
 	return c.store.DeleteToken(c.issuer, c.clientID)
 }
 
-func (c *Client) login(issuer string, clientID string, scopes []string) (*session.Token, error) {
-	flow, err := authflow.New(issuer, clientID, scopes)
+func (c *Client) login() (*session.Token, error) {
+	flow, err := authflow.New(c.issuer, c.clientID, c.scopes, c.audience)
 	if err != nil {
 		return nil, err
 	}
