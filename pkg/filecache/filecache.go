@@ -90,3 +90,7 @@ func (c *cache) filename(key string) string {
 	_ = os.MkdirAll(dir, 0755)
 	return filepath.Join(dir, key)
 }
+
+func IsCacheMiss(err error) bool {
+	return errors.Is(err, NotFound) || errors.Is(err, Expired)
+}
