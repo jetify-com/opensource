@@ -47,6 +47,7 @@ func WithCacheDir[T any](dir string) Option[T] {
 	}
 }
 
+// Set stores a value in the cache with the given key and expiration duration.
 func (c *Cache[T]) Set(key string, val T, dur time.Duration) error {
 	d, err := json.Marshal(data[T]{Val: val, Exp: time.Now().Add(dur)})
 	if err != nil {
@@ -56,7 +57,9 @@ func (c *Cache[T]) Set(key string, val T, dur time.Duration) error {
 	return errors.WithStack(os.WriteFile(c.filename(key), d, 0644))
 }
 
-func (c *Cache[T]) SetT(key string, val T, t time.Time) error {
+// SetWithTime is like Set but it allows the caller to specify the expiration
+// time of the value.
+func (c *Cache[T]) SetWithTime(key string, val T, t time.Time) error {
 	d, err := json.Marshal(data[T]{Val: val, Exp: t})
 	if err != nil {
 		return errors.WithStack(err)
@@ -65,6 +68,7 @@ func (c *Cache[T]) SetT(key string, val T, t time.Time) error {
 	return errors.WithStack(os.WriteFile(c.filename(key), d, 0644))
 }
 
+// Get retrieves a value from the cache with the given key.
 func (c *Cache[T]) Get(key string) (T, error) {
 	path := c.filename(key)
 	resultData := data[T]{}
@@ -87,6 +91,11 @@ func (c *Cache[T]) Get(key string) (T, error) {
 	return resultData.Val, nil
 }
 
+// GetOrSet is a convenience method that gets the value from the cache if it
+// exists, otherwise it calls the provided function to get the value and sets
+// it in the cache.
+// If the function returns an error, the error is returned and the value is not
+// cached.
 func (c *Cache[T]) GetOrSet(
 	key string,
 	f func() (T, time.Duration, error),
@@ -103,7 +112,9 @@ func (c *Cache[T]) GetOrSet(
 	return val, c.Set(key, val, dur)
 }
 
-func (c *Cache[T]) GetOrSetT(
+// GetOrSetWithTime is like GetOrSet but it allows the caller to specify the
+// expiration time of the value.
+func (c *Cache[T]) GetOrSetWithTime(
 	key string,
 	f func() (T, time.Time, error),
 ) (T, error) {
@@ -116,9 +127,10 @@ func (c *Cache[T]) GetOrSetT(
 		return val, err
 	}
 
-	return val, c.SetT(key, val, t)
+	return val, c.SetWithTime(key, val, t)
 }
 
+// IsCacheMiss returns true if the error is NotFound or Expired.
 func IsCacheMiss(err error) bool {
 	return errors.Is(err, NotFound) || errors.Is(err, Expired)
 }

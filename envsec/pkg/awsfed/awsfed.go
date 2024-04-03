@@ -40,7 +40,8 @@ func (a *AWSFed) AWSCredsWithLocalCache(
 	ctx context.Context,
 	tok *session.Token,
 ) (*types.Credentials, error) {
-	return filecache.New[*types.Credentials]("jetpack.io/envsec").GetOrSetT(
+	cache := filecache.New[*types.Credentials]("jetpack.io/envsec")
+	return cache.GetOrSetWithTime(
 		cacheKey(tok),
 		func() (*types.Credentials, time.Time, error) {
 			outputCreds, err := a.AWSCreds(ctx, tok.IDToken)
