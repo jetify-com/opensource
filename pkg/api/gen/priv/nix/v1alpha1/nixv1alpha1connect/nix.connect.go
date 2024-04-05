@@ -38,17 +38,22 @@ const (
 const (
 	// NixServiceGetBinCacheProcedure is the fully-qualified name of the NixService's GetBinCache RPC.
 	NixServiceGetBinCacheProcedure = "/priv.nix.v1alpha1.NixService/GetBinCache"
+	// NixServiceGetAWSCredentialsProcedure is the fully-qualified name of the NixService's
+	// GetAWSCredentials RPC.
+	NixServiceGetAWSCredentialsProcedure = "/priv.nix.v1alpha1.NixService/GetAWSCredentials"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	nixServiceServiceDescriptor           = v1alpha1.File_priv_nix_v1alpha1_nix_proto.Services().ByName("NixService")
-	nixServiceGetBinCacheMethodDescriptor = nixServiceServiceDescriptor.Methods().ByName("GetBinCache")
+	nixServiceServiceDescriptor                 = v1alpha1.File_priv_nix_v1alpha1_nix_proto.Services().ByName("NixService")
+	nixServiceGetBinCacheMethodDescriptor       = nixServiceServiceDescriptor.Methods().ByName("GetBinCache")
+	nixServiceGetAWSCredentialsMethodDescriptor = nixServiceServiceDescriptor.Methods().ByName("GetAWSCredentials")
 )
 
 // NixServiceClient is a client for the priv.nix.v1alpha1.NixService service.
 type NixServiceClient interface {
 	GetBinCache(context.Context, *connect.Request[v1alpha1.GetBinCacheRequest]) (*connect.Response[v1alpha1.GetBinCacheResponse], error)
+	GetAWSCredentials(context.Context, *connect.Request[v1alpha1.GetAWSCredentialsRequest]) (*connect.Response[v1alpha1.GetAWSCredentialsResponse], error)
 }
 
 // NewNixServiceClient constructs a client for the priv.nix.v1alpha1.NixService service. By default,
@@ -68,12 +73,20 @@ func NewNixServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
+		getAWSCredentials: connect.NewClient[v1alpha1.GetAWSCredentialsRequest, v1alpha1.GetAWSCredentialsResponse](
+			httpClient,
+			baseURL+NixServiceGetAWSCredentialsProcedure,
+			connect.WithSchema(nixServiceGetAWSCredentialsMethodDescriptor),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // nixServiceClient implements NixServiceClient.
 type nixServiceClient struct {
-	getBinCache *connect.Client[v1alpha1.GetBinCacheRequest, v1alpha1.GetBinCacheResponse]
+	getBinCache       *connect.Client[v1alpha1.GetBinCacheRequest, v1alpha1.GetBinCacheResponse]
+	getAWSCredentials *connect.Client[v1alpha1.GetAWSCredentialsRequest, v1alpha1.GetAWSCredentialsResponse]
 }
 
 // GetBinCache calls priv.nix.v1alpha1.NixService.GetBinCache.
@@ -81,9 +94,15 @@ func (c *nixServiceClient) GetBinCache(ctx context.Context, req *connect.Request
 	return c.getBinCache.CallUnary(ctx, req)
 }
 
+// GetAWSCredentials calls priv.nix.v1alpha1.NixService.GetAWSCredentials.
+func (c *nixServiceClient) GetAWSCredentials(ctx context.Context, req *connect.Request[v1alpha1.GetAWSCredentialsRequest]) (*connect.Response[v1alpha1.GetAWSCredentialsResponse], error) {
+	return c.getAWSCredentials.CallUnary(ctx, req)
+}
+
 // NixServiceHandler is an implementation of the priv.nix.v1alpha1.NixService service.
 type NixServiceHandler interface {
 	GetBinCache(context.Context, *connect.Request[v1alpha1.GetBinCacheRequest]) (*connect.Response[v1alpha1.GetBinCacheResponse], error)
+	GetAWSCredentials(context.Context, *connect.Request[v1alpha1.GetAWSCredentialsRequest]) (*connect.Response[v1alpha1.GetAWSCredentialsResponse], error)
 }
 
 // NewNixServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -99,10 +118,19 @@ func NewNixServiceHandler(svc NixServiceHandler, opts ...connect.HandlerOption) 
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
+	nixServiceGetAWSCredentialsHandler := connect.NewUnaryHandler(
+		NixServiceGetAWSCredentialsProcedure,
+		svc.GetAWSCredentials,
+		connect.WithSchema(nixServiceGetAWSCredentialsMethodDescriptor),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/priv.nix.v1alpha1.NixService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case NixServiceGetBinCacheProcedure:
 			nixServiceGetBinCacheHandler.ServeHTTP(w, r)
+		case NixServiceGetAWSCredentialsProcedure:
+			nixServiceGetAWSCredentialsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -114,4 +142,8 @@ type UnimplementedNixServiceHandler struct{}
 
 func (UnimplementedNixServiceHandler) GetBinCache(context.Context, *connect.Request[v1alpha1.GetBinCacheRequest]) (*connect.Response[v1alpha1.GetBinCacheResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.nix.v1alpha1.NixService.GetBinCache is not implemented"))
+}
+
+func (UnimplementedNixServiceHandler) GetAWSCredentials(context.Context, *connect.Request[v1alpha1.GetAWSCredentialsRequest]) (*connect.Response[v1alpha1.GetAWSCredentialsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.nix.v1alpha1.NixService.GetAWSCredentials is not implemented"))
 }
