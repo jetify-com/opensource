@@ -10,7 +10,7 @@ A Github action that makes it easy to publish code from one git repository to an
 while preserving history. One of the primary use cases is to mirror code from a directory
 in a monorepo, and publish it as a standalone repository.
 
-This action was originally built by [jetpack.io](https://www.jetify.com). We
+This action was originally built by [jetify](https://www.jetify.com). We
 do most of our development in an [opensource monorepo](https://github.com/jetify-com/opensource),
 and often publish some projects as separate repositories.
 

@@ -13,7 +13,7 @@ The framework was designed to be minimal: it is entirely self-contianed and
 depends only on nix builtin functions. Specifically, it does _not_ depend on `nixpkgs`,
 which can get somewhat large as a dependency.
 
-NixTest was originally built by [jetpack.io](https://www.jetify.com) – the company behind [Devbox](https://github.com/jetify-com/devbox) (one of the easiest ways to use Nix).
+NixTest was originally built by [jetify](https://www.jetify.com) – the company behind [Devbox](https://github.com/jetify-com/devbox) (one of the easiest ways to use Nix).
 
 ## Usage
 

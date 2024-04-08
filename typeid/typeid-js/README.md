@@ -8,7 +8,7 @@ as the primary identifiers for your data in a database, APIs, and distributed sy
 Read more about TypeIDs in their [spec](https://github.com/jetify-com/typeid).
 
 This is the official JavaScript / TypeScript implementation of TypeID by the
-[jetpack.io](https://www.jetify.com) team. It provides an npm package that can be used by
+[jetify](https://www.jetify.com) team. It provides an npm package that can be used by
 any JavaScript or TypeScript project.
 
 # Installation

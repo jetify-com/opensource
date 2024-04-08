@@ -60,7 +60,7 @@ The above evaluates to the following JSON:
 }
 ```
 
-TySON was originally developed by [jetpack.io](https://www.jetify.com). We are exploring
+TySON was originally developed by [jetify](https://www.jetify.com). We are exploring
 using it as a configuration language for [Devbox](https://github.com/jetify-com/devbox).
 
 ## Benefits of using TySON
