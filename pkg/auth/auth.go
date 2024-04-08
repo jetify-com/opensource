@@ -52,7 +52,7 @@ func storeDir() string {
 	if err != nil {
 		cacheDir = "~/.cache"
 	}
-	return filepath.Join(cacheDir, "jetpack.io", "auth")
+	return filepath.Join(cacheDir, "jetify", "auth")
 }
 
 func (c *Client) LoginFlow() (*session.Token, error) {
