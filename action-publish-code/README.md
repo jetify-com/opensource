@@ -2,7 +2,7 @@
 
 ### Publish code between repositories while preserving history
 
-![License: Apache 2.0](https://img.shields.io/github/license/jetpack-io/action-move-code)
+![License: Apache 2.0](https://img.shields.io/github/license/jetify-com/action-move-code)
 
 ## What is it?
 
