@@ -8,14 +8,14 @@
     "uuidv7",
     "guid"
   ],
-  "homepage": "https://github.com/jetpack-io/typeid-js",
-  "bugs": "https://github.com/jetpack-io/typeid-js/issues",
+  "homepage": "https://github.com/jetify-com/typeid-js",
+  "bugs": "https://github.com/jetify-com/typeid-js/issues",
   "license": "Apache-2.0",
   "author": {
-    "name": "jetpack.io",
-    "email": "opensource@jetpack.io"
+    "name": "jetify",
+    "email": "opensource@jetify.com"
   },
-  "repository": "github:jetpack-io/typeid-js",
+  "repository": "github:jetify-com/typeid-js",
   "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
