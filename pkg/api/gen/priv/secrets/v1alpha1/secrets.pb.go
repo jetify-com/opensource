@@ -20,7 +20,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Secret is a resource that represents a Jetpack Secret inside a Project.
+// Secret is a resource that represents a Jetify Secret inside a Project.
 //
 // NOTE: in this Secrets API, `org_id` is implicitly part of this API. We assume
 // that `org_id` will be retrieved from the Authorization JWT token.
