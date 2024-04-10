@@ -1,23 +1,11 @@
 {
-  "packages": [
-    "go@latest",
-    "golangci-lint@latest"
+  "include": [
+    "github:jetpack-io/devbox-plugins?dir=go-monorepo"
   ],
   "shell": {
-    "init_hook": [
-      "echo 'Welcome to devbox!' > /dev/null"
-    ],
     "scripts": {
-      "tidy": [
-        "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo mod '{}' && go mod tidy\"",
-        "go work sync"
-      ],
-      "build": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo build '{}' && go build -v ./...\"",
-      "lint": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo lint '{}' && golangci-lint run --fix --timeout 300s\"",
-      "fmt": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo fmt '{}' && go fmt ./...\"",
-      "test": "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo test '{}' && go test -race -cover -v ./...\"",
       "update-internal-deps": [
-        "find . -maxdepth 4 -type f -name go.mod -exec dirname {} \\; | xargs -I {} bash -c \"cd '{}' && echo update-internal-deps '{}' && go get -u go.jetpack.io/pkg@main go.jetpack.io/typeid@latest || true\"",
+        "for_each_gomod go get -u go.jetpack.io/pkg@main go.jetpack.io/typeid@main || true",
         "devbox run tidy"
       ]
     }
