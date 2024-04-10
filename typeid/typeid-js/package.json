@@ -31,9 +31,9 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "tsup src --format esm,cjs --dts",
+    "build": "tsup --format esm,cjs --dts",
     "clean": "rm -rf node_modules && rm -rf dist",
-    "dev": "tsup src --format esm,cjs --watch --dts",
+    "dev": "tsup --format esm,cjs --watch --dts",
     "fmt": "pnpm lint --fix",
     "lint": "prettier --write .",
     "test": "jest"

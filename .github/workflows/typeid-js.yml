@@ -1,0 +1,38 @@
+name: typeid-js
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "typeid/typeid-js"
+  push:
+    branches:
+      - main # When we merge to main
+    paths:
+      - "typeid/typeid-js"
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  typeid-js:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Monorepo
+        uses: actions/checkout@v4
+
+      - name: Install devbox
+        uses: jetify-com/devbox-install-action@v0.9.0
+        with:
+          enable-cache: true
+          project-path: './typeid/typeid-js'
+
+
+      - name: Build
+        working-directory: ./typeid/typeid-js
+        run: devbox run build
+
+      - name: Test
+        working-directory: ./typeid/typeid-js
+        run: devbox run test
