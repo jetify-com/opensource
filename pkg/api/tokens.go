@@ -26,10 +26,10 @@ func (c *Client) GetAccessToken(
 
 func (c *Client) CreatePAT(
 	ctx context.Context,
-) (*tokenservicev1alpha1.CreatePATResponse, error) {
-	response, err := c.tokenClient().CreatePAT(
+) (*tokenservicev1alpha1.CreateTokenResponse, error) {
+	response, err := c.tokenClient().CreateToken(
 		ctx,
-		connect.NewRequest(&tokenservicev1alpha1.CreatePATRequest{}),
+		connect.NewRequest(&tokenservicev1alpha1.CreateTokenRequest{}),
 	)
 	if err != nil {
 		return nil, err
