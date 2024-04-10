@@ -35,7 +35,7 @@
     "clean": "rm -rf node_modules && rm -rf dist",
     "dev": "tsup src --format esm,cjs --watch --dts",
     "fmt": "pnpm lint --fix",
-    "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
+    "lint": "prettier --write .",
     "test": "jest"
   },
   "devDependencies": {

@@ -10,4 +10,4 @@ export {
   toUUID,
   fromUUIDBytes,
   fromUUID,
-} from './unboxed/typeid';
+} from "./unboxed/typeid";

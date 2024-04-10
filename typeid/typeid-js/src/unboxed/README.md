@@ -31,15 +31,15 @@ pnpm add typeid-js
 To create a random TypeId of a given type, use the `typeidUnboxed()` function:
 
 ```typescript
-import { typeidUnboxed } from 'typeid-js';
-const tid = typeidUnboxed('prefix');
+import { typeidUnboxed } from "typeid-js";
+const tid = typeidUnboxed("prefix");
 ```
 
 The prefix is optional, so if you need to create an id without a type prefix, you
 can do that too:
 
 ```typescript
-import { typeidUnboxed } from 'typeid-js';
+import { typeidUnboxed } from "typeid-js";
 const tid = typeidUnboxed();
 ```
 
@@ -50,10 +50,10 @@ functions that expect it.
 For example, you can create a function that only accepts TypeIds of type `user`:
 
 ```typescript
-import { typeidUnboxed, TypeId } from 'typeid-js';
+import { typeidUnboxed, TypeId } from "typeid-js";
 
-function doSomethingWithUserID(id: TypeId<'user'>) {
-    // ...
+function doSomethingWithUserID(id: TypeId<"user">) {
+  // ...
 }
 ```
 
@@ -63,31 +63,31 @@ to encode/decode from other formats.
 For example, to parse an existing typeid from a string:
 
 ```typescript
-import { fromString } from 'typeid-js';
+import { fromString } from "typeid-js";
 
 // The second argument is optional, but it converts to type TypeID<"prefix"> instead
 // of TypeID<string>
-const tid = fromString('prefix_00041061050r3gg28a1c60t3gf', 'prefix');
+const tid = fromString("prefix_00041061050r3gg28a1c60t3gf", "prefix");
 ```
 
 To encode an existing UUID as a TypeId:
 
 ```typescript
-import { fromUUID } from 'typeid-js';
+import { fromUUID } from "typeid-js";
 
 // In this case TypeID<"prefix"> is inferred from the second argument
-const tid = fromUUID('00000000-0000-0000-0000-000000000000', 'prefix');
+const tid = fromUUID("00000000-0000-0000-0000-000000000000", "prefix");
 ```
 
 The full list of exported functions includes:
 
--   `typeidUnboxed(prefix?, suffix?)`: Creates a TypeId with an optional prefix and suffix.
--   `fromString(typeId, prefix?)`: Parses a TypeId from a string, optionally validating against a provided prefix.
--   `parseTypeId(typeId)`: Parses a TypeId string into its prefix and suffix components.
--   `getType(typeId)`: Retrieves the prefix from a TypeId.
--   `getSuffix(typeId)`: Retrieves the suffix from a TypeId.
--   `isTypeId(value)`: Checks if a given string is a valid TypeId format.
--   `toUUID(typeId)`: Decodes the TypeId into a UUID string in hex format. The type prefix is ignored.
--   `toUUIDBytes(typeId)`: Decodes the TypeId into a UUID byte array. The type prefix is ignored.
--   `fromUUID(uuid, prefix?)`: Creates a TypeId from a UUID in hex format, with an optional prefix.
--   `fromUUIDBytes(prefix, bytes)`: Creates a TypeId from a prefix and a UUID in byte array format.
+- `typeidUnboxed(prefix?, suffix?)`: Creates a TypeId with an optional prefix and suffix.
+- `fromString(typeId, prefix?)`: Parses a TypeId from a string, optionally validating against a provided prefix.
+- `parseTypeId(typeId)`: Parses a TypeId string into its prefix and suffix components.
+- `getType(typeId)`: Retrieves the prefix from a TypeId.
+- `getSuffix(typeId)`: Retrieves the suffix from a TypeId.
+- `isTypeId(value)`: Checks if a given string is a valid TypeId format.
+- `toUUID(typeId)`: Decodes the TypeId into a UUID string in hex format. The type prefix is ignored.
+- `toUUIDBytes(typeId)`: Decodes the TypeId into a UUID byte array. The type prefix is ignored.
+- `fromUUID(uuid, prefix?)`: Creates a TypeId from a UUID in hex format, with an optional prefix.
+- `fromUUIDBytes(prefix, bytes)`: Creates a TypeId from a prefix and a UUID in byte array format.

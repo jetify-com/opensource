@@ -1,7 +1,12 @@
 import { UUID } from "uuidv7";
 import { parseUUID } from "./parse_uuid";
 import { encode, decode } from "./base32";
-import { typeidUnboxed, getSuffix, getType, fromString } from "./unboxed/typeid";
+import {
+  typeidUnboxed,
+  getSuffix,
+  getType,
+  fromString,
+} from "./unboxed/typeid";
 
 export class TypeID<const T extends string> {
   constructor(private prefix: T, private suffix: string = "") {
@@ -22,7 +27,9 @@ export class TypeID<const T extends string> {
   public asType<const U extends string>(prefix: U): TypeID<U> {
     const self = this as unknown as TypeID<U>;
     if (self.prefix !== prefix) {
-      throw new Error(`Cannot convert TypeID of type ${self.prefix} to type ${prefix}`);
+      throw new Error(
+        `Cannot convert TypeID of type ${self.prefix} to type ${prefix}`
+      );
     }
     return self;
   }
@@ -49,7 +56,10 @@ export class TypeID<const T extends string> {
     return new TypeID<T>(getType(typeIdRaw) as T, getSuffix(typeIdRaw));
   }
 
-  static fromUUIDBytes<const T extends string>(prefix: T, bytes: Uint8Array): TypeID<T> {
+  static fromUUIDBytes<const T extends string>(
+    prefix: T,
+    bytes: Uint8Array
+  ): TypeID<T> {
     const suffix = encode(bytes);
     return new TypeID(prefix, suffix);
   }
@@ -60,10 +70,12 @@ export class TypeID<const T extends string> {
   }
 }
 
-export function typeid<T extends string>(): TypeID<''>;
+export function typeid<T extends string>(): TypeID<"">;
 export function typeid<T extends string>(prefix: T): TypeID<T>;
 export function typeid<T extends string>(prefix: T, suffix: string): TypeID<T>;
-export function typeid<T extends string>(prefix: T = "" as T, suffix: string = ""): TypeID<T> {
+export function typeid<T extends string>(
+  prefix: T = "" as T,
+  suffix: string = ""
+): TypeID<T> {
   return new TypeID(prefix, suffix);
 }
-
