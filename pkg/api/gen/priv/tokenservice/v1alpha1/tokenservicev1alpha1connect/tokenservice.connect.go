@@ -39,21 +39,22 @@ const (
 	// TokenServiceGetAccessTokenProcedure is the fully-qualified name of the TokenService's
 	// GetAccessToken RPC.
 	TokenServiceGetAccessTokenProcedure = "/priv.tokenservice.v1alpha1.TokenService/GetAccessToken"
-	// TokenServiceCreatePATProcedure is the fully-qualified name of the TokenService's CreatePAT RPC.
-	TokenServiceCreatePATProcedure = "/priv.tokenservice.v1alpha1.TokenService/CreatePAT"
+	// TokenServiceCreateTokenProcedure is the fully-qualified name of the TokenService's CreateToken
+	// RPC.
+	TokenServiceCreateTokenProcedure = "/priv.tokenservice.v1alpha1.TokenService/CreateToken"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
 	tokenServiceServiceDescriptor              = v1alpha1.File_priv_tokenservice_v1alpha1_tokenservice_proto.Services().ByName("TokenService")
 	tokenServiceGetAccessTokenMethodDescriptor = tokenServiceServiceDescriptor.Methods().ByName("GetAccessToken")
-	tokenServiceCreatePATMethodDescriptor      = tokenServiceServiceDescriptor.Methods().ByName("CreatePAT")
+	tokenServiceCreateTokenMethodDescriptor    = tokenServiceServiceDescriptor.Methods().ByName("CreateToken")
 )
 
 // TokenServiceClient is a client for the priv.tokenservice.v1alpha1.TokenService service.
 type TokenServiceClient interface {
 	GetAccessToken(context.Context, *connect.Request[v1alpha1.GetAccessTokenRequest]) (*connect.Response[v1alpha1.GetAccessTokenResponse], error)
-	CreatePAT(context.Context, *connect.Request[v1alpha1.CreatePATRequest]) (*connect.Response[v1alpha1.CreatePATResponse], error)
+	CreateToken(context.Context, *connect.Request[v1alpha1.CreateTokenRequest]) (*connect.Response[v1alpha1.CreateTokenResponse], error)
 }
 
 // NewTokenServiceClient constructs a client for the priv.tokenservice.v1alpha1.TokenService
@@ -73,10 +74,10 @@ func NewTokenServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
-		createPAT: connect.NewClient[v1alpha1.CreatePATRequest, v1alpha1.CreatePATResponse](
+		createToken: connect.NewClient[v1alpha1.CreateTokenRequest, v1alpha1.CreateTokenResponse](
 			httpClient,
-			baseURL+TokenServiceCreatePATProcedure,
-			connect.WithSchema(tokenServiceCreatePATMethodDescriptor),
+			baseURL+TokenServiceCreateTokenProcedure,
+			connect.WithSchema(tokenServiceCreateTokenMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -85,7 +86,7 @@ func NewTokenServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 // tokenServiceClient implements TokenServiceClient.
 type tokenServiceClient struct {
 	getAccessToken *connect.Client[v1alpha1.GetAccessTokenRequest, v1alpha1.GetAccessTokenResponse]
-	createPAT      *connect.Client[v1alpha1.CreatePATRequest, v1alpha1.CreatePATResponse]
+	createToken    *connect.Client[v1alpha1.CreateTokenRequest, v1alpha1.CreateTokenResponse]
 }
 
 // GetAccessToken calls priv.tokenservice.v1alpha1.TokenService.GetAccessToken.
@@ -93,15 +94,15 @@ func (c *tokenServiceClient) GetAccessToken(ctx context.Context, req *connect.Re
 	return c.getAccessToken.CallUnary(ctx, req)
 }
 
-// CreatePAT calls priv.tokenservice.v1alpha1.TokenService.CreatePAT.
-func (c *tokenServiceClient) CreatePAT(ctx context.Context, req *connect.Request[v1alpha1.CreatePATRequest]) (*connect.Response[v1alpha1.CreatePATResponse], error) {
-	return c.createPAT.CallUnary(ctx, req)
+// CreateToken calls priv.tokenservice.v1alpha1.TokenService.CreateToken.
+func (c *tokenServiceClient) CreateToken(ctx context.Context, req *connect.Request[v1alpha1.CreateTokenRequest]) (*connect.Response[v1alpha1.CreateTokenResponse], error) {
+	return c.createToken.CallUnary(ctx, req)
 }
 
 // TokenServiceHandler is an implementation of the priv.tokenservice.v1alpha1.TokenService service.
 type TokenServiceHandler interface {
 	GetAccessToken(context.Context, *connect.Request[v1alpha1.GetAccessTokenRequest]) (*connect.Response[v1alpha1.GetAccessTokenResponse], error)
-	CreatePAT(context.Context, *connect.Request[v1alpha1.CreatePATRequest]) (*connect.Response[v1alpha1.CreatePATResponse], error)
+	CreateToken(context.Context, *connect.Request[v1alpha1.CreateTokenRequest]) (*connect.Response[v1alpha1.CreateTokenResponse], error)
 }
 
 // NewTokenServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -117,18 +118,18 @@ func NewTokenServiceHandler(svc TokenServiceHandler, opts ...connect.HandlerOpti
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	tokenServiceCreatePATHandler := connect.NewUnaryHandler(
-		TokenServiceCreatePATProcedure,
-		svc.CreatePAT,
-		connect.WithSchema(tokenServiceCreatePATMethodDescriptor),
+	tokenServiceCreateTokenHandler := connect.NewUnaryHandler(
+		TokenServiceCreateTokenProcedure,
+		svc.CreateToken,
+		connect.WithSchema(tokenServiceCreateTokenMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/priv.tokenservice.v1alpha1.TokenService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case TokenServiceGetAccessTokenProcedure:
 			tokenServiceGetAccessTokenHandler.ServeHTTP(w, r)
-		case TokenServiceCreatePATProcedure:
-			tokenServiceCreatePATHandler.ServeHTTP(w, r)
+		case TokenServiceCreateTokenProcedure:
+			tokenServiceCreateTokenHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -142,6 +143,6 @@ func (UnimplementedTokenServiceHandler) GetAccessToken(context.Context, *connect
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.tokenservice.v1alpha1.TokenService.GetAccessToken is not implemented"))
 }
 
-func (UnimplementedTokenServiceHandler) CreatePAT(context.Context, *connect.Request[v1alpha1.CreatePATRequest]) (*connect.Response[v1alpha1.CreatePATResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.tokenservice.v1alpha1.TokenService.CreatePAT is not implemented"))
+func (UnimplementedTokenServiceHandler) CreateToken(context.Context, *connect.Request[v1alpha1.CreateTokenRequest]) (*connect.Response[v1alpha1.CreateTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.tokenservice.v1alpha1.TokenService.CreateToken is not implemented"))
 }
