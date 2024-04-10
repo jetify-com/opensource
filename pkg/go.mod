@@ -20,7 +20,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
-	go.jetpack.io/typeid v1.0.1-0.20240409204517-1cb0aefec14a
+	go.jetpack.io/typeid v1.0.1-0.20240410183543-96a4fd53d1e2
 	golang.org/x/oauth2 v0.19.0
 	google.golang.org/protobuf v1.33.0
 )
@@ -41,11 +41,9 @@ require (
 	github.com/juju/errors v1.0.0 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
