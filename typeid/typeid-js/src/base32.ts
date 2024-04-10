@@ -35,7 +35,7 @@ export function encode(src: Uint8Array): string {
   const dst: string[] = new Array(26).fill("");
 
   if (src.length !== 16) {
-    throw new Error("Invalid length");
+    throw new Error(`Invalid length. Expected 16 bytes, got ${src.length}. Input: ${src}`);
   }
 
   // 10 byte timestamp
@@ -73,7 +73,7 @@ export function encode(src: Uint8Array): string {
 
 export function decode(s: string): Uint8Array {
   if (s.length !== 26) {
-    throw new Error("Invalid length");
+    throw new Error(`Invalid length. Expected 26 bytes, got ${s.length}. Input: ${s}`);
   }
 
   const encoder = new TextEncoder();

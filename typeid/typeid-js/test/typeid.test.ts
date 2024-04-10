@@ -95,7 +95,7 @@ describe('TypeID', () => {
 
       expect(() => {
         TypeID.fromString(invalidStr);
-      }).toThrowError(new Error(`Invalid TypeID string: ${invalidStr}`));
+      }).toThrowError(new Error(`Invalid TypeId format: ${invalidStr}`));
     });
   });
 
