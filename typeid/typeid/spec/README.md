@@ -19,8 +19,8 @@ This document formalizes the specification for TypeIDs.
 A typeid consists of three parts:
 
 1. A **type prefix**: a string denoting the type of the ID. The prefix should be
-   at most 63 characters in all lowercase snake_case ASCII [a-z_].
-1. A **separator**: an underscore '\_' character. The separator is omitted if the prefix is empty.
+   at most 63 characters in all lowercase snake_case ASCII `[a-z_]`.
+1. A **separator**: an underscore `_` character. The separator is omitted if the prefix is empty.
 1. A **UUID suffix**: a 128-bit UUIDv7 encoded as a 26-character string in base32.
 
 ### Type Prefix
@@ -29,15 +29,17 @@ A type prefix is a string denoting the type of the ID.
 The prefix must:
 
 - Contain at most 63 characters.
-- May be empty. If it's not empty, it must contain only lowercase alphabetic ASCII characters [a-z], or an underscore '\_'.
-- If the prefix is not empty, it must start and end with an alphabetic character [a-z] (underscores are not allowed at the beginning or end of the string).
+- May be empty.
+- If not empty:
+  * Must contain only lowercase alphabetic ASCII characters `[a-z]`, or an underscore `_`.
+  * Must start and end with an alphabetic character `[a-z]`. Underscores are not allowed at the beginning or end of the string.
 
 Valid prefixes match the following
 regex: `^([a-z][a-z_]*[a-z])?$`.
 
-The empty string is a valid prefix, it's there for very specific use cases in which
+The empty string is a valid prefix, it's there for use cases in which
 applications need to encode a typeid but elide the type information. In general though,
-applications should use a prefix that is at least 3 characters long.
+applications SHOULD use a prefix that is at least 3 characters long.
 
 ### Separator
 
@@ -90,7 +92,7 @@ that value, by checking that the first character is a `7` or less.
 
 When genarating a new TypeID, the generated UUID suffix MUST decode to a valid UUIDv7.
 
-Implementations MAY allow encoding/decoding of other UUID variants when the
+Implementations SHOULD allow encoding/decoding of other UUID variants when the
 bits are provided by end users. This makes it possible for applications to encode
 other UUID variants like UUIDv1 or UUIDv4 at their discretion.
 
@@ -105,7 +107,7 @@ Libraries that implement this spec should also use semantic versioning.
 
 To assist library authors in validating their implementations, we provide:
 
-- A reference implementation in [Go](https://github.com/jetify-com/typeid-go)
+- A [reference implementation in Go](https://github.com/jetify-com/typeid-go)
   with extensive testing.
 - A [valid.yml](valid.yml) file containing a list of valid typeids along
   with their corresponding decoded UUIDs. For convienience, we also provide
