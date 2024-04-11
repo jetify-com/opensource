@@ -24,7 +24,7 @@ func (c *Client) GetAccessToken(
 	return response.Msg, nil
 }
 
-func (c *Client) CreatePAT(
+func (c *Client) CreateToken(
 	ctx context.Context,
 ) (*tokenservicev1alpha1.CreateTokenResponse, error) {
 	response, err := c.tokenClient().CreateToken(
