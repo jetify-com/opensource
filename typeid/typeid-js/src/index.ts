@@ -1,5 +1,6 @@
 export { typeid, TypeID } from "./typeid";
 export {
+  type TypeId,
   typeidUnboxed,
   fromString,
   parseTypeId,
