@@ -7,6 +7,8 @@ import {
   fromUUID,
   fromString,
   getType,
+  fromUUIDBytes,
+  getSuffix,
 } from "../src/unboxed/typeid";
 import validJson from "./valid";
 import invalidJson from "./invalid";
@@ -75,6 +77,28 @@ describe("TypeId Functions", () => {
       expect(() => {
         fromString(invalidStr);
       }).toThrowError(new Error(`Invalid TypeId format: ${invalidStr}`));
+    });
+  });
+
+  describe("fromUUIDBytes", () => {
+    it("should construct TypeId from a UUID bytes without prefix", () => {
+      const bytes = new Uint8Array([
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+      ]);
+      const tid = fromUUIDBytes("", bytes);
+
+      expect(getSuffix(tid)).toBe("00041061050r3gg28a1c60t3gf");
+      expect(getType(tid)).toBe("");
+    });
+
+    it("should construct TypeID from a UUID bytes with prefix", () => {
+      const bytes = new Uint8Array([
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+      ]);
+      const tid = fromUUIDBytes("prefix", bytes);
+
+      expect(getSuffix(tid)).toBe("00041061050r3gg28a1c60t3gf");
+      expect(getType(tid)).toBe("prefix");
     });
   });
 

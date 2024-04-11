@@ -6,7 +6,6 @@ export {
   parseTypeId,
   getType,
   getSuffix,
-  isTypeId,
   toUUIDBytes,
   toUUID,
   fromUUIDBytes,

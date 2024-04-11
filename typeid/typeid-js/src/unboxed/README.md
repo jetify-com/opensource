@@ -86,7 +86,6 @@ The full list of exported functions includes:
 -   `parseTypeId(typeId)`: Parses a TypeId string into its prefix and suffix components.
 -   `getType(typeId)`: Retrieves the prefix from a TypeId.
 -   `getSuffix(typeId)`: Retrieves the suffix from a TypeId.
--   `isTypeId(value)`: Checks if a given string is a valid TypeId format.
 -   `toUUID(typeId)`: Decodes the TypeId into a UUID string in hex format. The type prefix is ignored.
 -   `toUUIDBytes(typeId)`: Decodes the TypeId into a UUID byte array. The type prefix is ignored.
 -   `fromUUID(uuid, prefix?)`: Creates a TypeId from a UUID in hex format, with an optional prefix.

@@ -138,10 +138,6 @@ export function getSuffix<T extends string>(typeId: TypeId<T>): string {
   return typeId.substring(underscoreIndex + 1);
 }
 
-export function isTypeId<T extends string>(value: string): value is TypeId<T> {
-  return /^[a-z]{1,63}_[0-7][0-9a-v]{25}$/.test(value);
-}
-
 export function toUUIDBytes<T extends string>(typeId: TypeId<T>): Uint8Array {
   return decode(getSuffix(typeId));
 }
