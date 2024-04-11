@@ -35,7 +35,7 @@ The prefix must:
   * Must start and end with an alphabetic character `[a-z]`. Underscores are not allowed at the beginning or end of the string.
 
 Valid prefixes match the following
-regex: `^([a-z][a-z_]*[a-z])?$`.
+regex: `^([a-z]([a-z_]*[a-z])?)?$`.
 
 The empty string is a valid prefix, it's there for use cases in which
 applications need to encode a typeid but elide the type information. In general though,
