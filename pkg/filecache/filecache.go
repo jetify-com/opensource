@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"go.jetpack.io/pkg/cachehash"
 )
 
 var NotFound = errors.New("not found")
@@ -130,6 +131,10 @@ func (c *Cache[T]) GetOrSetWithTime(
 	return val, c.SetWithTime(key, val, t)
 }
 
+func (c *Cache[T]) Clear() error {
+	return errors.WithStack(os.RemoveAll(filepath.Join(c.cacheDir, c.domain)))
+}
+
 // IsCacheMiss returns true if the error is NotFound or Expired.
 func IsCacheMiss(err error) bool {
 	return errors.Is(err, NotFound) || errors.Is(err, Expired)
@@ -138,5 +143,5 @@ func IsCacheMiss(err error) bool {
 func (c *Cache[T]) filename(key string) string {
 	dir := filepath.Join(c.cacheDir, c.domain)
 	_ = os.MkdirAll(dir, 0755)
-	return filepath.Join(dir, key)
+	return filepath.Join(dir, cachehash.Slug(key))
 }
