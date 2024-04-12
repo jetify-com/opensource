@@ -1,6 +1,6 @@
 {
   "include": [
-    "github:jetpack-io/devbox-plugins?dir=go-monorepo"
+    "github:jetify-com/devbox-plugins?dir=go-monorepo"
   ],
   "shell": {
     "scripts": {
