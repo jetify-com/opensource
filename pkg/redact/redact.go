@@ -120,7 +120,7 @@ func Error(err error) error {
 //
 //	Errorf("cannot find user %s", Safe(username)).Error()
 //	// cannot find user bob
-func Errorf(format string, a ...any) error {
+func Errorf(format string, args ...any) error {
 	// Capture a stack trace.
 	safeErr := &safeError{
 		callers: make([]uintptr, 32),
@@ -131,20 +131,20 @@ func Errorf(format string, a ...any) error {
 	// Create the "normal" unredacted error. We need to remove the safe wrapper
 	// from any args so that fmt.Errorf can detect and format their type
 	// correctly.
-	args := make([]any, len(a))
-	for i := range a {
-		if safe, ok := a[i].(safe); ok {
-			args[i] = safe.a
+	unredactedArgs := make([]any, len(args))
+	for i := range args {
+		if safe, ok := args[i].(safe); ok {
+			unredactedArgs[i] = safe.a
 		} else {
-			args[i] = a[i]
+			unredactedArgs[i] = args[i]
 		}
 	}
-	safeErr.err = fmt.Errorf(format, args...)
+	safeErr.err = fmt.Errorf(format, unredactedArgs...)
 
 	// Now create the redacted error by replacing all args with their redacted
 	// version or by inserting a placeholder if the arg can't be redacted.
-	for i := range a {
-		switch t := a[i].(type) {
+	for i := range args {
+		switch t := args[i].(type) {
 		case safe:
 			args[i] = t.a
 		case error:
@@ -200,18 +200,18 @@ func (e *safeError) StackTrace() []runtime.Frame {
 	return frames
 }
 
-func (e *safeError) Format(f fmt.State, verb rune) {
+func (e *safeError) Format(state fmt.State, verb rune) {
 	switch verb {
 	case 'v', 's':
-		f.Write([]byte(e.Error()))
-		if f.Flag('+') {
+		state.Write([]byte(e.Error()))
+		if state.Flag('+') {
 			for _, fr := range e.StackTrace() {
-				fmt.Fprintf(f, "\n%s\n\t%s:%d", fr.Function, fr.File, fr.Line)
+				fmt.Fprintf(state, "\n%s\n\t%s:%d", fr.Function, fr.File, fr.Line)
 			}
 			return
 		}
 	case 'q':
-		fmt.Fprintf(f, "%q", e.Error())
+		fmt.Fprintf(state, "%q", e.Error())
 	}
 }
 

@@ -186,7 +186,7 @@ func TestErrorfRedactableArg(t *testing.T) {
 func TestErrorFormat(t *testing.T) {
 	// Capture the first line of output as the error message and all following
 	// lines as the stack trace.
-	re := regexp.MustCompile(`(.+)?((?s)
+	regex := regexp.MustCompile(`(.+)?((?s)
 .+/redact.TestErrorFormat
 	.+/redact/redact_test.go:\d+
 .*
@@ -208,7 +208,7 @@ runtime.goexit
 	for _, test := range cases {
 		t.Run(test.format, func(t *testing.T) {
 			got := fmt.Sprintf(test.format, test.err)
-			groups := re.FindStringSubmatch(got)
+			groups := regex.FindStringSubmatch(got)
 			if groups == nil {
 				t.Fatal("formatted error doesn't match regexp")
 			}
