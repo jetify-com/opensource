@@ -19,7 +19,7 @@ This document formalizes the specification for TypeIDs.
 A typeid consists of three parts:
 
 1. A **type prefix**: a string denoting the type of the ID. The prefix should be
-   at most 63 characters in all lowercase snake*case ASCII `[a-z*]`.
+   at most 63 characters in all lowercase snake_case ASCII `[a-z_]`.
 1. A **separator**: an underscore `_` character. The separator is omitted if the prefix is empty.
 1. A **UUID suffix**: a 128-bit UUIDv7 encoded as a 26-character string in base32.
 
