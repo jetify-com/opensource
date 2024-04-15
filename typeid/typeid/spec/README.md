@@ -19,7 +19,7 @@ This document formalizes the specification for TypeIDs.
 A typeid consists of three parts:
 
 1. A **type prefix**: a string denoting the type of the ID. The prefix should be
-   at most 63 characters in all lowercase snake_case ASCII `[a-z_]`.
+   at most 63 characters in all lowercase snake*case ASCII `[a-z*]`.
 1. A **separator**: an underscore `_` character. The separator is omitted if the prefix is empty.
 1. A **UUID suffix**: a 128-bit UUIDv7 encoded as a 26-character string in base32.
 
@@ -31,11 +31,11 @@ The prefix must:
 - Contain at most 63 characters.
 - May be empty.
 - If not empty:
-  * Must contain only lowercase alphabetic ASCII characters `[a-z]`, or an underscore `_`.
-  * Must start and end with an alphabetic character `[a-z]`. Underscores are not allowed at the beginning or end of the string.
+  - Must contain only lowercase alphabetic ASCII characters `[a-z]`, or an underscore `_`.
+  - Must start and end with an alphabetic character `[a-z]`. Underscores are not allowed at the beginning or end of the string.
 
 Valid prefixes match the following
-regex: `^([a-z]([a-z_]*[a-z])?)?$`.
+regex: `^([a-z]([a-z_]{0,61}[a-z])?)?$`.
 
 The empty string is a valid prefix, it's there for use cases in which
 applications need to encode a typeid but elide the type information. In general though,
