@@ -87,16 +87,16 @@ func Parse[T Subtype, PT SubtypePtr[T]](s string) (T, error) {
 }
 
 func split(id string) (string, string, error) {
-	switch parts := strings.SplitN(id, "_", 2); len(parts) {
-	case 1:
-		return "", parts[0], nil
-	case 2:
-		if parts[0] == "" {
+	index := strings.LastIndex(id, "_")
+	if index == -1 {
+		return "", id, nil
+	} else {
+		prefix := id[:index]
+		suffix := id[index+1:]
+		if prefix == "" {
 			return "", "", errors.New("prefix cannot be empty when there's a separator")
 		}
-		return parts[0], parts[1], nil
-	default:
-		return "", "", fmt.Errorf("invalid typeid: %s", id)
+		return prefix, suffix, nil
 	}
 }
 
