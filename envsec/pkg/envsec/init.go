@@ -20,7 +20,7 @@ var (
 )
 
 const (
-	dirName       = ".jetpack.io"
+	dirName       = ".jetify.com"
 	configName    = "project.json"
 	devConfigName = "dev.project.json"
 )

@@ -40,7 +40,7 @@ func (a *AWSFed) AWSCredsWithLocalCache(
 	ctx context.Context,
 	tok *session.Token,
 ) (*types.Credentials, error) {
-	cache := filecache.New[*types.Credentials]("jetpack.io/envsec")
+	cache := filecache.New[*types.Credentials]("jetify.com/envsec")
 	return cache.GetOrSetWithTime(
 		cacheKey(tok),
 		func() (*types.Credentials, time.Time, error) {

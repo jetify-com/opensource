@@ -12,7 +12,7 @@ import (
 	"go.jetpack.io/pkg/runx/impl/types"
 )
 
-var xdgInstallationSubdir = "jetpack.io/pkgs"
+var xdgInstallationSubdir = "jetify.com/pkgs"
 
 type Registry struct {
 	rootPath fileutil.Path
