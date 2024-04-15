@@ -90,14 +90,14 @@ func split(id string) (string, string, error) {
 	index := strings.LastIndex(id, "_")
 	if index == -1 {
 		return "", id, nil
-	} else {
-		prefix := id[:index]
-		suffix := id[index+1:]
-		if prefix == "" {
-			return "", "", errors.New("prefix cannot be empty when there's a separator")
-		}
-		return prefix, suffix, nil
 	}
+
+	prefix := id[:index]
+	suffix := id[index+1:]
+	if prefix == "" {
+		return "", "", errors.New("prefix cannot be empty when there's a separator")
+	}
+	return prefix, suffix, nil
 }
 
 // FromUUID encodes the given UUID (in hex string form) as a TypeID
