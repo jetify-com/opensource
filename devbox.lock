@@ -2,7 +2,7 @@
   "lockfile_version": "1",
   "packages": {
     "go@latest": {
-      "last_modified": "2024-03-22T11:26:23Z",
+      "last_modified": "2024-03-22T07:26:23-04:00",
       "resolved": "github:NixOS/nixpkgs/a3ed7406349a9335cb4c2a71369b697cecd9d351#go",
       "source": "devbox-search",
       "version": "1.22.1",
@@ -50,7 +50,7 @@
       }
     },
     "golangci-lint@latest": {
-      "last_modified": "2024-04-02T02:53:36Z",
+      "last_modified": "2024-04-01T22:53:36-04:00",
       "resolved": "github:NixOS/nixpkgs/080a4a27f206d07724b88da096e27ef63401a504#golangci-lint",
       "source": "devbox-search",
       "version": "1.57.2",
