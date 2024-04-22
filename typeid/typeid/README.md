@@ -58,16 +58,16 @@ Latest spec version: v0.3.0
 | [C# (.NET)](https://github.com/firenero/TypeId)               | [@firenero](https://github.com/firenero)                                                  | v0.3 on 2024-04-15 |
 | [Dart](https://github.com/TBD54566975/typeid-dart)            | [@mistermoe](https://github.com/mistermoe) [@tbd54566975](https://github.com/tbd54566975) | v0.2 on 2024-03-25 |
 | [Elixir](https://github.com/sloanelybutsurely/typeid-elixir)  | [@sloanelybutsurely](https://github.com/sloanelybutsurely)                                | v0.2 on 2023-07-02 |
-| [Haskell](https://github.com/MMZK1526/mmzk-typeid)            | [@MMZK1526](https://github.com/MMZK1526)                                                  | v0.2 on 2023-07-07 |
+| [Haskell](https://github.com/MMZK1526/mmzk-typeid)            | [@MMZK1526](https://github.com/MMZK1526)                                                  | v0.3 on 2024-04-19 |
 | [Java](https://github.com/fxlae/typeid-java)                  | [@fxlae](https://github.com/fxlae)                                                        | v0.3 on 2024-04-14 |
 | [Java](https://github.com/softprops/typeid-java)              | [@softprops](https://github.com/softprops)                                                | v0.2 on 2023-07-04 |
 | [OCaml](https://github.com/titouancreach/typeid-ocaml)        | [@titouancreach](https://github.com/titouancreach)                                        | v0.3 on 2024-04-22 |
 | [PHP](https://github.com/BombenProdukt/typeid)                | [@BombenProdukt](https://github.com/BombenProdukt)                                        | v0.2 on 2023-07-03 |
 | [Python](https://github.com/akhundMurad/typeid-python)        | [@akhundMurad](https://github.com/akhundMurad)                                            | v0.2 on 2023-06-30 |
 | [Ruby](https://github.com/broothie/typeid-ruby)               | [@broothie](https://github.com/broothie)                                                  | [v0.3 on 2024-04-13](https://github.com/broothie/typeid-ruby/pull/17) |
-| [Rust](https://github.com/conradludgate/type-safe-id)         | [@conradludgate](https://github.com/conradludgate)                                        | v0.2 on 2023-07-01 |
+| [Rust](https://github.com/conradludgate/type-safe-id)         | [@conradludgate](https://github.com/conradludgate)                                        | [v0.3 on 2023-04-12](https://github.com/conradludgate/type-safe-id/pull/1) |
 | [Rust](https://github.com/johnnynotsolucky/strong_id)         | [@johnnynotsolucky](https://github.com/johnnynotsolucky)                                  | v0.2 on 2023-07-13 |
-| [Scala](https://github.com/ant8e/uuid4cats-effect)            | [@ant8e](https://github.com/ant8e)                                                        | v0.2 on 2023-07-14 |
+| [Scala](https://github.com/ant8e/uuid4cats-effect)            | [@ant8e](https://github.com/ant8e)                                                        | v0.3 on 2024-04-19 |
 | [Scala](https://github.com/guizmaii-opensource/zio-uuid)      | [@guizmaii](https://github.com/guizmaii)                                                  | Not validated yet  |
 | [Swift](https://github.com/Frizlab/swift-typeid)              | [@Frizlab](https://github.com/Frizlab)                                                    | v0.3 on 2024-04-19 |
 | [T-SQL](https://github.com/uniteeio/typeid_tsql)              | [@uniteeio](https://github.com/uniteeio)                                                  | v0.2 on 2023-08-25 |
