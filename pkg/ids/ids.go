@@ -70,14 +70,6 @@ type CustomDomainID struct {
 	typeid.TypeID[customDomainPrefix]
 }
 
-type personalAccessTokenPrefix struct{}
-
-func (personalAccessTokenPrefix) Prefix() string { return "pat" }
-
-type PersonalAccessToken struct {
-	typeid.TypeID[personalAccessTokenPrefix]
-}
-
 func Short[P typeid.PrefixType](tid typeid.TypeID[P]) string {
 	return ShortStr(tid.String()) // NOTE: len(id.String) >= 26 always
 }

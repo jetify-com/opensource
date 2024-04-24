@@ -10,12 +10,12 @@ import (
 
 func (c *Client) GetAccessToken(
 	ctx context.Context,
-	pat ids.PersonalAccessToken,
+	apiKey ids.APIKey,
 ) (*tokenservicev1alpha1.GetAccessTokenResponse, error) {
 	response, err := c.tokenClient().GetAccessToken(
 		ctx,
 		connect.NewRequest(&tokenservicev1alpha1.GetAccessTokenRequest{
-			Token: pat.String(),
+			Token: apiKey.String(),
 		}),
 	)
 	if err != nil {
