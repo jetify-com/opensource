@@ -48,6 +48,9 @@ const (
 	// ProjectsServiceListProjectsProcedure is the fully-qualified name of the ProjectsService's
 	// ListProjects RPC.
 	ProjectsServiceListProjectsProcedure = "/priv.projects.v1alpha1.ProjectsService/ListProjects"
+	// ProjectsServiceCountProjectsWithDeploymentProcedure is the fully-qualified name of the
+	// ProjectsService's CountProjectsWithDeployment RPC.
+	ProjectsServiceCountProjectsWithDeploymentProcedure = "/priv.projects.v1alpha1.ProjectsService/CountProjectsWithDeployment"
 	// ProjectsServiceSearchProjectsProcedure is the fully-qualified name of the ProjectsService's
 	// SearchProjects RPC.
 	ProjectsServiceSearchProjectsProcedure = "/priv.projects.v1alpha1.ProjectsService/SearchProjects"
@@ -67,14 +70,15 @@ const (
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	projectsServiceServiceDescriptor              = v1alpha1.File_priv_projects_v1alpha1_projects_proto.Services().ByName("ProjectsService")
-	projectsServiceGetProjectMethodDescriptor     = projectsServiceServiceDescriptor.Methods().ByName("GetProject")
-	projectsServiceListProjectsMethodDescriptor   = projectsServiceServiceDescriptor.Methods().ByName("ListProjects")
-	projectsServiceSearchProjectsMethodDescriptor = projectsServiceServiceDescriptor.Methods().ByName("SearchProjects")
-	projectsServiceCreateProjectMethodDescriptor  = projectsServiceServiceDescriptor.Methods().ByName("CreateProject")
-	projectsServiceDeleteProjectMethodDescriptor  = projectsServiceServiceDescriptor.Methods().ByName("DeleteProject")
-	projectsServicePatchProjectMethodDescriptor   = projectsServiceServiceDescriptor.Methods().ByName("PatchProject")
-	projectsServiceUpdateProjectMethodDescriptor  = projectsServiceServiceDescriptor.Methods().ByName("UpdateProject")
+	projectsServiceServiceDescriptor                           = v1alpha1.File_priv_projects_v1alpha1_projects_proto.Services().ByName("ProjectsService")
+	projectsServiceGetProjectMethodDescriptor                  = projectsServiceServiceDescriptor.Methods().ByName("GetProject")
+	projectsServiceListProjectsMethodDescriptor                = projectsServiceServiceDescriptor.Methods().ByName("ListProjects")
+	projectsServiceCountProjectsWithDeploymentMethodDescriptor = projectsServiceServiceDescriptor.Methods().ByName("CountProjectsWithDeployment")
+	projectsServiceSearchProjectsMethodDescriptor              = projectsServiceServiceDescriptor.Methods().ByName("SearchProjects")
+	projectsServiceCreateProjectMethodDescriptor               = projectsServiceServiceDescriptor.Methods().ByName("CreateProject")
+	projectsServiceDeleteProjectMethodDescriptor               = projectsServiceServiceDescriptor.Methods().ByName("DeleteProject")
+	projectsServicePatchProjectMethodDescriptor                = projectsServiceServiceDescriptor.Methods().ByName("PatchProject")
+	projectsServiceUpdateProjectMethodDescriptor               = projectsServiceServiceDescriptor.Methods().ByName("UpdateProject")
 )
 
 // ProjectsServiceClient is a client for the priv.projects.v1alpha1.ProjectsService service.
@@ -90,6 +94,11 @@ type ProjectsServiceClient interface {
 	// sorted by creation date, with the most recently created projects appearing
 	// first.
 	ListProjects(context.Context, *connect.Request[v1alpha1.ListProjectsRequest]) (*connect.Response[v1alpha1.ListProjectsResponse], error)
+	// Count the number of projects with Deployments
+	//
+	// Given an org_id, counts the number of projects in an organization that have
+	// enabled deployments.
+	CountProjectsWithDeployment(context.Context, *connect.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect.Response[v1alpha1.CountProjectsWithDeploymentResponse], error)
 	// Search for projects in an organization
 	//
 	// Searches for products previously created in the given organization.
@@ -142,6 +151,13 @@ func NewProjectsServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
+		countProjectsWithDeployment: connect.NewClient[v1alpha1.CountProjectsWithDeploymentRequest, v1alpha1.CountProjectsWithDeploymentResponse](
+			httpClient,
+			baseURL+ProjectsServiceCountProjectsWithDeploymentProcedure,
+			connect.WithSchema(projectsServiceCountProjectsWithDeploymentMethodDescriptor),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
+		),
 		searchProjects: connect.NewClient[v1alpha1.SearchProjectsRequest, v1alpha1.SearchProjectsResponse](
 			httpClient,
 			baseURL+ProjectsServiceSearchProjectsProcedure,
@@ -178,13 +194,14 @@ func NewProjectsServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 
 // projectsServiceClient implements ProjectsServiceClient.
 type projectsServiceClient struct {
-	getProject     *connect.Client[v1alpha1.GetProjectRequest, v1alpha1.GetProjectResponse]
-	listProjects   *connect.Client[v1alpha1.ListProjectsRequest, v1alpha1.ListProjectsResponse]
-	searchProjects *connect.Client[v1alpha1.SearchProjectsRequest, v1alpha1.SearchProjectsResponse]
-	createProject  *connect.Client[v1alpha1.CreateProjectRequest, v1alpha1.CreateProjectResponse]
-	deleteProject  *connect.Client[v1alpha1.DeleteProjectRequest, v1alpha1.DeleteProjectResponse]
-	patchProject   *connect.Client[v1alpha1.PatchProjectRequest, v1alpha1.PatchProjectResponse]
-	updateProject  *connect.Client[v1alpha1.UpdateProjectRequest, v1alpha1.UpdateProjectResponse]
+	getProject                  *connect.Client[v1alpha1.GetProjectRequest, v1alpha1.GetProjectResponse]
+	listProjects                *connect.Client[v1alpha1.ListProjectsRequest, v1alpha1.ListProjectsResponse]
+	countProjectsWithDeployment *connect.Client[v1alpha1.CountProjectsWithDeploymentRequest, v1alpha1.CountProjectsWithDeploymentResponse]
+	searchProjects              *connect.Client[v1alpha1.SearchProjectsRequest, v1alpha1.SearchProjectsResponse]
+	createProject               *connect.Client[v1alpha1.CreateProjectRequest, v1alpha1.CreateProjectResponse]
+	deleteProject               *connect.Client[v1alpha1.DeleteProjectRequest, v1alpha1.DeleteProjectResponse]
+	patchProject                *connect.Client[v1alpha1.PatchProjectRequest, v1alpha1.PatchProjectResponse]
+	updateProject               *connect.Client[v1alpha1.UpdateProjectRequest, v1alpha1.UpdateProjectResponse]
 }
 
 // GetProject calls priv.projects.v1alpha1.ProjectsService.GetProject.
@@ -195,6 +212,12 @@ func (c *projectsServiceClient) GetProject(ctx context.Context, req *connect.Req
 // ListProjects calls priv.projects.v1alpha1.ProjectsService.ListProjects.
 func (c *projectsServiceClient) ListProjects(ctx context.Context, req *connect.Request[v1alpha1.ListProjectsRequest]) (*connect.Response[v1alpha1.ListProjectsResponse], error) {
 	return c.listProjects.CallUnary(ctx, req)
+}
+
+// CountProjectsWithDeployment calls
+// priv.projects.v1alpha1.ProjectsService.CountProjectsWithDeployment.
+func (c *projectsServiceClient) CountProjectsWithDeployment(ctx context.Context, req *connect.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect.Response[v1alpha1.CountProjectsWithDeploymentResponse], error) {
+	return c.countProjectsWithDeployment.CallUnary(ctx, req)
 }
 
 // SearchProjects calls priv.projects.v1alpha1.ProjectsService.SearchProjects.
@@ -236,6 +259,11 @@ type ProjectsServiceHandler interface {
 	// sorted by creation date, with the most recently created projects appearing
 	// first.
 	ListProjects(context.Context, *connect.Request[v1alpha1.ListProjectsRequest]) (*connect.Response[v1alpha1.ListProjectsResponse], error)
+	// Count the number of projects with Deployments
+	//
+	// Given an org_id, counts the number of projects in an organization that have
+	// enabled deployments.
+	CountProjectsWithDeployment(context.Context, *connect.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect.Response[v1alpha1.CountProjectsWithDeploymentResponse], error)
 	// Search for projects in an organization
 	//
 	// Searches for products previously created in the given organization.
@@ -284,6 +312,13 @@ func NewProjectsServiceHandler(svc ProjectsServiceHandler, opts ...connect.Handl
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
+	projectsServiceCountProjectsWithDeploymentHandler := connect.NewUnaryHandler(
+		ProjectsServiceCountProjectsWithDeploymentProcedure,
+		svc.CountProjectsWithDeployment,
+		connect.WithSchema(projectsServiceCountProjectsWithDeploymentMethodDescriptor),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
+	)
 	projectsServiceSearchProjectsHandler := connect.NewUnaryHandler(
 		ProjectsServiceSearchProjectsProcedure,
 		svc.SearchProjects,
@@ -321,6 +356,8 @@ func NewProjectsServiceHandler(svc ProjectsServiceHandler, opts ...connect.Handl
 			projectsServiceGetProjectHandler.ServeHTTP(w, r)
 		case ProjectsServiceListProjectsProcedure:
 			projectsServiceListProjectsHandler.ServeHTTP(w, r)
+		case ProjectsServiceCountProjectsWithDeploymentProcedure:
+			projectsServiceCountProjectsWithDeploymentHandler.ServeHTTP(w, r)
 		case ProjectsServiceSearchProjectsProcedure:
 			projectsServiceSearchProjectsHandler.ServeHTTP(w, r)
 		case ProjectsServiceCreateProjectProcedure:
@@ -346,6 +383,10 @@ func (UnimplementedProjectsServiceHandler) GetProject(context.Context, *connect.
 
 func (UnimplementedProjectsServiceHandler) ListProjects(context.Context, *connect.Request[v1alpha1.ListProjectsRequest]) (*connect.Response[v1alpha1.ListProjectsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.ListProjects is not implemented"))
+}
+
+func (UnimplementedProjectsServiceHandler) CountProjectsWithDeployment(context.Context, *connect.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect.Response[v1alpha1.CountProjectsWithDeploymentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.CountProjectsWithDeployment is not implemented"))
 }
 
 func (UnimplementedProjectsServiceHandler) SearchProjects(context.Context, *connect.Request[v1alpha1.SearchProjectsRequest]) (*connect.Response[v1alpha1.SearchProjectsResponse], error) {
