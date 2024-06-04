@@ -91,8 +91,6 @@ github.com/ulikunitz/xz v0.5.12/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0o
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 go.jetify.com/typeid v1.1.0 h1:eRW/BBYx1Kh3DiOKBLaAHbwomxK4jm4/tWuNshN5wXY=
 go.jetify.com/typeid v1.1.0/go.mod h1:68KXnMPJvJi4Pf2vUhr1QtWo5LfXzMwbUdLfwPlO4jI=
-go.jetpack.io/typeid v1.0.1-0.20240410183543-96a4fd53d1e2 h1:w9uWg8BAim374iWzxEuDhf6MJ/cMQVR/0xi/L3DgfT0=
-go.jetpack.io/typeid v1.0.1-0.20240410183543-96a4fd53d1e2/go.mod h1:zqBUNjE3NxAL8wRYW2LcOpH5LxCvTqthm9YSuuu1ic4=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
 golang.org/x/crypto v0.3.1-0.20221117191849-2c476679df9a/go.mod h1:hebNnKkNXi2UzZN1eVRvBB7co0a+JxK6XbPiWVs/3J4=

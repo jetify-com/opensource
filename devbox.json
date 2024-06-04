@@ -5,7 +5,7 @@
   "shell": {
     "scripts": {
       "update-internal-deps": [
-        "for_each_gomod go get -u go.jetpack.io/pkg@main go.jetpack.io/typeid@main || true",
+        "for_each_gomod go get -u go.jetpack.io/pkg@main go.jetify.com/typeid@main || true",
         "devbox run tidy"
       ]
     }

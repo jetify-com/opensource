@@ -5,7 +5,7 @@ package ids
 // repos)
 
 import (
-	"go.jetpack.io/typeid"
+	"go.jetify.com/typeid"
 )
 
 type userPrefix struct{}

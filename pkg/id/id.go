@@ -1,6 +1,6 @@
 package id
 
-import "go.jetpack.io/typeid"
+import "go.jetify.com/typeid"
 
 type ProjectPrefix struct{}
 
