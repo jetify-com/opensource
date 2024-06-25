@@ -10,10 +10,10 @@ import (
 // breaking the examples.
 
 func Example_wrapped() {
-	// user := "gcurtis"
+	user := "gcurtis"
 	wrapped := Errorf("wrong password")
-	// err := Errorf("login %q: %w", user, wrapped)
-	fmt.Printf("error: %+v\n", wrapped)
+	err := Errorf("login %q: %w", user, wrapped)
+	fmt.Printf("error: %+v\n", err)
 
 	// Output:
 	// error: login "gcurtis": wrong password

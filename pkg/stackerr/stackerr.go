@@ -55,18 +55,20 @@ import (
 // its source location. See the package documentation for details.
 func Errorf(format string, a ...any) error {
 	err := fmt.Errorf(format, a...)
-	switch t := err.(type) {
+
+	//nolint:errorlint
+	switch wrapErr := err.(type) {
 	case interface{ Unwrap() error }:
 		werr := &wrapError{
 			srcError: srcError{msg: err.Error()},
-			err:      t.Unwrap(),
+			err:      wrapErr.Unwrap(),
 		}
 		runtime.Callers(2, werr.pc[:])
 		return werr
 	case interface{ Unwrap() []error }:
 		werr := &wrapErrors{
 			srcError: srcError{msg: err.Error()},
-			errs:     t.Unwrap(),
+			errs:     wrapErr.Unwrap(),
 		}
 		runtime.Callers(2, werr.pc[:])
 		return werr
@@ -105,7 +107,7 @@ func (e *wrapErrors) Format(f fmt.State, verb rune) { format(f, verb, e) }
 func format(f fmt.State, verb rune, err error) {
 	fmt.Fprintf(f, fmt.FormatString(f, verb), err.Error())
 	if f.Flag('+') {
-		io.WriteString(f, "\n")
+		_, _ = io.WriteString(f, "\n")
 		printChain(f, err, "")
 	}
 }
@@ -113,20 +115,21 @@ func format(f fmt.State, verb rune, err error) {
 func printChain(w io.Writer, err error, indent string) {
 	printFileLine(w, err, "")
 	for {
-		switch uw := err.(type) {
+		//nolint:errorlint
+		switch wrapErr := err.(type) {
 		case interface{ Unwrap() error }:
-			err = uw.Unwrap()
+			err = wrapErr.Unwrap()
 			if err == nil {
 				return
 			}
 		case interface{ Unwrap() []error }:
-			joined := uw.Unwrap()
+			joined := wrapErr.Unwrap()
 			if len(joined) == 0 {
 				return
 			}
 			width := len(strconv.Itoa(len(joined)))
 			indent := "\t" + strings.Repeat(" ", width+3)
-			for i, err := range uw.Unwrap() {
+			for i, err := range wrapErr.Unwrap() {
 				if err == nil {
 					continue
 				}
@@ -144,21 +147,21 @@ func printChain(w io.Writer, err error, indent string) {
 var basePath = ""
 
 func printFileLine(w io.Writer, err error, prefix string) {
-	var fr runtime.Frame
+	var frame runtime.Frame
 	if err, ok := err.(interface{ Frame() runtime.Frame }); ok {
-		fr = err.Frame()
+		frame = err.Frame()
 	}
-	if fr.Line == 0 {
+	if frame.Line == 0 {
 		return
 	}
 	if basePath != "" {
-		if rel, err := filepath.Rel(basePath, fr.File); err == nil {
-			fr.File = rel
+		if rel, err := filepath.Rel(basePath, frame.File); err == nil {
+			frame.File = rel
 		}
 	}
 	msg := err.Error()
 	if !strconv.CanBackquote(strings.ReplaceAll(msg, "`", "\"")) {
 		msg = strconv.Quote(msg)
 	}
-	io.WriteString(w, prefix+fr.File+":"+strconv.Itoa(fr.Line)+" "+msg)
+	_, _ = io.WriteString(w, prefix+frame.File+":"+strconv.Itoa(frame.Line)+" "+msg)
 }
