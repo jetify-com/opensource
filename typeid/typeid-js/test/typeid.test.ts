@@ -100,7 +100,7 @@ describe("TypeID", () => {
 
     it("should construct TypeID from a string with prefix and specified prefix", () => {
       const str = "prefix_00041061050r3gg28a1c60t3gf";
-      const tid = TypeID.fromString(str);
+      const tid = TypeID.fromString(str, "prefix");
 
       expect(tid.getSuffix()).toBe("00041061050r3gg28a1c60t3gf");
       expect(tid.getType()).toBe("prefix");
@@ -219,4 +219,3 @@ describe("TypeID", () => {
     });
   });
 });
-
