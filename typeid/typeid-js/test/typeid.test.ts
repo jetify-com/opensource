@@ -98,6 +98,14 @@ describe("TypeID", () => {
       expect(tid.getType()).toBe("prefix");
     });
 
+    it("should construct TypeID from a string with prefix and specified prefix", () => {
+      const str = "prefix_00041061050r3gg28a1c60t3gf";
+      const tid = TypeID.fromString(str, "prefix");
+
+      expect(tid.getSuffix()).toBe("00041061050r3gg28a1c60t3gf");
+      expect(tid.getType()).toBe("prefix");
+    });
+
     it("should throw an error for invalid TypeID string", () => {
       const invalidStr = "invalid_string_with_underscore0000000000000000";
 
@@ -106,6 +114,26 @@ describe("TypeID", () => {
       }).toThrowError(
         new Error(`Invalid suffix. First character must be in the range [0-7]`)
       );
+    });
+    it("should throw an error with wrong prefix", () => {
+      const str = "prefix_00041061050r3gg28a1c60t3gf";
+      expect(() => {
+        TypeID.fromString(str, "wrong");
+      }).toThrowError(
+        new Error(`Invalid TypeId. Prefix mismatch. Expected wrong, got prefix`)
+      );
+    });
+    it("should throw an error for empty TypeId string", () => {
+      const invalidStr = "";
+      expect(() => {
+        TypeID.fromString(invalidStr);
+      }).toThrowError(new Error(`Invalid TypeId. Suffix cannot be empty`));
+    });
+    it("should throw an error for TypeId string with empty suffix", () => {
+      const invalidStr = "prefix_";
+      expect(() => {
+        TypeID.fromString(invalidStr);
+      }).toThrowError(new Error(`Invalid TypeId. Suffix cannot be empty`));
     });
   });
 
