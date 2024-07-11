@@ -8,9 +8,9 @@
 package devcloudv1alpha1connect
 
 import (
+	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	connect_go "github.com/bufbuild/connect-go"
 	v1alpha1 "go.jetpack.io/axiom/api/gen/pub/devcloud/v1alpha1"
 	http "net/http"
 	strings "strings"
@@ -21,7 +21,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect_go.IsAtLeastVersion0_1_0
+const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// SandboxServiceName is the fully-qualified name of the SandboxService service.
@@ -42,20 +42,19 @@ const (
 	// SandboxServiceGetSandboxProcedure is the fully-qualified name of the SandboxService's GetSandbox
 	// RPC.
 	SandboxServiceGetSandboxProcedure = "/pub.devcloud.v1alpha1.SandboxService/GetSandbox"
-	// SandboxServiceDeleteSandboxProcedure is the fully-qualified name of the SandboxService's
-	// DeleteSandbox RPC.
-	SandboxServiceDeleteSandboxProcedure = "/pub.devcloud.v1alpha1.SandboxService/DeleteSandbox"
-	// SandboxServiceListSandboxesProcedure is the fully-qualified name of the SandboxService's
-	// ListSandboxes RPC.
-	SandboxServiceListSandboxesProcedure = "/pub.devcloud.v1alpha1.SandboxService/ListSandboxes"
+)
+
+// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
+var (
+	sandboxServiceServiceDescriptor             = v1alpha1.File_pub_devcloud_v1alpha1_sandbox_proto.Services().ByName("SandboxService")
+	sandboxServiceCreateSandboxMethodDescriptor = sandboxServiceServiceDescriptor.Methods().ByName("CreateSandbox")
+	sandboxServiceGetSandboxMethodDescriptor    = sandboxServiceServiceDescriptor.Methods().ByName("GetSandbox")
 )
 
 // SandboxServiceClient is a client for the pub.devcloud.v1alpha1.SandboxService service.
 type SandboxServiceClient interface {
-	CreateSandbox(context.Context, *connect_go.Request[v1alpha1.CreateSandboxRequest]) (*connect_go.Response[v1alpha1.CreateSandboxResponse], error)
-	GetSandbox(context.Context, *connect_go.Request[v1alpha1.GetSandboxRequest]) (*connect_go.Response[v1alpha1.GetSandboxResponse], error)
-	DeleteSandbox(context.Context, *connect_go.Request[v1alpha1.DeleteSandboxRequest]) (*connect_go.Response[v1alpha1.DeleteSandboxResponse], error)
-	ListSandboxes(context.Context, *connect_go.Request[v1alpha1.ListSandboxesRequest]) (*connect_go.Response[v1alpha1.ListSandboxesResponse], error)
+	CreateSandbox(context.Context, *connect.Request[v1alpha1.CreateSandboxRequest]) (*connect.Response[v1alpha1.CreateSandboxResponse], error)
+	GetSandbox(context.Context, *connect.Request[v1alpha1.GetSandboxRequest]) (*connect.Response[v1alpha1.GetSandboxResponse], error)
 }
 
 // NewSandboxServiceClient constructs a client for the pub.devcloud.v1alpha1.SandboxService service.
@@ -65,66 +64,44 @@ type SandboxServiceClient interface {
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewSandboxServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) SandboxServiceClient {
+func NewSandboxServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) SandboxServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &sandboxServiceClient{
-		createSandbox: connect_go.NewClient[v1alpha1.CreateSandboxRequest, v1alpha1.CreateSandboxResponse](
+		createSandbox: connect.NewClient[v1alpha1.CreateSandboxRequest, v1alpha1.CreateSandboxResponse](
 			httpClient,
 			baseURL+SandboxServiceCreateSandboxProcedure,
-			opts...,
+			connect.WithSchema(sandboxServiceCreateSandboxMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
-		getSandbox: connect_go.NewClient[v1alpha1.GetSandboxRequest, v1alpha1.GetSandboxResponse](
+		getSandbox: connect.NewClient[v1alpha1.GetSandboxRequest, v1alpha1.GetSandboxResponse](
 			httpClient,
 			baseURL+SandboxServiceGetSandboxProcedure,
-			opts...,
-		),
-		deleteSandbox: connect_go.NewClient[v1alpha1.DeleteSandboxRequest, v1alpha1.DeleteSandboxResponse](
-			httpClient,
-			baseURL+SandboxServiceDeleteSandboxProcedure,
-			opts...,
-		),
-		listSandboxes: connect_go.NewClient[v1alpha1.ListSandboxesRequest, v1alpha1.ListSandboxesResponse](
-			httpClient,
-			baseURL+SandboxServiceListSandboxesProcedure,
-			opts...,
+			connect.WithSchema(sandboxServiceGetSandboxMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
 
 // sandboxServiceClient implements SandboxServiceClient.
 type sandboxServiceClient struct {
-	createSandbox *connect_go.Client[v1alpha1.CreateSandboxRequest, v1alpha1.CreateSandboxResponse]
-	getSandbox    *connect_go.Client[v1alpha1.GetSandboxRequest, v1alpha1.GetSandboxResponse]
-	deleteSandbox *connect_go.Client[v1alpha1.DeleteSandboxRequest, v1alpha1.DeleteSandboxResponse]
-	listSandboxes *connect_go.Client[v1alpha1.ListSandboxesRequest, v1alpha1.ListSandboxesResponse]
+	createSandbox *connect.Client[v1alpha1.CreateSandboxRequest, v1alpha1.CreateSandboxResponse]
+	getSandbox    *connect.Client[v1alpha1.GetSandboxRequest, v1alpha1.GetSandboxResponse]
 }
 
 // CreateSandbox calls pub.devcloud.v1alpha1.SandboxService.CreateSandbox.
-func (c *sandboxServiceClient) CreateSandbox(ctx context.Context, req *connect_go.Request[v1alpha1.CreateSandboxRequest]) (*connect_go.Response[v1alpha1.CreateSandboxResponse], error) {
+func (c *sandboxServiceClient) CreateSandbox(ctx context.Context, req *connect.Request[v1alpha1.CreateSandboxRequest]) (*connect.Response[v1alpha1.CreateSandboxResponse], error) {
 	return c.createSandbox.CallUnary(ctx, req)
 }
 
 // GetSandbox calls pub.devcloud.v1alpha1.SandboxService.GetSandbox.
-func (c *sandboxServiceClient) GetSandbox(ctx context.Context, req *connect_go.Request[v1alpha1.GetSandboxRequest]) (*connect_go.Response[v1alpha1.GetSandboxResponse], error) {
+func (c *sandboxServiceClient) GetSandbox(ctx context.Context, req *connect.Request[v1alpha1.GetSandboxRequest]) (*connect.Response[v1alpha1.GetSandboxResponse], error) {
 	return c.getSandbox.CallUnary(ctx, req)
-}
-
-// DeleteSandbox calls pub.devcloud.v1alpha1.SandboxService.DeleteSandbox.
-func (c *sandboxServiceClient) DeleteSandbox(ctx context.Context, req *connect_go.Request[v1alpha1.DeleteSandboxRequest]) (*connect_go.Response[v1alpha1.DeleteSandboxResponse], error) {
-	return c.deleteSandbox.CallUnary(ctx, req)
-}
-
-// ListSandboxes calls pub.devcloud.v1alpha1.SandboxService.ListSandboxes.
-func (c *sandboxServiceClient) ListSandboxes(ctx context.Context, req *connect_go.Request[v1alpha1.ListSandboxesRequest]) (*connect_go.Response[v1alpha1.ListSandboxesResponse], error) {
-	return c.listSandboxes.CallUnary(ctx, req)
 }
 
 // SandboxServiceHandler is an implementation of the pub.devcloud.v1alpha1.SandboxService service.
 type SandboxServiceHandler interface {
-	CreateSandbox(context.Context, *connect_go.Request[v1alpha1.CreateSandboxRequest]) (*connect_go.Response[v1alpha1.CreateSandboxResponse], error)
-	GetSandbox(context.Context, *connect_go.Request[v1alpha1.GetSandboxRequest]) (*connect_go.Response[v1alpha1.GetSandboxResponse], error)
-	DeleteSandbox(context.Context, *connect_go.Request[v1alpha1.DeleteSandboxRequest]) (*connect_go.Response[v1alpha1.DeleteSandboxResponse], error)
-	ListSandboxes(context.Context, *connect_go.Request[v1alpha1.ListSandboxesRequest]) (*connect_go.Response[v1alpha1.ListSandboxesResponse], error)
+	CreateSandbox(context.Context, *connect.Request[v1alpha1.CreateSandboxRequest]) (*connect.Response[v1alpha1.CreateSandboxResponse], error)
+	GetSandbox(context.Context, *connect.Request[v1alpha1.GetSandboxRequest]) (*connect.Response[v1alpha1.GetSandboxResponse], error)
 }
 
 // NewSandboxServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -132,26 +109,18 @@ type SandboxServiceHandler interface {
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewSandboxServiceHandler(svc SandboxServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	sandboxServiceCreateSandboxHandler := connect_go.NewUnaryHandler(
+func NewSandboxServiceHandler(svc SandboxServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	sandboxServiceCreateSandboxHandler := connect.NewUnaryHandler(
 		SandboxServiceCreateSandboxProcedure,
 		svc.CreateSandbox,
-		opts...,
+		connect.WithSchema(sandboxServiceCreateSandboxMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
-	sandboxServiceGetSandboxHandler := connect_go.NewUnaryHandler(
+	sandboxServiceGetSandboxHandler := connect.NewUnaryHandler(
 		SandboxServiceGetSandboxProcedure,
 		svc.GetSandbox,
-		opts...,
-	)
-	sandboxServiceDeleteSandboxHandler := connect_go.NewUnaryHandler(
-		SandboxServiceDeleteSandboxProcedure,
-		svc.DeleteSandbox,
-		opts...,
-	)
-	sandboxServiceListSandboxesHandler := connect_go.NewUnaryHandler(
-		SandboxServiceListSandboxesProcedure,
-		svc.ListSandboxes,
-		opts...,
+		connect.WithSchema(sandboxServiceGetSandboxMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/pub.devcloud.v1alpha1.SandboxService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -159,10 +128,6 @@ func NewSandboxServiceHandler(svc SandboxServiceHandler, opts ...connect_go.Hand
 			sandboxServiceCreateSandboxHandler.ServeHTTP(w, r)
 		case SandboxServiceGetSandboxProcedure:
 			sandboxServiceGetSandboxHandler.ServeHTTP(w, r)
-		case SandboxServiceDeleteSandboxProcedure:
-			sandboxServiceDeleteSandboxHandler.ServeHTTP(w, r)
-		case SandboxServiceListSandboxesProcedure:
-			sandboxServiceListSandboxesHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -172,18 +137,10 @@ func NewSandboxServiceHandler(svc SandboxServiceHandler, opts ...connect_go.Hand
 // UnimplementedSandboxServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedSandboxServiceHandler struct{}
 
-func (UnimplementedSandboxServiceHandler) CreateSandbox(context.Context, *connect_go.Request[v1alpha1.CreateSandboxRequest]) (*connect_go.Response[v1alpha1.CreateSandboxResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("pub.devcloud.v1alpha1.SandboxService.CreateSandbox is not implemented"))
+func (UnimplementedSandboxServiceHandler) CreateSandbox(context.Context, *connect.Request[v1alpha1.CreateSandboxRequest]) (*connect.Response[v1alpha1.CreateSandboxResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pub.devcloud.v1alpha1.SandboxService.CreateSandbox is not implemented"))
 }
 
-func (UnimplementedSandboxServiceHandler) GetSandbox(context.Context, *connect_go.Request[v1alpha1.GetSandboxRequest]) (*connect_go.Response[v1alpha1.GetSandboxResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("pub.devcloud.v1alpha1.SandboxService.GetSandbox is not implemented"))
-}
-
-func (UnimplementedSandboxServiceHandler) DeleteSandbox(context.Context, *connect_go.Request[v1alpha1.DeleteSandboxRequest]) (*connect_go.Response[v1alpha1.DeleteSandboxResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("pub.devcloud.v1alpha1.SandboxService.DeleteSandbox is not implemented"))
-}
-
-func (UnimplementedSandboxServiceHandler) ListSandboxes(context.Context, *connect_go.Request[v1alpha1.ListSandboxesRequest]) (*connect_go.Response[v1alpha1.ListSandboxesResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("pub.devcloud.v1alpha1.SandboxService.ListSandboxes is not implemented"))
+func (UnimplementedSandboxServiceHandler) GetSandbox(context.Context, *connect.Request[v1alpha1.GetSandboxRequest]) (*connect.Response[v1alpha1.GetSandboxResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pub.devcloud.v1alpha1.SandboxService.GetSandbox is not implemented"))
 }

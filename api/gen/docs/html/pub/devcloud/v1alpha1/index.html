@@ -191,27 +191,11 @@
                 </li>
               
                 <li>
-                  <a href="#pub.devcloud.v1alpha1.DeleteSandboxRequest"><span class="badge">M</span>DeleteSandboxRequest</a>
-                </li>
-              
-                <li>
-                  <a href="#pub.devcloud.v1alpha1.DeleteSandboxResponse"><span class="badge">M</span>DeleteSandboxResponse</a>
-                </li>
-              
-                <li>
                   <a href="#pub.devcloud.v1alpha1.GetSandboxRequest"><span class="badge">M</span>GetSandboxRequest</a>
                 </li>
               
                 <li>
                   <a href="#pub.devcloud.v1alpha1.GetSandboxResponse"><span class="badge">M</span>GetSandboxResponse</a>
-                </li>
-              
-                <li>
-                  <a href="#pub.devcloud.v1alpha1.ListSandboxesRequest"><span class="badge">M</span>ListSandboxesRequest</a>
-                </li>
-              
-                <li>
-                  <a href="#pub.devcloud.v1alpha1.ListSandboxesResponse"><span class="badge">M</span>ListSandboxesResponse</a>
                 </li>
               
                 <li>
@@ -351,37 +335,6 @@
 
         
       
-        <h3 id="pub.devcloud.v1alpha1.DeleteSandboxRequest">DeleteSandboxRequest</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>id</td>
-                  <td><a href="#string">string</a></td>
-                  <td></td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
-        <h3 id="pub.devcloud.v1alpha1.DeleteSandboxResponse">DeleteSandboxResponse</h3>
-        <p></p>
-
-        
-
-        
-      
         <h3 id="pub.devcloud.v1alpha1.GetSandboxRequest">GetSandboxRequest</h3>
         <p></p>
 
@@ -430,37 +383,6 @@
 
         
       
-        <h3 id="pub.devcloud.v1alpha1.ListSandboxesRequest">ListSandboxesRequest</h3>
-        <p></p>
-
-        
-
-        
-      
-        <h3 id="pub.devcloud.v1alpha1.ListSandboxesResponse">ListSandboxesResponse</h3>
-        <p></p>
-
-        
-          <table class="field-table">
-            <thead>
-              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
-            </thead>
-            <tbody>
-              
-                <tr>
-                  <td>sandboxes</td>
-                  <td><a href="#pub.devcloud.v1alpha1.Sandbox">Sandbox</a></td>
-                  <td>repeated</td>
-                  <td><p> </p></td>
-                </tr>
-              
-            </tbody>
-          </table>
-
-          
-
-        
-      
         <h3 id="pub.devcloud.v1alpha1.Sandbox">Sandbox</h3>
         <p></p>
 
@@ -496,35 +418,35 @@
                   <td>subdir</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>The subdirectory within the repo to checkout. Defaults to the root of the repo. </p></td>
+                  <td><p> </p></td>
                 </tr>
               
                 <tr>
                   <td>ref</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>The git ref to checkout. This can be a branch, tag, or commit hash. Defaults to the default branch. </p></td>
+                  <td><p> </p></td>
                 </tr>
               
                 <tr>
                   <td>url</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>Will be empty if the sandbox is not running. If present, it will contain access token. </p></td>
+                  <td><p>possibly empty while creating </p></td>
                 </tr>
               
                 <tr>
                   <td>state</td>
                   <td><a href="#pub.devcloud.v1alpha1.SandboxState">SandboxState</a></td>
                   <td></td>
-                  <td><p> </p></td>
+                  <td><p>enum </p></td>
                 </tr>
               
                 <tr>
                   <td>access_token</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p>Token used to make requests to the sandbox. Use in the Authorization header as a Bearer token. </p></td>
+                  <td><p> </p></td>
                 </tr>
               
             </tbody>
@@ -537,7 +459,7 @@
 
       
         <h3 id="pub.devcloud.v1alpha1.SandboxState">SandboxState</h3>
-        <p>SandboxState represents the state of a sandbox and maps (0-4) to workstationspb.Workstation_State</p><p>in the GCP Workstations API. </p><p>States after 4 do not map to the GCP Workstations API.</p>
+        <p>SandboxState represents the state of a sandbox and maps to workstationspb.Workstation_State</p><p>in the GCP Workstations API.</p>
         <table class="enum-table">
           <thead>
             <tr><td>Name</td><td>Number</td><td>Description</td></tr>
@@ -576,12 +498,6 @@ be soon.</p></td>
 it is started.</p></td>
               </tr>
             
-              <tr>
-                <td>SANDBOX_STATE_DELETED</td>
-                <td>5</td>
-                <td><p>Deleted and possibly no longer exists.</p></td>
-              </tr>
-            
           </tbody>
         </table>
       
@@ -608,20 +524,6 @@ it is started.</p></td>
                 <td>GetSandbox</td>
                 <td><a href="#pub.devcloud.v1alpha1.GetSandboxRequest">GetSandboxRequest</a></td>
                 <td><a href="#pub.devcloud.v1alpha1.GetSandboxResponse">GetSandboxResponse</a></td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>DeleteSandbox</td>
-                <td><a href="#pub.devcloud.v1alpha1.DeleteSandboxRequest">DeleteSandboxRequest</a></td>
-                <td><a href="#pub.devcloud.v1alpha1.DeleteSandboxResponse">DeleteSandboxResponse</a></td>
-                <td><p></p></td>
-              </tr>
-            
-              <tr>
-                <td>ListSandboxes</td>
-                <td><a href="#pub.devcloud.v1alpha1.ListSandboxesRequest">ListSandboxesRequest</a></td>
-                <td><a href="#pub.devcloud.v1alpha1.ListSandboxesResponse">ListSandboxesResponse</a></td>
                 <td><p></p></td>
               </tr>
             
