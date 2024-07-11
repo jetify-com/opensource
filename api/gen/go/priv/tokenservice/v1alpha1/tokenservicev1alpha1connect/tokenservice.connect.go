@@ -8,9 +8,9 @@
 package tokenservicev1alpha1connect
 
 import (
+	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	connect_go "github.com/bufbuild/connect-go"
 	v1alpha1 "go.jetpack.io/axiom/api/gen/priv/tokenservice/v1alpha1"
 	http "net/http"
 	strings "strings"
@@ -21,7 +21,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect_go.IsAtLeastVersion1_7_0
+const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// TokenServiceName is the fully-qualified name of the TokenService service.
@@ -44,10 +44,17 @@ const (
 	TokenServiceCreateTokenProcedure = "/priv.tokenservice.v1alpha1.TokenService/CreateToken"
 )
 
+// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
+var (
+	tokenServiceServiceDescriptor              = v1alpha1.File_priv_tokenservice_v1alpha1_tokenservice_proto.Services().ByName("TokenService")
+	tokenServiceGetAccessTokenMethodDescriptor = tokenServiceServiceDescriptor.Methods().ByName("GetAccessToken")
+	tokenServiceCreateTokenMethodDescriptor    = tokenServiceServiceDescriptor.Methods().ByName("CreateToken")
+)
+
 // TokenServiceClient is a client for the priv.tokenservice.v1alpha1.TokenService service.
 type TokenServiceClient interface {
-	GetAccessToken(context.Context, *connect_go.Request[v1alpha1.GetAccessTokenRequest]) (*connect_go.Response[v1alpha1.GetAccessTokenResponse], error)
-	CreateToken(context.Context, *connect_go.Request[v1alpha1.CreateTokenRequest]) (*connect_go.Response[v1alpha1.CreateTokenResponse], error)
+	GetAccessToken(context.Context, *connect.Request[v1alpha1.GetAccessTokenRequest]) (*connect.Response[v1alpha1.GetAccessTokenResponse], error)
+	CreateToken(context.Context, *connect.Request[v1alpha1.CreateTokenRequest]) (*connect.Response[v1alpha1.CreateTokenResponse], error)
 }
 
 // NewTokenServiceClient constructs a client for the priv.tokenservice.v1alpha1.TokenService
@@ -57,43 +64,45 @@ type TokenServiceClient interface {
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewTokenServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) TokenServiceClient {
+func NewTokenServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) TokenServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &tokenServiceClient{
-		getAccessToken: connect_go.NewClient[v1alpha1.GetAccessTokenRequest, v1alpha1.GetAccessTokenResponse](
+		getAccessToken: connect.NewClient[v1alpha1.GetAccessTokenRequest, v1alpha1.GetAccessTokenResponse](
 			httpClient,
 			baseURL+TokenServiceGetAccessTokenProcedure,
-			connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-			connect_go.WithClientOptions(opts...),
+			connect.WithSchema(tokenServiceGetAccessTokenMethodDescriptor),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
-		createToken: connect_go.NewClient[v1alpha1.CreateTokenRequest, v1alpha1.CreateTokenResponse](
+		createToken: connect.NewClient[v1alpha1.CreateTokenRequest, v1alpha1.CreateTokenResponse](
 			httpClient,
 			baseURL+TokenServiceCreateTokenProcedure,
-			opts...,
+			connect.WithSchema(tokenServiceCreateTokenMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
 
 // tokenServiceClient implements TokenServiceClient.
 type tokenServiceClient struct {
-	getAccessToken *connect_go.Client[v1alpha1.GetAccessTokenRequest, v1alpha1.GetAccessTokenResponse]
-	createToken    *connect_go.Client[v1alpha1.CreateTokenRequest, v1alpha1.CreateTokenResponse]
+	getAccessToken *connect.Client[v1alpha1.GetAccessTokenRequest, v1alpha1.GetAccessTokenResponse]
+	createToken    *connect.Client[v1alpha1.CreateTokenRequest, v1alpha1.CreateTokenResponse]
 }
 
 // GetAccessToken calls priv.tokenservice.v1alpha1.TokenService.GetAccessToken.
-func (c *tokenServiceClient) GetAccessToken(ctx context.Context, req *connect_go.Request[v1alpha1.GetAccessTokenRequest]) (*connect_go.Response[v1alpha1.GetAccessTokenResponse], error) {
+func (c *tokenServiceClient) GetAccessToken(ctx context.Context, req *connect.Request[v1alpha1.GetAccessTokenRequest]) (*connect.Response[v1alpha1.GetAccessTokenResponse], error) {
 	return c.getAccessToken.CallUnary(ctx, req)
 }
 
 // CreateToken calls priv.tokenservice.v1alpha1.TokenService.CreateToken.
-func (c *tokenServiceClient) CreateToken(ctx context.Context, req *connect_go.Request[v1alpha1.CreateTokenRequest]) (*connect_go.Response[v1alpha1.CreateTokenResponse], error) {
+func (c *tokenServiceClient) CreateToken(ctx context.Context, req *connect.Request[v1alpha1.CreateTokenRequest]) (*connect.Response[v1alpha1.CreateTokenResponse], error) {
 	return c.createToken.CallUnary(ctx, req)
 }
 
 // TokenServiceHandler is an implementation of the priv.tokenservice.v1alpha1.TokenService service.
 type TokenServiceHandler interface {
-	GetAccessToken(context.Context, *connect_go.Request[v1alpha1.GetAccessTokenRequest]) (*connect_go.Response[v1alpha1.GetAccessTokenResponse], error)
-	CreateToken(context.Context, *connect_go.Request[v1alpha1.CreateTokenRequest]) (*connect_go.Response[v1alpha1.CreateTokenResponse], error)
+	GetAccessToken(context.Context, *connect.Request[v1alpha1.GetAccessTokenRequest]) (*connect.Response[v1alpha1.GetAccessTokenResponse], error)
+	CreateToken(context.Context, *connect.Request[v1alpha1.CreateTokenRequest]) (*connect.Response[v1alpha1.CreateTokenResponse], error)
 }
 
 // NewTokenServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -101,17 +110,19 @@ type TokenServiceHandler interface {
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewTokenServiceHandler(svc TokenServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	tokenServiceGetAccessTokenHandler := connect_go.NewUnaryHandler(
+func NewTokenServiceHandler(svc TokenServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	tokenServiceGetAccessTokenHandler := connect.NewUnaryHandler(
 		TokenServiceGetAccessTokenProcedure,
 		svc.GetAccessToken,
-		connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-		connect_go.WithHandlerOptions(opts...),
+		connect.WithSchema(tokenServiceGetAccessTokenMethodDescriptor),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
-	tokenServiceCreateTokenHandler := connect_go.NewUnaryHandler(
+	tokenServiceCreateTokenHandler := connect.NewUnaryHandler(
 		TokenServiceCreateTokenProcedure,
 		svc.CreateToken,
-		opts...,
+		connect.WithSchema(tokenServiceCreateTokenMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/priv.tokenservice.v1alpha1.TokenService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -128,10 +139,10 @@ func NewTokenServiceHandler(svc TokenServiceHandler, opts ...connect_go.HandlerO
 // UnimplementedTokenServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedTokenServiceHandler struct{}
 
-func (UnimplementedTokenServiceHandler) GetAccessToken(context.Context, *connect_go.Request[v1alpha1.GetAccessTokenRequest]) (*connect_go.Response[v1alpha1.GetAccessTokenResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.tokenservice.v1alpha1.TokenService.GetAccessToken is not implemented"))
+func (UnimplementedTokenServiceHandler) GetAccessToken(context.Context, *connect.Request[v1alpha1.GetAccessTokenRequest]) (*connect.Response[v1alpha1.GetAccessTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.tokenservice.v1alpha1.TokenService.GetAccessToken is not implemented"))
 }
 
-func (UnimplementedTokenServiceHandler) CreateToken(context.Context, *connect_go.Request[v1alpha1.CreateTokenRequest]) (*connect_go.Response[v1alpha1.CreateTokenResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.tokenservice.v1alpha1.TokenService.CreateToken is not implemented"))
+func (UnimplementedTokenServiceHandler) CreateToken(context.Context, *connect.Request[v1alpha1.CreateTokenRequest]) (*connect.Response[v1alpha1.CreateTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.tokenservice.v1alpha1.TokenService.CreateToken is not implemented"))
 }

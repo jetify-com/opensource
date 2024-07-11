@@ -5,9 +5,9 @@
 package secretsv1alpha1connect
 
 import (
+	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	connect_go "github.com/bufbuild/connect-go"
 	v1alpha1 "go.jetpack.io/axiom/api/gen/priv/secrets/v1alpha1"
 	http "net/http"
 	strings "strings"
@@ -18,7 +18,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect_go.IsAtLeastVersion1_7_0
+const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// SecretsServiceName is the fully-qualified name of the SecretsService service.
@@ -46,16 +46,25 @@ const (
 	SecretsServicePatchSecretProcedure = "/priv.secrets.v1alpha1.SecretsService/PatchSecret"
 )
 
+// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
+var (
+	secretsServiceServiceDescriptor            = v1alpha1.File_priv_secrets_v1alpha1_secrets_proto.Services().ByName("SecretsService")
+	secretsServiceBatchMethodDescriptor        = secretsServiceServiceDescriptor.Methods().ByName("Batch")
+	secretsServiceDeleteSecretMethodDescriptor = secretsServiceServiceDescriptor.Methods().ByName("DeleteSecret")
+	secretsServiceListSecretsMethodDescriptor  = secretsServiceServiceDescriptor.Methods().ByName("ListSecrets")
+	secretsServicePatchSecretMethodDescriptor  = secretsServiceServiceDescriptor.Methods().ByName("PatchSecret")
+)
+
 // SecretsServiceClient is a client for the priv.secrets.v1alpha1.SecretsService service.
 type SecretsServiceClient interface {
 	// Batch composes multiple CRUD requests into a single request.
-	Batch(context.Context, *connect_go.Request[v1alpha1.BatchRequest]) (*connect_go.Response[v1alpha1.BatchResponse], error)
+	Batch(context.Context, *connect.Request[v1alpha1.BatchRequest]) (*connect.Response[v1alpha1.BatchResponse], error)
 	// DeleteSecret deletes an existing Secret.
-	DeleteSecret(context.Context, *connect_go.Request[v1alpha1.DeleteSecretRequest]) (*connect_go.Response[v1alpha1.DeleteSecretResponse], error)
+	DeleteSecret(context.Context, *connect.Request[v1alpha1.DeleteSecretRequest]) (*connect.Response[v1alpha1.DeleteSecretResponse], error)
 	// ListSecrets returns a list of Secrets for a given Project.
-	ListSecrets(context.Context, *connect_go.Request[v1alpha1.ListSecretsRequest]) (*connect_go.Response[v1alpha1.ListSecretsResponse], error)
+	ListSecrets(context.Context, *connect.Request[v1alpha1.ListSecretsRequest]) (*connect.Response[v1alpha1.ListSecretsResponse], error)
 	// PatchSecret partially updates an existing Secret, or creates it if it doesn't exist.
-	PatchSecret(context.Context, *connect_go.Request[v1alpha1.PatchSecretRequest]) (*connect_go.Response[v1alpha1.PatchSecretResponse], error)
+	PatchSecret(context.Context, *connect.Request[v1alpha1.PatchSecretRequest]) (*connect.Response[v1alpha1.PatchSecretResponse], error)
 }
 
 // NewSecretsServiceClient constructs a client for the priv.secrets.v1alpha1.SecretsService service.
@@ -65,71 +74,75 @@ type SecretsServiceClient interface {
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewSecretsServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) SecretsServiceClient {
+func NewSecretsServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) SecretsServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &secretsServiceClient{
-		batch: connect_go.NewClient[v1alpha1.BatchRequest, v1alpha1.BatchResponse](
+		batch: connect.NewClient[v1alpha1.BatchRequest, v1alpha1.BatchResponse](
 			httpClient,
 			baseURL+SecretsServiceBatchProcedure,
-			opts...,
+			connect.WithSchema(secretsServiceBatchMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
-		deleteSecret: connect_go.NewClient[v1alpha1.DeleteSecretRequest, v1alpha1.DeleteSecretResponse](
+		deleteSecret: connect.NewClient[v1alpha1.DeleteSecretRequest, v1alpha1.DeleteSecretResponse](
 			httpClient,
 			baseURL+SecretsServiceDeleteSecretProcedure,
-			opts...,
+			connect.WithSchema(secretsServiceDeleteSecretMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
-		listSecrets: connect_go.NewClient[v1alpha1.ListSecretsRequest, v1alpha1.ListSecretsResponse](
+		listSecrets: connect.NewClient[v1alpha1.ListSecretsRequest, v1alpha1.ListSecretsResponse](
 			httpClient,
 			baseURL+SecretsServiceListSecretsProcedure,
-			connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-			connect_go.WithClientOptions(opts...),
+			connect.WithSchema(secretsServiceListSecretsMethodDescriptor),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
-		patchSecret: connect_go.NewClient[v1alpha1.PatchSecretRequest, v1alpha1.PatchSecretResponse](
+		patchSecret: connect.NewClient[v1alpha1.PatchSecretRequest, v1alpha1.PatchSecretResponse](
 			httpClient,
 			baseURL+SecretsServicePatchSecretProcedure,
-			opts...,
+			connect.WithSchema(secretsServicePatchSecretMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
 
 // secretsServiceClient implements SecretsServiceClient.
 type secretsServiceClient struct {
-	batch        *connect_go.Client[v1alpha1.BatchRequest, v1alpha1.BatchResponse]
-	deleteSecret *connect_go.Client[v1alpha1.DeleteSecretRequest, v1alpha1.DeleteSecretResponse]
-	listSecrets  *connect_go.Client[v1alpha1.ListSecretsRequest, v1alpha1.ListSecretsResponse]
-	patchSecret  *connect_go.Client[v1alpha1.PatchSecretRequest, v1alpha1.PatchSecretResponse]
+	batch        *connect.Client[v1alpha1.BatchRequest, v1alpha1.BatchResponse]
+	deleteSecret *connect.Client[v1alpha1.DeleteSecretRequest, v1alpha1.DeleteSecretResponse]
+	listSecrets  *connect.Client[v1alpha1.ListSecretsRequest, v1alpha1.ListSecretsResponse]
+	patchSecret  *connect.Client[v1alpha1.PatchSecretRequest, v1alpha1.PatchSecretResponse]
 }
 
 // Batch calls priv.secrets.v1alpha1.SecretsService.Batch.
-func (c *secretsServiceClient) Batch(ctx context.Context, req *connect_go.Request[v1alpha1.BatchRequest]) (*connect_go.Response[v1alpha1.BatchResponse], error) {
+func (c *secretsServiceClient) Batch(ctx context.Context, req *connect.Request[v1alpha1.BatchRequest]) (*connect.Response[v1alpha1.BatchResponse], error) {
 	return c.batch.CallUnary(ctx, req)
 }
 
 // DeleteSecret calls priv.secrets.v1alpha1.SecretsService.DeleteSecret.
-func (c *secretsServiceClient) DeleteSecret(ctx context.Context, req *connect_go.Request[v1alpha1.DeleteSecretRequest]) (*connect_go.Response[v1alpha1.DeleteSecretResponse], error) {
+func (c *secretsServiceClient) DeleteSecret(ctx context.Context, req *connect.Request[v1alpha1.DeleteSecretRequest]) (*connect.Response[v1alpha1.DeleteSecretResponse], error) {
 	return c.deleteSecret.CallUnary(ctx, req)
 }
 
 // ListSecrets calls priv.secrets.v1alpha1.SecretsService.ListSecrets.
-func (c *secretsServiceClient) ListSecrets(ctx context.Context, req *connect_go.Request[v1alpha1.ListSecretsRequest]) (*connect_go.Response[v1alpha1.ListSecretsResponse], error) {
+func (c *secretsServiceClient) ListSecrets(ctx context.Context, req *connect.Request[v1alpha1.ListSecretsRequest]) (*connect.Response[v1alpha1.ListSecretsResponse], error) {
 	return c.listSecrets.CallUnary(ctx, req)
 }
 
 // PatchSecret calls priv.secrets.v1alpha1.SecretsService.PatchSecret.
-func (c *secretsServiceClient) PatchSecret(ctx context.Context, req *connect_go.Request[v1alpha1.PatchSecretRequest]) (*connect_go.Response[v1alpha1.PatchSecretResponse], error) {
+func (c *secretsServiceClient) PatchSecret(ctx context.Context, req *connect.Request[v1alpha1.PatchSecretRequest]) (*connect.Response[v1alpha1.PatchSecretResponse], error) {
 	return c.patchSecret.CallUnary(ctx, req)
 }
 
 // SecretsServiceHandler is an implementation of the priv.secrets.v1alpha1.SecretsService service.
 type SecretsServiceHandler interface {
 	// Batch composes multiple CRUD requests into a single request.
-	Batch(context.Context, *connect_go.Request[v1alpha1.BatchRequest]) (*connect_go.Response[v1alpha1.BatchResponse], error)
+	Batch(context.Context, *connect.Request[v1alpha1.BatchRequest]) (*connect.Response[v1alpha1.BatchResponse], error)
 	// DeleteSecret deletes an existing Secret.
-	DeleteSecret(context.Context, *connect_go.Request[v1alpha1.DeleteSecretRequest]) (*connect_go.Response[v1alpha1.DeleteSecretResponse], error)
+	DeleteSecret(context.Context, *connect.Request[v1alpha1.DeleteSecretRequest]) (*connect.Response[v1alpha1.DeleteSecretResponse], error)
 	// ListSecrets returns a list of Secrets for a given Project.
-	ListSecrets(context.Context, *connect_go.Request[v1alpha1.ListSecretsRequest]) (*connect_go.Response[v1alpha1.ListSecretsResponse], error)
+	ListSecrets(context.Context, *connect.Request[v1alpha1.ListSecretsRequest]) (*connect.Response[v1alpha1.ListSecretsResponse], error)
 	// PatchSecret partially updates an existing Secret, or creates it if it doesn't exist.
-	PatchSecret(context.Context, *connect_go.Request[v1alpha1.PatchSecretRequest]) (*connect_go.Response[v1alpha1.PatchSecretResponse], error)
+	PatchSecret(context.Context, *connect.Request[v1alpha1.PatchSecretRequest]) (*connect.Response[v1alpha1.PatchSecretResponse], error)
 }
 
 // NewSecretsServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -137,27 +150,31 @@ type SecretsServiceHandler interface {
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewSecretsServiceHandler(svc SecretsServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	secretsServiceBatchHandler := connect_go.NewUnaryHandler(
+func NewSecretsServiceHandler(svc SecretsServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	secretsServiceBatchHandler := connect.NewUnaryHandler(
 		SecretsServiceBatchProcedure,
 		svc.Batch,
-		opts...,
+		connect.WithSchema(secretsServiceBatchMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
-	secretsServiceDeleteSecretHandler := connect_go.NewUnaryHandler(
+	secretsServiceDeleteSecretHandler := connect.NewUnaryHandler(
 		SecretsServiceDeleteSecretProcedure,
 		svc.DeleteSecret,
-		opts...,
+		connect.WithSchema(secretsServiceDeleteSecretMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
-	secretsServiceListSecretsHandler := connect_go.NewUnaryHandler(
+	secretsServiceListSecretsHandler := connect.NewUnaryHandler(
 		SecretsServiceListSecretsProcedure,
 		svc.ListSecrets,
-		connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-		connect_go.WithHandlerOptions(opts...),
+		connect.WithSchema(secretsServiceListSecretsMethodDescriptor),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
-	secretsServicePatchSecretHandler := connect_go.NewUnaryHandler(
+	secretsServicePatchSecretHandler := connect.NewUnaryHandler(
 		SecretsServicePatchSecretProcedure,
 		svc.PatchSecret,
-		opts...,
+		connect.WithSchema(secretsServicePatchSecretMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/priv.secrets.v1alpha1.SecretsService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -178,18 +195,18 @@ func NewSecretsServiceHandler(svc SecretsServiceHandler, opts ...connect_go.Hand
 // UnimplementedSecretsServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedSecretsServiceHandler struct{}
 
-func (UnimplementedSecretsServiceHandler) Batch(context.Context, *connect_go.Request[v1alpha1.BatchRequest]) (*connect_go.Response[v1alpha1.BatchResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.secrets.v1alpha1.SecretsService.Batch is not implemented"))
+func (UnimplementedSecretsServiceHandler) Batch(context.Context, *connect.Request[v1alpha1.BatchRequest]) (*connect.Response[v1alpha1.BatchResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.secrets.v1alpha1.SecretsService.Batch is not implemented"))
 }
 
-func (UnimplementedSecretsServiceHandler) DeleteSecret(context.Context, *connect_go.Request[v1alpha1.DeleteSecretRequest]) (*connect_go.Response[v1alpha1.DeleteSecretResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.secrets.v1alpha1.SecretsService.DeleteSecret is not implemented"))
+func (UnimplementedSecretsServiceHandler) DeleteSecret(context.Context, *connect.Request[v1alpha1.DeleteSecretRequest]) (*connect.Response[v1alpha1.DeleteSecretResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.secrets.v1alpha1.SecretsService.DeleteSecret is not implemented"))
 }
 
-func (UnimplementedSecretsServiceHandler) ListSecrets(context.Context, *connect_go.Request[v1alpha1.ListSecretsRequest]) (*connect_go.Response[v1alpha1.ListSecretsResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.secrets.v1alpha1.SecretsService.ListSecrets is not implemented"))
+func (UnimplementedSecretsServiceHandler) ListSecrets(context.Context, *connect.Request[v1alpha1.ListSecretsRequest]) (*connect.Response[v1alpha1.ListSecretsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.secrets.v1alpha1.SecretsService.ListSecrets is not implemented"))
 }
 
-func (UnimplementedSecretsServiceHandler) PatchSecret(context.Context, *connect_go.Request[v1alpha1.PatchSecretRequest]) (*connect_go.Response[v1alpha1.PatchSecretResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.secrets.v1alpha1.SecretsService.PatchSecret is not implemented"))
+func (UnimplementedSecretsServiceHandler) PatchSecret(context.Context, *connect.Request[v1alpha1.PatchSecretRequest]) (*connect.Response[v1alpha1.PatchSecretResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.secrets.v1alpha1.SecretsService.PatchSecret is not implemented"))
 }

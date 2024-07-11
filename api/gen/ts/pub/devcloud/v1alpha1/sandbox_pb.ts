@@ -10,9 +10,8 @@ import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialM
 import { Message, proto3 } from "@bufbuild/protobuf";
 
 /**
- * SandboxState represents the state of a sandbox and maps (0-4) to workstationspb.Workstation_State
- * in the GCP Workstations API. 
- * States after 4 do not map to the GCP Workstations API.
+ * SandboxState represents the state of a sandbox and maps to workstationspb.Workstation_State
+ * in the GCP Workstations API.
  *
  * @generated from enum pub.devcloud.v1alpha1.SandboxState
  */
@@ -53,13 +52,6 @@ export enum SandboxState {
    * @generated from enum value: SANDBOX_STATE_STOPPED = 4;
    */
   STOPPED = 4,
-
-  /**
-   * Deleted and possibly no longer exists.
-   *
-   * @generated from enum value: SANDBOX_STATE_DELETED = 5;
-   */
-  DELETED = 5,
 }
 // Retrieve enum metadata with: proto3.getEnumType(SandboxState)
 proto3.util.setEnumType(SandboxState, "pub.devcloud.v1alpha1.SandboxState", [
@@ -68,7 +60,6 @@ proto3.util.setEnumType(SandboxState, "pub.devcloud.v1alpha1.SandboxState", [
   { no: 2, name: "SANDBOX_STATE_RUNNING" },
   { no: 3, name: "SANDBOX_STATE_STOPPING" },
   { no: 4, name: "SANDBOX_STATE_STOPPED" },
-  { no: 5, name: "SANDBOX_STATE_DELETED" },
 ]);
 
 /**
@@ -246,142 +237,6 @@ export class GetSandboxResponse extends Message<GetSandboxResponse> {
 }
 
 /**
- * @generated from message pub.devcloud.v1alpha1.DeleteSandboxRequest
- */
-export class DeleteSandboxRequest extends Message<DeleteSandboxRequest> {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id = "";
-
-  constructor(data?: PartialMessage<DeleteSandboxRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "pub.devcloud.v1alpha1.DeleteSandboxRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteSandboxRequest {
-    return new DeleteSandboxRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeleteSandboxRequest {
-    return new DeleteSandboxRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeleteSandboxRequest {
-    return new DeleteSandboxRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: DeleteSandboxRequest | PlainMessage<DeleteSandboxRequest> | undefined, b: DeleteSandboxRequest | PlainMessage<DeleteSandboxRequest> | undefined): boolean {
-    return proto3.util.equals(DeleteSandboxRequest, a, b);
-  }
-}
-
-/**
- * @generated from message pub.devcloud.v1alpha1.DeleteSandboxResponse
- */
-export class DeleteSandboxResponse extends Message<DeleteSandboxResponse> {
-  constructor(data?: PartialMessage<DeleteSandboxResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "pub.devcloud.v1alpha1.DeleteSandboxResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteSandboxResponse {
-    return new DeleteSandboxResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeleteSandboxResponse {
-    return new DeleteSandboxResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeleteSandboxResponse {
-    return new DeleteSandboxResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: DeleteSandboxResponse | PlainMessage<DeleteSandboxResponse> | undefined, b: DeleteSandboxResponse | PlainMessage<DeleteSandboxResponse> | undefined): boolean {
-    return proto3.util.equals(DeleteSandboxResponse, a, b);
-  }
-}
-
-/**
- * @generated from message pub.devcloud.v1alpha1.ListSandboxesRequest
- */
-export class ListSandboxesRequest extends Message<ListSandboxesRequest> {
-  constructor(data?: PartialMessage<ListSandboxesRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "pub.devcloud.v1alpha1.ListSandboxesRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListSandboxesRequest {
-    return new ListSandboxesRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListSandboxesRequest {
-    return new ListSandboxesRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListSandboxesRequest {
-    return new ListSandboxesRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: ListSandboxesRequest | PlainMessage<ListSandboxesRequest> | undefined, b: ListSandboxesRequest | PlainMessage<ListSandboxesRequest> | undefined): boolean {
-    return proto3.util.equals(ListSandboxesRequest, a, b);
-  }
-}
-
-/**
- * @generated from message pub.devcloud.v1alpha1.ListSandboxesResponse
- */
-export class ListSandboxesResponse extends Message<ListSandboxesResponse> {
-  /**
-   * @generated from field: repeated pub.devcloud.v1alpha1.Sandbox sandboxes = 1;
-   */
-  sandboxes: Sandbox[] = [];
-
-  constructor(data?: PartialMessage<ListSandboxesResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "pub.devcloud.v1alpha1.ListSandboxesResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "sandboxes", kind: "message", T: Sandbox, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListSandboxesResponse {
-    return new ListSandboxesResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListSandboxesResponse {
-    return new ListSandboxesResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListSandboxesResponse {
-    return new ListSandboxesResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: ListSandboxesResponse | PlainMessage<ListSandboxesResponse> | undefined, b: ListSandboxesResponse | PlainMessage<ListSandboxesResponse> | undefined): boolean {
-    return proto3.util.equals(ListSandboxesResponse, a, b);
-  }
-}
-
-/**
  * @generated from message pub.devcloud.v1alpha1.Sandbox
  */
 export class Sandbox extends Message<Sandbox> {
@@ -401,34 +256,30 @@ export class Sandbox extends Message<Sandbox> {
   repo = "";
 
   /**
-   * The subdirectory within the repo to checkout. Defaults to the root of the repo.
-   *
    * @generated from field: string subdir = 4;
    */
   subdir = "";
 
   /**
-   * The git ref to checkout. This can be a branch, tag, or commit hash. Defaults to the default branch.
-   *
    * @generated from field: string ref = 5;
    */
   ref = "";
 
   /**
-   * Will be empty if the sandbox is not running. If present, it will contain access token.
+   * possibly empty while creating
    *
    * @generated from field: string url = 6;
    */
   url = "";
 
   /**
+   * enum
+   *
    * @generated from field: pub.devcloud.v1alpha1.SandboxState state = 7;
    */
   state = SandboxState.UNSPECIFIED;
 
   /**
-   * Token used to make requests to the sandbox. Use in the Authorization header as a Bearer token.
-   *
    * @generated from field: string access_token = 8;
    */
   accessToken = "";

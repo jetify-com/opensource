@@ -7,12 +7,8 @@
     - [CreateSandboxRequest](#pub-devcloud-v1alpha1-CreateSandboxRequest)
     - [CreateSandboxRequest.EnvironmentVariablesEntry](#pub-devcloud-v1alpha1-CreateSandboxRequest-EnvironmentVariablesEntry)
     - [CreateSandboxResponse](#pub-devcloud-v1alpha1-CreateSandboxResponse)
-    - [DeleteSandboxRequest](#pub-devcloud-v1alpha1-DeleteSandboxRequest)
-    - [DeleteSandboxResponse](#pub-devcloud-v1alpha1-DeleteSandboxResponse)
     - [GetSandboxRequest](#pub-devcloud-v1alpha1-GetSandboxRequest)
     - [GetSandboxResponse](#pub-devcloud-v1alpha1-GetSandboxResponse)
-    - [ListSandboxesRequest](#pub-devcloud-v1alpha1-ListSandboxesRequest)
-    - [ListSandboxesResponse](#pub-devcloud-v1alpha1-ListSandboxesResponse)
     - [Sandbox](#pub-devcloud-v1alpha1-Sandbox)
   
     - [SandboxState](#pub-devcloud-v1alpha1-SandboxState)
@@ -80,31 +76,6 @@ API to manage Jetify devcloud Sandbox environments
 
 
 
-<a name="pub-devcloud-v1alpha1-DeleteSandboxRequest"></a>
-
-### DeleteSandboxRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  |  |
-
-
-
-
-
-
-<a name="pub-devcloud-v1alpha1-DeleteSandboxResponse"></a>
-
-### DeleteSandboxResponse
-
-
-
-
-
-
-
 <a name="pub-devcloud-v1alpha1-GetSandboxRequest"></a>
 
 ### GetSandboxRequest
@@ -135,31 +106,6 @@ API to manage Jetify devcloud Sandbox environments
 
 
 
-<a name="pub-devcloud-v1alpha1-ListSandboxesRequest"></a>
-
-### ListSandboxesRequest
-
-
-
-
-
-
-
-<a name="pub-devcloud-v1alpha1-ListSandboxesResponse"></a>
-
-### ListSandboxesResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| sandboxes | [Sandbox](#pub-devcloud-v1alpha1-Sandbox) | repeated |  |
-
-
-
-
-
-
 <a name="pub-devcloud-v1alpha1-Sandbox"></a>
 
 ### Sandbox
@@ -171,11 +117,11 @@ API to manage Jetify devcloud Sandbox environments
 | id | [string](#string) |  |  |
 | external_billing_tag | [string](#string) |  |  |
 | repo | [string](#string) |  |  |
-| subdir | [string](#string) |  | The subdirectory within the repo to checkout. Defaults to the root of the repo. |
-| ref | [string](#string) |  | The git ref to checkout. This can be a branch, tag, or commit hash. Defaults to the default branch. |
-| url | [string](#string) |  | Will be empty if the sandbox is not running. If present, it will contain access token. |
-| state | [SandboxState](#pub-devcloud-v1alpha1-SandboxState) |  |  |
-| access_token | [string](#string) |  | Token used to make requests to the sandbox. Use in the Authorization header as a Bearer token. |
+| subdir | [string](#string) |  |  |
+| ref | [string](#string) |  |  |
+| url | [string](#string) |  | possibly empty while creating |
+| state | [SandboxState](#pub-devcloud-v1alpha1-SandboxState) |  | enum |
+| access_token | [string](#string) |  |  |
 
 
 
@@ -187,9 +133,8 @@ API to manage Jetify devcloud Sandbox environments
 <a name="pub-devcloud-v1alpha1-SandboxState"></a>
 
 ### SandboxState
-SandboxState represents the state of a sandbox and maps (0-4) to workstationspb.Workstation_State
-in the GCP Workstations API. 
-States after 4 do not map to the GCP Workstations API.
+SandboxState represents the state of a sandbox and maps to workstationspb.Workstation_State
+in the GCP Workstations API.
 
 | Name | Number | Description |
 | ---- | ------ | ----------- |
@@ -198,7 +143,6 @@ States after 4 do not map to the GCP Workstations API.
 | SANDBOX_STATE_RUNNING | 2 | The workstation is ready to accept requests from users. |
 | SANDBOX_STATE_STOPPING | 3 | The workstation is being stopped. |
 | SANDBOX_STATE_STOPPED | 4 | The workstation is stopped and will not be able to receive requests until it is started. |
-| SANDBOX_STATE_DELETED | 5 | Deleted and possibly no longer exists. |
 
 
  
@@ -215,8 +159,6 @@ States after 4 do not map to the GCP Workstations API.
 | ----------- | ------------ | ------------- | ------------|
 | CreateSandbox | [CreateSandboxRequest](#pub-devcloud-v1alpha1-CreateSandboxRequest) | [CreateSandboxResponse](#pub-devcloud-v1alpha1-CreateSandboxResponse) |  |
 | GetSandbox | [GetSandboxRequest](#pub-devcloud-v1alpha1-GetSandboxRequest) | [GetSandboxResponse](#pub-devcloud-v1alpha1-GetSandboxResponse) |  |
-| DeleteSandbox | [DeleteSandboxRequest](#pub-devcloud-v1alpha1-DeleteSandboxRequest) | [DeleteSandboxResponse](#pub-devcloud-v1alpha1-DeleteSandboxResponse) |  |
-| ListSandboxes | [ListSandboxesRequest](#pub-devcloud-v1alpha1-ListSandboxesRequest) | [ListSandboxesResponse](#pub-devcloud-v1alpha1-ListSandboxesResponse) |  |
 
  
 

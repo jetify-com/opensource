@@ -6,7 +6,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateSandboxRequest, CreateSandboxResponse, DeleteSandboxRequest, DeleteSandboxResponse, GetSandboxRequest, GetSandboxResponse, ListSandboxesRequest, ListSandboxesResponse } from "./sandbox_pb.js";
+import { CreateSandboxRequest, CreateSandboxResponse, GetSandboxRequest, GetSandboxResponse } from "./sandbox_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -31,24 +31,6 @@ export const SandboxService = {
       name: "GetSandbox",
       I: GetSandboxRequest,
       O: GetSandboxResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc pub.devcloud.v1alpha1.SandboxService.DeleteSandbox
-     */
-    deleteSandbox: {
-      name: "DeleteSandbox",
-      I: DeleteSandboxRequest,
-      O: DeleteSandboxResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc pub.devcloud.v1alpha1.SandboxService.ListSandboxes
-     */
-    listSandboxes: {
-      name: "ListSandboxes",
-      I: ListSandboxesRequest,
-      O: ListSandboxesResponse,
       kind: MethodKind.Unary,
     },
   }

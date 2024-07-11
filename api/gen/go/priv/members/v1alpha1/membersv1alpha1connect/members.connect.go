@@ -8,9 +8,9 @@
 package membersv1alpha1connect
 
 import (
+	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	connect_go "github.com/bufbuild/connect-go"
 	v1alpha1 "go.jetpack.io/axiom/api/gen/priv/members/v1alpha1"
 	http "net/http"
 	strings "strings"
@@ -21,7 +21,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect_go.IsAtLeastVersion1_7_0
+const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// MembersServiceName is the fully-qualified name of the MembersService service.
@@ -47,15 +47,23 @@ const (
 	MembersServiceDeleteMemberProcedure = "/priv.members.v1alpha1.MembersService/DeleteMember"
 )
 
+// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
+var (
+	membersServiceServiceDescriptor            = v1alpha1.File_priv_members_v1alpha1_members_proto.Services().ByName("MembersService")
+	membersServiceGetMemberMethodDescriptor    = membersServiceServiceDescriptor.Methods().ByName("GetMember")
+	membersServiceCreateMemberMethodDescriptor = membersServiceServiceDescriptor.Methods().ByName("CreateMember")
+	membersServiceDeleteMemberMethodDescriptor = membersServiceServiceDescriptor.Methods().ByName("DeleteMember")
+)
+
 // MembersServiceClient is a client for the priv.members.v1alpha1.MembersService service.
 type MembersServiceClient interface {
 	// Get logged-in member
 	//
 	// Retrieves the details of an existing member identified by its unique
 	// member id.
-	GetMember(context.Context, *connect_go.Request[v1alpha1.GetMemberRequest]) (*connect_go.Response[v1alpha1.GetMemberResponse], error)
-	CreateMember(context.Context, *connect_go.Request[v1alpha1.CreateMemberRequest]) (*connect_go.Response[v1alpha1.CreateMemberResponse], error)
-	DeleteMember(context.Context, *connect_go.Request[v1alpha1.DeleteMemberRequest]) (*connect_go.Response[v1alpha1.DeleteMemberResponse], error)
+	GetMember(context.Context, *connect.Request[v1alpha1.GetMemberRequest]) (*connect.Response[v1alpha1.GetMemberResponse], error)
+	CreateMember(context.Context, *connect.Request[v1alpha1.CreateMemberRequest]) (*connect.Response[v1alpha1.CreateMemberResponse], error)
+	DeleteMember(context.Context, *connect.Request[v1alpha1.DeleteMemberRequest]) (*connect.Response[v1alpha1.DeleteMemberResponse], error)
 }
 
 // NewMembersServiceClient constructs a client for the priv.members.v1alpha1.MembersService service.
@@ -65,47 +73,50 @@ type MembersServiceClient interface {
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewMembersServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) MembersServiceClient {
+func NewMembersServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) MembersServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &membersServiceClient{
-		getMember: connect_go.NewClient[v1alpha1.GetMemberRequest, v1alpha1.GetMemberResponse](
+		getMember: connect.NewClient[v1alpha1.GetMemberRequest, v1alpha1.GetMemberResponse](
 			httpClient,
 			baseURL+MembersServiceGetMemberProcedure,
-			connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-			connect_go.WithClientOptions(opts...),
+			connect.WithSchema(membersServiceGetMemberMethodDescriptor),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
-		createMember: connect_go.NewClient[v1alpha1.CreateMemberRequest, v1alpha1.CreateMemberResponse](
+		createMember: connect.NewClient[v1alpha1.CreateMemberRequest, v1alpha1.CreateMemberResponse](
 			httpClient,
 			baseURL+MembersServiceCreateMemberProcedure,
-			opts...,
+			connect.WithSchema(membersServiceCreateMemberMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
-		deleteMember: connect_go.NewClient[v1alpha1.DeleteMemberRequest, v1alpha1.DeleteMemberResponse](
+		deleteMember: connect.NewClient[v1alpha1.DeleteMemberRequest, v1alpha1.DeleteMemberResponse](
 			httpClient,
 			baseURL+MembersServiceDeleteMemberProcedure,
-			opts...,
+			connect.WithSchema(membersServiceDeleteMemberMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
 
 // membersServiceClient implements MembersServiceClient.
 type membersServiceClient struct {
-	getMember    *connect_go.Client[v1alpha1.GetMemberRequest, v1alpha1.GetMemberResponse]
-	createMember *connect_go.Client[v1alpha1.CreateMemberRequest, v1alpha1.CreateMemberResponse]
-	deleteMember *connect_go.Client[v1alpha1.DeleteMemberRequest, v1alpha1.DeleteMemberResponse]
+	getMember    *connect.Client[v1alpha1.GetMemberRequest, v1alpha1.GetMemberResponse]
+	createMember *connect.Client[v1alpha1.CreateMemberRequest, v1alpha1.CreateMemberResponse]
+	deleteMember *connect.Client[v1alpha1.DeleteMemberRequest, v1alpha1.DeleteMemberResponse]
 }
 
 // GetMember calls priv.members.v1alpha1.MembersService.GetMember.
-func (c *membersServiceClient) GetMember(ctx context.Context, req *connect_go.Request[v1alpha1.GetMemberRequest]) (*connect_go.Response[v1alpha1.GetMemberResponse], error) {
+func (c *membersServiceClient) GetMember(ctx context.Context, req *connect.Request[v1alpha1.GetMemberRequest]) (*connect.Response[v1alpha1.GetMemberResponse], error) {
 	return c.getMember.CallUnary(ctx, req)
 }
 
 // CreateMember calls priv.members.v1alpha1.MembersService.CreateMember.
-func (c *membersServiceClient) CreateMember(ctx context.Context, req *connect_go.Request[v1alpha1.CreateMemberRequest]) (*connect_go.Response[v1alpha1.CreateMemberResponse], error) {
+func (c *membersServiceClient) CreateMember(ctx context.Context, req *connect.Request[v1alpha1.CreateMemberRequest]) (*connect.Response[v1alpha1.CreateMemberResponse], error) {
 	return c.createMember.CallUnary(ctx, req)
 }
 
 // DeleteMember calls priv.members.v1alpha1.MembersService.DeleteMember.
-func (c *membersServiceClient) DeleteMember(ctx context.Context, req *connect_go.Request[v1alpha1.DeleteMemberRequest]) (*connect_go.Response[v1alpha1.DeleteMemberResponse], error) {
+func (c *membersServiceClient) DeleteMember(ctx context.Context, req *connect.Request[v1alpha1.DeleteMemberRequest]) (*connect.Response[v1alpha1.DeleteMemberResponse], error) {
 	return c.deleteMember.CallUnary(ctx, req)
 }
 
@@ -115,9 +126,9 @@ type MembersServiceHandler interface {
 	//
 	// Retrieves the details of an existing member identified by its unique
 	// member id.
-	GetMember(context.Context, *connect_go.Request[v1alpha1.GetMemberRequest]) (*connect_go.Response[v1alpha1.GetMemberResponse], error)
-	CreateMember(context.Context, *connect_go.Request[v1alpha1.CreateMemberRequest]) (*connect_go.Response[v1alpha1.CreateMemberResponse], error)
-	DeleteMember(context.Context, *connect_go.Request[v1alpha1.DeleteMemberRequest]) (*connect_go.Response[v1alpha1.DeleteMemberResponse], error)
+	GetMember(context.Context, *connect.Request[v1alpha1.GetMemberRequest]) (*connect.Response[v1alpha1.GetMemberResponse], error)
+	CreateMember(context.Context, *connect.Request[v1alpha1.CreateMemberRequest]) (*connect.Response[v1alpha1.CreateMemberResponse], error)
+	DeleteMember(context.Context, *connect.Request[v1alpha1.DeleteMemberRequest]) (*connect.Response[v1alpha1.DeleteMemberResponse], error)
 }
 
 // NewMembersServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -125,22 +136,25 @@ type MembersServiceHandler interface {
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewMembersServiceHandler(svc MembersServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	membersServiceGetMemberHandler := connect_go.NewUnaryHandler(
+func NewMembersServiceHandler(svc MembersServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	membersServiceGetMemberHandler := connect.NewUnaryHandler(
 		MembersServiceGetMemberProcedure,
 		svc.GetMember,
-		connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-		connect_go.WithHandlerOptions(opts...),
+		connect.WithSchema(membersServiceGetMemberMethodDescriptor),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
-	membersServiceCreateMemberHandler := connect_go.NewUnaryHandler(
+	membersServiceCreateMemberHandler := connect.NewUnaryHandler(
 		MembersServiceCreateMemberProcedure,
 		svc.CreateMember,
-		opts...,
+		connect.WithSchema(membersServiceCreateMemberMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
-	membersServiceDeleteMemberHandler := connect_go.NewUnaryHandler(
+	membersServiceDeleteMemberHandler := connect.NewUnaryHandler(
 		MembersServiceDeleteMemberProcedure,
 		svc.DeleteMember,
-		opts...,
+		connect.WithSchema(membersServiceDeleteMemberMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/priv.members.v1alpha1.MembersService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -159,14 +173,14 @@ func NewMembersServiceHandler(svc MembersServiceHandler, opts ...connect_go.Hand
 // UnimplementedMembersServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedMembersServiceHandler struct{}
 
-func (UnimplementedMembersServiceHandler) GetMember(context.Context, *connect_go.Request[v1alpha1.GetMemberRequest]) (*connect_go.Response[v1alpha1.GetMemberResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.members.v1alpha1.MembersService.GetMember is not implemented"))
+func (UnimplementedMembersServiceHandler) GetMember(context.Context, *connect.Request[v1alpha1.GetMemberRequest]) (*connect.Response[v1alpha1.GetMemberResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.members.v1alpha1.MembersService.GetMember is not implemented"))
 }
 
-func (UnimplementedMembersServiceHandler) CreateMember(context.Context, *connect_go.Request[v1alpha1.CreateMemberRequest]) (*connect_go.Response[v1alpha1.CreateMemberResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.members.v1alpha1.MembersService.CreateMember is not implemented"))
+func (UnimplementedMembersServiceHandler) CreateMember(context.Context, *connect.Request[v1alpha1.CreateMemberRequest]) (*connect.Response[v1alpha1.CreateMemberResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.members.v1alpha1.MembersService.CreateMember is not implemented"))
 }
 
-func (UnimplementedMembersServiceHandler) DeleteMember(context.Context, *connect_go.Request[v1alpha1.DeleteMemberRequest]) (*connect_go.Response[v1alpha1.DeleteMemberResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.members.v1alpha1.MembersService.DeleteMember is not implemented"))
+func (UnimplementedMembersServiceHandler) DeleteMember(context.Context, *connect.Request[v1alpha1.DeleteMemberRequest]) (*connect.Response[v1alpha1.DeleteMemberResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.members.v1alpha1.MembersService.DeleteMember is not implemented"))
 }

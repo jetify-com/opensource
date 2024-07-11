@@ -14,9 +14,9 @@
 package projectsv1alpha1connect
 
 import (
+	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	connect_go "github.com/bufbuild/connect-go"
 	v1alpha1 "go.jetpack.io/axiom/api/gen/priv/projects/v1alpha1"
 	http "net/http"
 	strings "strings"
@@ -27,7 +27,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect_go.IsAtLeastVersion1_7_0
+const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// ProjectsServiceName is the fully-qualified name of the ProjectsService service.
@@ -68,50 +68,63 @@ const (
 	ProjectsServiceUpdateProjectProcedure = "/priv.projects.v1alpha1.ProjectsService/UpdateProject"
 )
 
+// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
+var (
+	projectsServiceServiceDescriptor                           = v1alpha1.File_priv_projects_v1alpha1_projects_proto.Services().ByName("ProjectsService")
+	projectsServiceGetProjectMethodDescriptor                  = projectsServiceServiceDescriptor.Methods().ByName("GetProject")
+	projectsServiceListProjectsMethodDescriptor                = projectsServiceServiceDescriptor.Methods().ByName("ListProjects")
+	projectsServiceCountProjectsWithDeploymentMethodDescriptor = projectsServiceServiceDescriptor.Methods().ByName("CountProjectsWithDeployment")
+	projectsServiceSearchProjectsMethodDescriptor              = projectsServiceServiceDescriptor.Methods().ByName("SearchProjects")
+	projectsServiceCreateProjectMethodDescriptor               = projectsServiceServiceDescriptor.Methods().ByName("CreateProject")
+	projectsServiceDeleteProjectMethodDescriptor               = projectsServiceServiceDescriptor.Methods().ByName("DeleteProject")
+	projectsServicePatchProjectMethodDescriptor                = projectsServiceServiceDescriptor.Methods().ByName("PatchProject")
+	projectsServiceUpdateProjectMethodDescriptor               = projectsServiceServiceDescriptor.Methods().ByName("UpdateProject")
+)
+
 // ProjectsServiceClient is a client for the priv.projects.v1alpha1.ProjectsService service.
 type ProjectsServiceClient interface {
 	// Get a project
 	//
 	// Retrieves the details of an existing project identified by its unique
 	// project id.
-	GetProject(context.Context, *connect_go.Request[v1alpha1.GetProjectRequest]) (*connect_go.Response[v1alpha1.GetProjectResponse], error)
+	GetProject(context.Context, *connect.Request[v1alpha1.GetProjectRequest]) (*connect.Response[v1alpha1.GetProjectResponse], error)
 	// List the projects in an organization
 	//
 	// Lists the projects belonging to the given organization. The projects are
 	// sorted by creation date, with the most recently created projects appearing
 	// first.
-	ListProjects(context.Context, *connect_go.Request[v1alpha1.ListProjectsRequest]) (*connect_go.Response[v1alpha1.ListProjectsResponse], error)
+	ListProjects(context.Context, *connect.Request[v1alpha1.ListProjectsRequest]) (*connect.Response[v1alpha1.ListProjectsResponse], error)
 	// Count the number of projects with Deployments
 	//
 	// Given an org_id, counts the number of projects in an organization that have
 	// enabled deployments.
-	CountProjectsWithDeployment(context.Context, *connect_go.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect_go.Response[v1alpha1.CountProjectsWithDeploymentResponse], error)
+	CountProjectsWithDeployment(context.Context, *connect.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect.Response[v1alpha1.CountProjectsWithDeploymentResponse], error)
 	// Search for projects in an organization
 	//
 	// Searches for products previously created in the given organization.
 	// Don't use search in read-after-write flows where strict consistency is
 	// necessary.
-	SearchProjects(context.Context, *connect_go.Request[v1alpha1.SearchProjectsRequest]) (*connect_go.Response[v1alpha1.SearchProjectsResponse], error)
+	SearchProjects(context.Context, *connect.Request[v1alpha1.SearchProjectsRequest]) (*connect.Response[v1alpha1.SearchProjectsResponse], error)
 	// Create a new project
 	//
 	// Creates a new project in the specified organization. The authenticated user
 	// must be a member of the organization.
-	CreateProject(context.Context, *connect_go.Request[v1alpha1.CreateProjectRequest]) (*connect_go.Response[v1alpha1.CreateProjectResponse], error)
+	CreateProject(context.Context, *connect.Request[v1alpha1.CreateProjectRequest]) (*connect.Response[v1alpha1.CreateProjectResponse], error)
 	// Delete a project
 	//
 	// Deletes the project specified by the given id.
-	DeleteProject(context.Context, *connect_go.Request[v1alpha1.DeleteProjectRequest]) (*connect_go.Response[v1alpha1.DeleteProjectResponse], error)
+	DeleteProject(context.Context, *connect.Request[v1alpha1.DeleteProjectRequest]) (*connect.Response[v1alpha1.DeleteProjectResponse], error)
 	// Patch a project
 	//
 	// Patches the specified project with the provided fields. Any fields that
 	// are not provided, will be left unchanged.
-	PatchProject(context.Context, *connect_go.Request[v1alpha1.PatchProjectRequest]) (*connect_go.Response[v1alpha1.PatchProjectResponse], error)
+	PatchProject(context.Context, *connect.Request[v1alpha1.PatchProjectRequest]) (*connect.Response[v1alpha1.PatchProjectResponse], error)
 	// Update a project
 	//
 	// Updates the specified project by setting the values of the provided fields.
 	// All fields will be updates. If you'd like to partially update some fields,
 	// use Patch instead.
-	UpdateProject(context.Context, *connect_go.Request[v1alpha1.UpdateProjectRequest]) (*connect_go.Response[v1alpha1.UpdateProjectResponse], error)
+	UpdateProject(context.Context, *connect.Request[v1alpha1.UpdateProjectRequest]) (*connect.Response[v1alpha1.UpdateProjectResponse], error)
 }
 
 // NewProjectsServiceClient constructs a client for the priv.projects.v1alpha1.ProjectsService
@@ -121,106 +134,114 @@ type ProjectsServiceClient interface {
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewProjectsServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) ProjectsServiceClient {
+func NewProjectsServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ProjectsServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &projectsServiceClient{
-		getProject: connect_go.NewClient[v1alpha1.GetProjectRequest, v1alpha1.GetProjectResponse](
+		getProject: connect.NewClient[v1alpha1.GetProjectRequest, v1alpha1.GetProjectResponse](
 			httpClient,
 			baseURL+ProjectsServiceGetProjectProcedure,
-			connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-			connect_go.WithClientOptions(opts...),
+			connect.WithSchema(projectsServiceGetProjectMethodDescriptor),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
-		listProjects: connect_go.NewClient[v1alpha1.ListProjectsRequest, v1alpha1.ListProjectsResponse](
+		listProjects: connect.NewClient[v1alpha1.ListProjectsRequest, v1alpha1.ListProjectsResponse](
 			httpClient,
 			baseURL+ProjectsServiceListProjectsProcedure,
-			connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-			connect_go.WithClientOptions(opts...),
+			connect.WithSchema(projectsServiceListProjectsMethodDescriptor),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
-		countProjectsWithDeployment: connect_go.NewClient[v1alpha1.CountProjectsWithDeploymentRequest, v1alpha1.CountProjectsWithDeploymentResponse](
+		countProjectsWithDeployment: connect.NewClient[v1alpha1.CountProjectsWithDeploymentRequest, v1alpha1.CountProjectsWithDeploymentResponse](
 			httpClient,
 			baseURL+ProjectsServiceCountProjectsWithDeploymentProcedure,
-			connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-			connect_go.WithClientOptions(opts...),
+			connect.WithSchema(projectsServiceCountProjectsWithDeploymentMethodDescriptor),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
-		searchProjects: connect_go.NewClient[v1alpha1.SearchProjectsRequest, v1alpha1.SearchProjectsResponse](
+		searchProjects: connect.NewClient[v1alpha1.SearchProjectsRequest, v1alpha1.SearchProjectsResponse](
 			httpClient,
 			baseURL+ProjectsServiceSearchProjectsProcedure,
-			connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-			connect_go.WithClientOptions(opts...),
+			connect.WithSchema(projectsServiceSearchProjectsMethodDescriptor),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
-		createProject: connect_go.NewClient[v1alpha1.CreateProjectRequest, v1alpha1.CreateProjectResponse](
+		createProject: connect.NewClient[v1alpha1.CreateProjectRequest, v1alpha1.CreateProjectResponse](
 			httpClient,
 			baseURL+ProjectsServiceCreateProjectProcedure,
-			opts...,
+			connect.WithSchema(projectsServiceCreateProjectMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
-		deleteProject: connect_go.NewClient[v1alpha1.DeleteProjectRequest, v1alpha1.DeleteProjectResponse](
+		deleteProject: connect.NewClient[v1alpha1.DeleteProjectRequest, v1alpha1.DeleteProjectResponse](
 			httpClient,
 			baseURL+ProjectsServiceDeleteProjectProcedure,
-			opts...,
+			connect.WithSchema(projectsServiceDeleteProjectMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
-		patchProject: connect_go.NewClient[v1alpha1.PatchProjectRequest, v1alpha1.PatchProjectResponse](
+		patchProject: connect.NewClient[v1alpha1.PatchProjectRequest, v1alpha1.PatchProjectResponse](
 			httpClient,
 			baseURL+ProjectsServicePatchProjectProcedure,
-			opts...,
+			connect.WithSchema(projectsServicePatchProjectMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
-		updateProject: connect_go.NewClient[v1alpha1.UpdateProjectRequest, v1alpha1.UpdateProjectResponse](
+		updateProject: connect.NewClient[v1alpha1.UpdateProjectRequest, v1alpha1.UpdateProjectResponse](
 			httpClient,
 			baseURL+ProjectsServiceUpdateProjectProcedure,
-			opts...,
+			connect.WithSchema(projectsServiceUpdateProjectMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
 
 // projectsServiceClient implements ProjectsServiceClient.
 type projectsServiceClient struct {
-	getProject                  *connect_go.Client[v1alpha1.GetProjectRequest, v1alpha1.GetProjectResponse]
-	listProjects                *connect_go.Client[v1alpha1.ListProjectsRequest, v1alpha1.ListProjectsResponse]
-	countProjectsWithDeployment *connect_go.Client[v1alpha1.CountProjectsWithDeploymentRequest, v1alpha1.CountProjectsWithDeploymentResponse]
-	searchProjects              *connect_go.Client[v1alpha1.SearchProjectsRequest, v1alpha1.SearchProjectsResponse]
-	createProject               *connect_go.Client[v1alpha1.CreateProjectRequest, v1alpha1.CreateProjectResponse]
-	deleteProject               *connect_go.Client[v1alpha1.DeleteProjectRequest, v1alpha1.DeleteProjectResponse]
-	patchProject                *connect_go.Client[v1alpha1.PatchProjectRequest, v1alpha1.PatchProjectResponse]
-	updateProject               *connect_go.Client[v1alpha1.UpdateProjectRequest, v1alpha1.UpdateProjectResponse]
+	getProject                  *connect.Client[v1alpha1.GetProjectRequest, v1alpha1.GetProjectResponse]
+	listProjects                *connect.Client[v1alpha1.ListProjectsRequest, v1alpha1.ListProjectsResponse]
+	countProjectsWithDeployment *connect.Client[v1alpha1.CountProjectsWithDeploymentRequest, v1alpha1.CountProjectsWithDeploymentResponse]
+	searchProjects              *connect.Client[v1alpha1.SearchProjectsRequest, v1alpha1.SearchProjectsResponse]
+	createProject               *connect.Client[v1alpha1.CreateProjectRequest, v1alpha1.CreateProjectResponse]
+	deleteProject               *connect.Client[v1alpha1.DeleteProjectRequest, v1alpha1.DeleteProjectResponse]
+	patchProject                *connect.Client[v1alpha1.PatchProjectRequest, v1alpha1.PatchProjectResponse]
+	updateProject               *connect.Client[v1alpha1.UpdateProjectRequest, v1alpha1.UpdateProjectResponse]
 }
 
 // GetProject calls priv.projects.v1alpha1.ProjectsService.GetProject.
-func (c *projectsServiceClient) GetProject(ctx context.Context, req *connect_go.Request[v1alpha1.GetProjectRequest]) (*connect_go.Response[v1alpha1.GetProjectResponse], error) {
+func (c *projectsServiceClient) GetProject(ctx context.Context, req *connect.Request[v1alpha1.GetProjectRequest]) (*connect.Response[v1alpha1.GetProjectResponse], error) {
 	return c.getProject.CallUnary(ctx, req)
 }
 
 // ListProjects calls priv.projects.v1alpha1.ProjectsService.ListProjects.
-func (c *projectsServiceClient) ListProjects(ctx context.Context, req *connect_go.Request[v1alpha1.ListProjectsRequest]) (*connect_go.Response[v1alpha1.ListProjectsResponse], error) {
+func (c *projectsServiceClient) ListProjects(ctx context.Context, req *connect.Request[v1alpha1.ListProjectsRequest]) (*connect.Response[v1alpha1.ListProjectsResponse], error) {
 	return c.listProjects.CallUnary(ctx, req)
 }
 
 // CountProjectsWithDeployment calls
 // priv.projects.v1alpha1.ProjectsService.CountProjectsWithDeployment.
-func (c *projectsServiceClient) CountProjectsWithDeployment(ctx context.Context, req *connect_go.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect_go.Response[v1alpha1.CountProjectsWithDeploymentResponse], error) {
+func (c *projectsServiceClient) CountProjectsWithDeployment(ctx context.Context, req *connect.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect.Response[v1alpha1.CountProjectsWithDeploymentResponse], error) {
 	return c.countProjectsWithDeployment.CallUnary(ctx, req)
 }
 
 // SearchProjects calls priv.projects.v1alpha1.ProjectsService.SearchProjects.
-func (c *projectsServiceClient) SearchProjects(ctx context.Context, req *connect_go.Request[v1alpha1.SearchProjectsRequest]) (*connect_go.Response[v1alpha1.SearchProjectsResponse], error) {
+func (c *projectsServiceClient) SearchProjects(ctx context.Context, req *connect.Request[v1alpha1.SearchProjectsRequest]) (*connect.Response[v1alpha1.SearchProjectsResponse], error) {
 	return c.searchProjects.CallUnary(ctx, req)
 }
 
 // CreateProject calls priv.projects.v1alpha1.ProjectsService.CreateProject.
-func (c *projectsServiceClient) CreateProject(ctx context.Context, req *connect_go.Request[v1alpha1.CreateProjectRequest]) (*connect_go.Response[v1alpha1.CreateProjectResponse], error) {
+func (c *projectsServiceClient) CreateProject(ctx context.Context, req *connect.Request[v1alpha1.CreateProjectRequest]) (*connect.Response[v1alpha1.CreateProjectResponse], error) {
 	return c.createProject.CallUnary(ctx, req)
 }
 
 // DeleteProject calls priv.projects.v1alpha1.ProjectsService.DeleteProject.
-func (c *projectsServiceClient) DeleteProject(ctx context.Context, req *connect_go.Request[v1alpha1.DeleteProjectRequest]) (*connect_go.Response[v1alpha1.DeleteProjectResponse], error) {
+func (c *projectsServiceClient) DeleteProject(ctx context.Context, req *connect.Request[v1alpha1.DeleteProjectRequest]) (*connect.Response[v1alpha1.DeleteProjectResponse], error) {
 	return c.deleteProject.CallUnary(ctx, req)
 }
 
 // PatchProject calls priv.projects.v1alpha1.ProjectsService.PatchProject.
-func (c *projectsServiceClient) PatchProject(ctx context.Context, req *connect_go.Request[v1alpha1.PatchProjectRequest]) (*connect_go.Response[v1alpha1.PatchProjectResponse], error) {
+func (c *projectsServiceClient) PatchProject(ctx context.Context, req *connect.Request[v1alpha1.PatchProjectRequest]) (*connect.Response[v1alpha1.PatchProjectResponse], error) {
 	return c.patchProject.CallUnary(ctx, req)
 }
 
 // UpdateProject calls priv.projects.v1alpha1.ProjectsService.UpdateProject.
-func (c *projectsServiceClient) UpdateProject(ctx context.Context, req *connect_go.Request[v1alpha1.UpdateProjectRequest]) (*connect_go.Response[v1alpha1.UpdateProjectResponse], error) {
+func (c *projectsServiceClient) UpdateProject(ctx context.Context, req *connect.Request[v1alpha1.UpdateProjectRequest]) (*connect.Response[v1alpha1.UpdateProjectResponse], error) {
 	return c.updateProject.CallUnary(ctx, req)
 }
 
@@ -231,44 +252,44 @@ type ProjectsServiceHandler interface {
 	//
 	// Retrieves the details of an existing project identified by its unique
 	// project id.
-	GetProject(context.Context, *connect_go.Request[v1alpha1.GetProjectRequest]) (*connect_go.Response[v1alpha1.GetProjectResponse], error)
+	GetProject(context.Context, *connect.Request[v1alpha1.GetProjectRequest]) (*connect.Response[v1alpha1.GetProjectResponse], error)
 	// List the projects in an organization
 	//
 	// Lists the projects belonging to the given organization. The projects are
 	// sorted by creation date, with the most recently created projects appearing
 	// first.
-	ListProjects(context.Context, *connect_go.Request[v1alpha1.ListProjectsRequest]) (*connect_go.Response[v1alpha1.ListProjectsResponse], error)
+	ListProjects(context.Context, *connect.Request[v1alpha1.ListProjectsRequest]) (*connect.Response[v1alpha1.ListProjectsResponse], error)
 	// Count the number of projects with Deployments
 	//
 	// Given an org_id, counts the number of projects in an organization that have
 	// enabled deployments.
-	CountProjectsWithDeployment(context.Context, *connect_go.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect_go.Response[v1alpha1.CountProjectsWithDeploymentResponse], error)
+	CountProjectsWithDeployment(context.Context, *connect.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect.Response[v1alpha1.CountProjectsWithDeploymentResponse], error)
 	// Search for projects in an organization
 	//
 	// Searches for products previously created in the given organization.
 	// Don't use search in read-after-write flows where strict consistency is
 	// necessary.
-	SearchProjects(context.Context, *connect_go.Request[v1alpha1.SearchProjectsRequest]) (*connect_go.Response[v1alpha1.SearchProjectsResponse], error)
+	SearchProjects(context.Context, *connect.Request[v1alpha1.SearchProjectsRequest]) (*connect.Response[v1alpha1.SearchProjectsResponse], error)
 	// Create a new project
 	//
 	// Creates a new project in the specified organization. The authenticated user
 	// must be a member of the organization.
-	CreateProject(context.Context, *connect_go.Request[v1alpha1.CreateProjectRequest]) (*connect_go.Response[v1alpha1.CreateProjectResponse], error)
+	CreateProject(context.Context, *connect.Request[v1alpha1.CreateProjectRequest]) (*connect.Response[v1alpha1.CreateProjectResponse], error)
 	// Delete a project
 	//
 	// Deletes the project specified by the given id.
-	DeleteProject(context.Context, *connect_go.Request[v1alpha1.DeleteProjectRequest]) (*connect_go.Response[v1alpha1.DeleteProjectResponse], error)
+	DeleteProject(context.Context, *connect.Request[v1alpha1.DeleteProjectRequest]) (*connect.Response[v1alpha1.DeleteProjectResponse], error)
 	// Patch a project
 	//
 	// Patches the specified project with the provided fields. Any fields that
 	// are not provided, will be left unchanged.
-	PatchProject(context.Context, *connect_go.Request[v1alpha1.PatchProjectRequest]) (*connect_go.Response[v1alpha1.PatchProjectResponse], error)
+	PatchProject(context.Context, *connect.Request[v1alpha1.PatchProjectRequest]) (*connect.Response[v1alpha1.PatchProjectResponse], error)
 	// Update a project
 	//
 	// Updates the specified project by setting the values of the provided fields.
 	// All fields will be updates. If you'd like to partially update some fields,
 	// use Patch instead.
-	UpdateProject(context.Context, *connect_go.Request[v1alpha1.UpdateProjectRequest]) (*connect_go.Response[v1alpha1.UpdateProjectResponse], error)
+	UpdateProject(context.Context, *connect.Request[v1alpha1.UpdateProjectRequest]) (*connect.Response[v1alpha1.UpdateProjectResponse], error)
 }
 
 // NewProjectsServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -276,50 +297,58 @@ type ProjectsServiceHandler interface {
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewProjectsServiceHandler(svc ProjectsServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	projectsServiceGetProjectHandler := connect_go.NewUnaryHandler(
+func NewProjectsServiceHandler(svc ProjectsServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	projectsServiceGetProjectHandler := connect.NewUnaryHandler(
 		ProjectsServiceGetProjectProcedure,
 		svc.GetProject,
-		connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-		connect_go.WithHandlerOptions(opts...),
+		connect.WithSchema(projectsServiceGetProjectMethodDescriptor),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
-	projectsServiceListProjectsHandler := connect_go.NewUnaryHandler(
+	projectsServiceListProjectsHandler := connect.NewUnaryHandler(
 		ProjectsServiceListProjectsProcedure,
 		svc.ListProjects,
-		connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-		connect_go.WithHandlerOptions(opts...),
+		connect.WithSchema(projectsServiceListProjectsMethodDescriptor),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
-	projectsServiceCountProjectsWithDeploymentHandler := connect_go.NewUnaryHandler(
+	projectsServiceCountProjectsWithDeploymentHandler := connect.NewUnaryHandler(
 		ProjectsServiceCountProjectsWithDeploymentProcedure,
 		svc.CountProjectsWithDeployment,
-		connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-		connect_go.WithHandlerOptions(opts...),
+		connect.WithSchema(projectsServiceCountProjectsWithDeploymentMethodDescriptor),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
-	projectsServiceSearchProjectsHandler := connect_go.NewUnaryHandler(
+	projectsServiceSearchProjectsHandler := connect.NewUnaryHandler(
 		ProjectsServiceSearchProjectsProcedure,
 		svc.SearchProjects,
-		connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-		connect_go.WithHandlerOptions(opts...),
+		connect.WithSchema(projectsServiceSearchProjectsMethodDescriptor),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
-	projectsServiceCreateProjectHandler := connect_go.NewUnaryHandler(
+	projectsServiceCreateProjectHandler := connect.NewUnaryHandler(
 		ProjectsServiceCreateProjectProcedure,
 		svc.CreateProject,
-		opts...,
+		connect.WithSchema(projectsServiceCreateProjectMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
-	projectsServiceDeleteProjectHandler := connect_go.NewUnaryHandler(
+	projectsServiceDeleteProjectHandler := connect.NewUnaryHandler(
 		ProjectsServiceDeleteProjectProcedure,
 		svc.DeleteProject,
-		opts...,
+		connect.WithSchema(projectsServiceDeleteProjectMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
-	projectsServicePatchProjectHandler := connect_go.NewUnaryHandler(
+	projectsServicePatchProjectHandler := connect.NewUnaryHandler(
 		ProjectsServicePatchProjectProcedure,
 		svc.PatchProject,
-		opts...,
+		connect.WithSchema(projectsServicePatchProjectMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
-	projectsServiceUpdateProjectHandler := connect_go.NewUnaryHandler(
+	projectsServiceUpdateProjectHandler := connect.NewUnaryHandler(
 		ProjectsServiceUpdateProjectProcedure,
 		svc.UpdateProject,
-		opts...,
+		connect.WithSchema(projectsServiceUpdateProjectMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/priv.projects.v1alpha1.ProjectsService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -348,34 +377,34 @@ func NewProjectsServiceHandler(svc ProjectsServiceHandler, opts ...connect_go.Ha
 // UnimplementedProjectsServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedProjectsServiceHandler struct{}
 
-func (UnimplementedProjectsServiceHandler) GetProject(context.Context, *connect_go.Request[v1alpha1.GetProjectRequest]) (*connect_go.Response[v1alpha1.GetProjectResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.GetProject is not implemented"))
+func (UnimplementedProjectsServiceHandler) GetProject(context.Context, *connect.Request[v1alpha1.GetProjectRequest]) (*connect.Response[v1alpha1.GetProjectResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.GetProject is not implemented"))
 }
 
-func (UnimplementedProjectsServiceHandler) ListProjects(context.Context, *connect_go.Request[v1alpha1.ListProjectsRequest]) (*connect_go.Response[v1alpha1.ListProjectsResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.ListProjects is not implemented"))
+func (UnimplementedProjectsServiceHandler) ListProjects(context.Context, *connect.Request[v1alpha1.ListProjectsRequest]) (*connect.Response[v1alpha1.ListProjectsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.ListProjects is not implemented"))
 }
 
-func (UnimplementedProjectsServiceHandler) CountProjectsWithDeployment(context.Context, *connect_go.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect_go.Response[v1alpha1.CountProjectsWithDeploymentResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.CountProjectsWithDeployment is not implemented"))
+func (UnimplementedProjectsServiceHandler) CountProjectsWithDeployment(context.Context, *connect.Request[v1alpha1.CountProjectsWithDeploymentRequest]) (*connect.Response[v1alpha1.CountProjectsWithDeploymentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.CountProjectsWithDeployment is not implemented"))
 }
 
-func (UnimplementedProjectsServiceHandler) SearchProjects(context.Context, *connect_go.Request[v1alpha1.SearchProjectsRequest]) (*connect_go.Response[v1alpha1.SearchProjectsResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.SearchProjects is not implemented"))
+func (UnimplementedProjectsServiceHandler) SearchProjects(context.Context, *connect.Request[v1alpha1.SearchProjectsRequest]) (*connect.Response[v1alpha1.SearchProjectsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.SearchProjects is not implemented"))
 }
 
-func (UnimplementedProjectsServiceHandler) CreateProject(context.Context, *connect_go.Request[v1alpha1.CreateProjectRequest]) (*connect_go.Response[v1alpha1.CreateProjectResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.CreateProject is not implemented"))
+func (UnimplementedProjectsServiceHandler) CreateProject(context.Context, *connect.Request[v1alpha1.CreateProjectRequest]) (*connect.Response[v1alpha1.CreateProjectResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.CreateProject is not implemented"))
 }
 
-func (UnimplementedProjectsServiceHandler) DeleteProject(context.Context, *connect_go.Request[v1alpha1.DeleteProjectRequest]) (*connect_go.Response[v1alpha1.DeleteProjectResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.DeleteProject is not implemented"))
+func (UnimplementedProjectsServiceHandler) DeleteProject(context.Context, *connect.Request[v1alpha1.DeleteProjectRequest]) (*connect.Response[v1alpha1.DeleteProjectResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.DeleteProject is not implemented"))
 }
 
-func (UnimplementedProjectsServiceHandler) PatchProject(context.Context, *connect_go.Request[v1alpha1.PatchProjectRequest]) (*connect_go.Response[v1alpha1.PatchProjectResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.PatchProject is not implemented"))
+func (UnimplementedProjectsServiceHandler) PatchProject(context.Context, *connect.Request[v1alpha1.PatchProjectRequest]) (*connect.Response[v1alpha1.PatchProjectResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.PatchProject is not implemented"))
 }
 
-func (UnimplementedProjectsServiceHandler) UpdateProject(context.Context, *connect_go.Request[v1alpha1.UpdateProjectRequest]) (*connect_go.Response[v1alpha1.UpdateProjectResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.UpdateProject is not implemented"))
+func (UnimplementedProjectsServiceHandler) UpdateProject(context.Context, *connect.Request[v1alpha1.UpdateProjectRequest]) (*connect.Response[v1alpha1.UpdateProjectResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.projects.v1alpha1.ProjectsService.UpdateProject is not implemented"))
 }

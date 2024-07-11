@@ -8,9 +8,9 @@
 package organizationsv1alpha1connect
 
 import (
+	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	connect_go "github.com/bufbuild/connect-go"
 	v1alpha1 "go.jetpack.io/axiom/api/gen/priv/organizations/v1alpha1"
 	http "net/http"
 	strings "strings"
@@ -21,7 +21,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect_go.IsAtLeastVersion1_7_0
+const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// OrganizationsServiceName is the fully-qualified name of the OrganizationsService service.
@@ -47,12 +47,20 @@ const (
 	OrganizationsServiceDeleteOrganizationProcedure = "/priv.organizations.v1alpha1.OrganizationsService/DeleteOrganization"
 )
 
+// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
+var (
+	organizationsServiceServiceDescriptor                  = v1alpha1.File_priv_organizations_v1alpha1_organizations_proto.Services().ByName("OrganizationsService")
+	organizationsServiceGetOrganizationMethodDescriptor    = organizationsServiceServiceDescriptor.Methods().ByName("GetOrganization")
+	organizationsServiceCreateOrganizationMethodDescriptor = organizationsServiceServiceDescriptor.Methods().ByName("CreateOrganization")
+	organizationsServiceDeleteOrganizationMethodDescriptor = organizationsServiceServiceDescriptor.Methods().ByName("DeleteOrganization")
+)
+
 // OrganizationsServiceClient is a client for the priv.organizations.v1alpha1.OrganizationsService
 // service.
 type OrganizationsServiceClient interface {
-	GetOrganization(context.Context, *connect_go.Request[v1alpha1.GetOrganizationRequest]) (*connect_go.Response[v1alpha1.GetOrganizationResponse], error)
-	CreateOrganization(context.Context, *connect_go.Request[v1alpha1.CreateOrganizationRequest]) (*connect_go.Response[v1alpha1.CreateOrganizationResponse], error)
-	DeleteOrganization(context.Context, *connect_go.Request[v1alpha1.DeleteOrganizationRequest]) (*connect_go.Response[v1alpha1.DeleteOrganizationResponse], error)
+	GetOrganization(context.Context, *connect.Request[v1alpha1.GetOrganizationRequest]) (*connect.Response[v1alpha1.GetOrganizationResponse], error)
+	CreateOrganization(context.Context, *connect.Request[v1alpha1.CreateOrganizationRequest]) (*connect.Response[v1alpha1.CreateOrganizationResponse], error)
+	DeleteOrganization(context.Context, *connect.Request[v1alpha1.DeleteOrganizationRequest]) (*connect.Response[v1alpha1.DeleteOrganizationResponse], error)
 }
 
 // NewOrganizationsServiceClient constructs a client for the
@@ -63,56 +71,59 @@ type OrganizationsServiceClient interface {
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewOrganizationsServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) OrganizationsServiceClient {
+func NewOrganizationsServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) OrganizationsServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &organizationsServiceClient{
-		getOrganization: connect_go.NewClient[v1alpha1.GetOrganizationRequest, v1alpha1.GetOrganizationResponse](
+		getOrganization: connect.NewClient[v1alpha1.GetOrganizationRequest, v1alpha1.GetOrganizationResponse](
 			httpClient,
 			baseURL+OrganizationsServiceGetOrganizationProcedure,
-			connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-			connect_go.WithClientOptions(opts...),
+			connect.WithSchema(organizationsServiceGetOrganizationMethodDescriptor),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
-		createOrganization: connect_go.NewClient[v1alpha1.CreateOrganizationRequest, v1alpha1.CreateOrganizationResponse](
+		createOrganization: connect.NewClient[v1alpha1.CreateOrganizationRequest, v1alpha1.CreateOrganizationResponse](
 			httpClient,
 			baseURL+OrganizationsServiceCreateOrganizationProcedure,
-			opts...,
+			connect.WithSchema(organizationsServiceCreateOrganizationMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
-		deleteOrganization: connect_go.NewClient[v1alpha1.DeleteOrganizationRequest, v1alpha1.DeleteOrganizationResponse](
+		deleteOrganization: connect.NewClient[v1alpha1.DeleteOrganizationRequest, v1alpha1.DeleteOrganizationResponse](
 			httpClient,
 			baseURL+OrganizationsServiceDeleteOrganizationProcedure,
-			opts...,
+			connect.WithSchema(organizationsServiceDeleteOrganizationMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
 
 // organizationsServiceClient implements OrganizationsServiceClient.
 type organizationsServiceClient struct {
-	getOrganization    *connect_go.Client[v1alpha1.GetOrganizationRequest, v1alpha1.GetOrganizationResponse]
-	createOrganization *connect_go.Client[v1alpha1.CreateOrganizationRequest, v1alpha1.CreateOrganizationResponse]
-	deleteOrganization *connect_go.Client[v1alpha1.DeleteOrganizationRequest, v1alpha1.DeleteOrganizationResponse]
+	getOrganization    *connect.Client[v1alpha1.GetOrganizationRequest, v1alpha1.GetOrganizationResponse]
+	createOrganization *connect.Client[v1alpha1.CreateOrganizationRequest, v1alpha1.CreateOrganizationResponse]
+	deleteOrganization *connect.Client[v1alpha1.DeleteOrganizationRequest, v1alpha1.DeleteOrganizationResponse]
 }
 
 // GetOrganization calls priv.organizations.v1alpha1.OrganizationsService.GetOrganization.
-func (c *organizationsServiceClient) GetOrganization(ctx context.Context, req *connect_go.Request[v1alpha1.GetOrganizationRequest]) (*connect_go.Response[v1alpha1.GetOrganizationResponse], error) {
+func (c *organizationsServiceClient) GetOrganization(ctx context.Context, req *connect.Request[v1alpha1.GetOrganizationRequest]) (*connect.Response[v1alpha1.GetOrganizationResponse], error) {
 	return c.getOrganization.CallUnary(ctx, req)
 }
 
 // CreateOrganization calls priv.organizations.v1alpha1.OrganizationsService.CreateOrganization.
-func (c *organizationsServiceClient) CreateOrganization(ctx context.Context, req *connect_go.Request[v1alpha1.CreateOrganizationRequest]) (*connect_go.Response[v1alpha1.CreateOrganizationResponse], error) {
+func (c *organizationsServiceClient) CreateOrganization(ctx context.Context, req *connect.Request[v1alpha1.CreateOrganizationRequest]) (*connect.Response[v1alpha1.CreateOrganizationResponse], error) {
 	return c.createOrganization.CallUnary(ctx, req)
 }
 
 // DeleteOrganization calls priv.organizations.v1alpha1.OrganizationsService.DeleteOrganization.
-func (c *organizationsServiceClient) DeleteOrganization(ctx context.Context, req *connect_go.Request[v1alpha1.DeleteOrganizationRequest]) (*connect_go.Response[v1alpha1.DeleteOrganizationResponse], error) {
+func (c *organizationsServiceClient) DeleteOrganization(ctx context.Context, req *connect.Request[v1alpha1.DeleteOrganizationRequest]) (*connect.Response[v1alpha1.DeleteOrganizationResponse], error) {
 	return c.deleteOrganization.CallUnary(ctx, req)
 }
 
 // OrganizationsServiceHandler is an implementation of the
 // priv.organizations.v1alpha1.OrganizationsService service.
 type OrganizationsServiceHandler interface {
-	GetOrganization(context.Context, *connect_go.Request[v1alpha1.GetOrganizationRequest]) (*connect_go.Response[v1alpha1.GetOrganizationResponse], error)
-	CreateOrganization(context.Context, *connect_go.Request[v1alpha1.CreateOrganizationRequest]) (*connect_go.Response[v1alpha1.CreateOrganizationResponse], error)
-	DeleteOrganization(context.Context, *connect_go.Request[v1alpha1.DeleteOrganizationRequest]) (*connect_go.Response[v1alpha1.DeleteOrganizationResponse], error)
+	GetOrganization(context.Context, *connect.Request[v1alpha1.GetOrganizationRequest]) (*connect.Response[v1alpha1.GetOrganizationResponse], error)
+	CreateOrganization(context.Context, *connect.Request[v1alpha1.CreateOrganizationRequest]) (*connect.Response[v1alpha1.CreateOrganizationResponse], error)
+	DeleteOrganization(context.Context, *connect.Request[v1alpha1.DeleteOrganizationRequest]) (*connect.Response[v1alpha1.DeleteOrganizationResponse], error)
 }
 
 // NewOrganizationsServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -120,22 +131,25 @@ type OrganizationsServiceHandler interface {
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewOrganizationsServiceHandler(svc OrganizationsServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	organizationsServiceGetOrganizationHandler := connect_go.NewUnaryHandler(
+func NewOrganizationsServiceHandler(svc OrganizationsServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	organizationsServiceGetOrganizationHandler := connect.NewUnaryHandler(
 		OrganizationsServiceGetOrganizationProcedure,
 		svc.GetOrganization,
-		connect_go.WithIdempotency(connect_go.IdempotencyNoSideEffects),
-		connect_go.WithHandlerOptions(opts...),
+		connect.WithSchema(organizationsServiceGetOrganizationMethodDescriptor),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
-	organizationsServiceCreateOrganizationHandler := connect_go.NewUnaryHandler(
+	organizationsServiceCreateOrganizationHandler := connect.NewUnaryHandler(
 		OrganizationsServiceCreateOrganizationProcedure,
 		svc.CreateOrganization,
-		opts...,
+		connect.WithSchema(organizationsServiceCreateOrganizationMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
-	organizationsServiceDeleteOrganizationHandler := connect_go.NewUnaryHandler(
+	organizationsServiceDeleteOrganizationHandler := connect.NewUnaryHandler(
 		OrganizationsServiceDeleteOrganizationProcedure,
 		svc.DeleteOrganization,
-		opts...,
+		connect.WithSchema(organizationsServiceDeleteOrganizationMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/priv.organizations.v1alpha1.OrganizationsService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -154,14 +168,14 @@ func NewOrganizationsServiceHandler(svc OrganizationsServiceHandler, opts ...con
 // UnimplementedOrganizationsServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedOrganizationsServiceHandler struct{}
 
-func (UnimplementedOrganizationsServiceHandler) GetOrganization(context.Context, *connect_go.Request[v1alpha1.GetOrganizationRequest]) (*connect_go.Response[v1alpha1.GetOrganizationResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.organizations.v1alpha1.OrganizationsService.GetOrganization is not implemented"))
+func (UnimplementedOrganizationsServiceHandler) GetOrganization(context.Context, *connect.Request[v1alpha1.GetOrganizationRequest]) (*connect.Response[v1alpha1.GetOrganizationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.organizations.v1alpha1.OrganizationsService.GetOrganization is not implemented"))
 }
 
-func (UnimplementedOrganizationsServiceHandler) CreateOrganization(context.Context, *connect_go.Request[v1alpha1.CreateOrganizationRequest]) (*connect_go.Response[v1alpha1.CreateOrganizationResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.organizations.v1alpha1.OrganizationsService.CreateOrganization is not implemented"))
+func (UnimplementedOrganizationsServiceHandler) CreateOrganization(context.Context, *connect.Request[v1alpha1.CreateOrganizationRequest]) (*connect.Response[v1alpha1.CreateOrganizationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.organizations.v1alpha1.OrganizationsService.CreateOrganization is not implemented"))
 }
 
-func (UnimplementedOrganizationsServiceHandler) DeleteOrganization(context.Context, *connect_go.Request[v1alpha1.DeleteOrganizationRequest]) (*connect_go.Response[v1alpha1.DeleteOrganizationResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("priv.organizations.v1alpha1.OrganizationsService.DeleteOrganization is not implemented"))
+func (UnimplementedOrganizationsServiceHandler) DeleteOrganization(context.Context, *connect.Request[v1alpha1.DeleteOrganizationRequest]) (*connect.Response[v1alpha1.DeleteOrganizationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("priv.organizations.v1alpha1.OrganizationsService.DeleteOrganization is not implemented"))
 }
