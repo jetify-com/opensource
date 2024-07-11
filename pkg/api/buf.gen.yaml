@@ -1,13 +1,13 @@
-version: v1
+version: v2
 managed:
   enabled: true
-  go_package_prefix:
-    default: go.jetpack.io/pkg/api/gen
-
+  override:
+    - file_option: go_package_prefix
+      value: go.jetpack.io/pkg/api/gen
 plugins:
-  - plugin: go
+  - local: protoc-gen-go
     out: gen
     opt: paths=source_relative
-  - plugin: connect-go
+  - local: protoc-gen-connect-go
     out: gen
     opt: paths=source_relative

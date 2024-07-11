@@ -9,5 +9,6 @@
         "devbox run tidy"
       ]
     }
-  }
+  },
+  "packages": {}
 }

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/main/.schema/devbox.schema.json",
+  "packages": [
+    "buf@latest"
+  ],
+  "shell": {
+    "scripts": {
+      "gen": [
+        "rm -rf gen && \\",
+        "buf generate ../../axiom/api/proto \\",
+        "--path ../../axiom/api/proto/priv/members \\", 
+        "--path ../../axiom/api/proto/priv/nix \\",
+        "--path ../../axiom/api/proto/priv/organizations \\",
+        "--path ../../axiom/api/proto/priv/projects \\",
+        "--path ../../axiom/api/proto/priv/secrets \\",
+        "--path ../../axiom/api/proto/priv/tokenservice \\",
+        "--path ../../axiom/api/proto/pub",
+      ],
+    }
+  }
+}
