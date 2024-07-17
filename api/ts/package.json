@@ -1,0 +1,42 @@
+{
+  "name": "@jetify/api",
+  "version": "0.0.0-dev",
+  "author": "Jetify Inc.",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": "./dist/*/index.js"
+  },
+  "scripts": {
+    "build": "pnpm typecheck && tsup src",
+    "check": "prettier --check .",
+    "dev": "tsup src --watch",
+    "fmt": "pnpm lint --fix && pnpm prettier",
+    "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint ./src",
+    "prettier": "prettier --write .",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "eslint": "^9.7.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
+    "tsup": "^6.7.0",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^1.4.0",
+    "@connectrpc/connect": "^1.1.2",
+    "@connectrpc/connect-web": "^1.1.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

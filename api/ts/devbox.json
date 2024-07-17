@@ -1,0 +1,14 @@
+{
+    "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/main/.schema/devbox.schema.json",
+    "packages": ["nodejs@18.12.1"],
+    "env": {
+        "DEVBOX_COREPACK_ENABLED": "true",
+    },
+    "shell": {
+        "scripts": {
+            "build": "pnpm run build",
+            "lint": "pnpm run lint",
+            "fmt": "pnpm run fmt"
+        }
+    }
+}
