@@ -1,6 +1,6 @@
 import { createPromiseClient } from '@connectrpc/connect';
 import { createConnectTransport } from '@connectrpc/connect-web';
-import { SandboxService } from '@jetify/api';
+import { SandboxService } from '@jetify/client';
 
 const transport = createConnectTransport({
   baseUrl: process.env.JETIFY_API_URL || 'https://api.jetpack.io',

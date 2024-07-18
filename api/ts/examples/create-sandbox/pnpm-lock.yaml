@@ -14,7 +14,7 @@ dependencies:
   '@connectrpc/connect-web':
     specifier: ^1.4.0
     version: 1.4.0(@bufbuild/protobuf@1.10.0)(@connectrpc/connect@1.4.0)
-  '@jetify/api':
+  '@jetify/client':
     specifier: link:../../dist
     version: link:../../dist
 
