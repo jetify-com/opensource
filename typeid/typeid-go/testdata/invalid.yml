@@ -102,7 +102,7 @@
 # spec tests
 - name: empty
   typeid: ""
-  description: "The empty string is not a parseable typeid"
+  description: "The empty string is not a valid typeid"
 
 - name: prefix-empty
   typeid: "prefix_"
