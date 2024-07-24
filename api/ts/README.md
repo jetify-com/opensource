@@ -1,5 +1,7 @@
 # Jetify API TypeScript Client
 
+**Warning:** this client is currently in development and subject to change.
+
 ## Usage
 
 ```bash
