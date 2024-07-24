@@ -1,7 +1,16 @@
 {
   "name": "@jetify/client",
-  "version": "0.0.0-dev",
-  "author": "Jetify Inc.",
+  "version": "0.1.0-dev",
+  "description": "Jetify client library for Node.js and the browser",
+  "keywords": [
+    "jetify",
+    "api",
+    "client"
+  ],
+  "author": {
+    "name": "Jetify Inc.",
+    "email": "opensource@jetify.com"
+  },
   "license": "Apache-2.0",
   "sideEffects": false,
   "main": "./dist/index.js",

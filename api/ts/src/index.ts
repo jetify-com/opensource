@@ -1,2 +1,2 @@
-export * from './gen/pub/devcloud/v1alpha1/sandbox_connect';
-export * from './gen/pub/devcloud/v1alpha1/sandbox_pb';
+export * from './gen/pub/sandbox/v1alpha1/sandbox_connect';
+export * from './gen/pub/sandbox/v1alpha1/sandbox_pb';

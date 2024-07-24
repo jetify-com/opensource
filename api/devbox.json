@@ -6,7 +6,9 @@
   "shell": {
     "scripts": {
       "gen": [
-        "rm -rf gen && \\",
+        "rm -rf go/gen && \\",
+        "rm -rf ts/src/gen && \\",
+        "rm -rf docs/gen && \\",
         "buf generate ../../axiom/api/proto \\",
         "--path ../../axiom/api/proto/pub",
       ],
