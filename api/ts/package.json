@@ -1,6 +1,6 @@
 {
   "name": "@jetify/client",
-  "version": "0.1.0-dev",
+  "version": "0.2.0-dev",
   "description": "Jetify client library for Node.js and the browser",
   "keywords": [
     "jetify",
@@ -24,7 +24,7 @@
     "./*": "./dist/*/index.js"
   },
   "scripts": {
-    "build": "pnpm typecheck && tsup src",
+    "build": "tsup src",
     "check": "prettier --check .",
     "dev": "tsup src --watch",
     "fmt": "pnpm lint --fix && pnpm prettier",
@@ -34,6 +34,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@typescript-eslint/parser": "^7.17.0",
     "eslint": "^9.7.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.3.3",

@@ -15,8 +15,8 @@ dependencies:
     specifier: ^1.4.0
     version: 1.4.0(@bufbuild/protobuf@1.10.0)(@connectrpc/connect@1.4.0)
   '@jetify/client':
-    specifier: 0.1.0-dev
-    version: 0.1.0-dev
+    specifier: link:../../dist
+    version: link:../../dist
 
 packages:
 
@@ -40,13 +40,4 @@ packages:
       '@bufbuild/protobuf': ^1.4.2
     dependencies:
       '@bufbuild/protobuf': 1.10.0
-    dev: false
-
-  /@jetify/client@0.1.0-dev:
-    resolution: {integrity: sha512-DQfArQy3JwKWc83wL1ae1PvQfd6sSWGJmaEaFPNMwJHFJU3kY0+v/7JBln8SC4ISSUN0GblTISdvKSw9EB+W5A==}
-    engines: {node: '>=18'}
-    dependencies:
-      '@bufbuild/protobuf': 1.10.0
-      '@connectrpc/connect': 1.4.0(@bufbuild/protobuf@1.10.0)
-      '@connectrpc/connect-web': 1.4.0(@bufbuild/protobuf@1.10.0)(@connectrpc/connect@1.4.0)
     dev: false

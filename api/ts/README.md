@@ -10,29 +10,20 @@
 ```
 
 ```typescript
-import { createPromiseClient } from '@connectrpc/connect';
-import { createConnectTransport } from '@connectrpc/connect-web';
-import { SandboxService } from '@jetify/client';
+import { ApiClient } from '@jetify/client';
 
-const transport = createConnectTransport({
-  baseUrl: process.env.JETIFY_API_URL || 'https://api.jetpack.io',
+const client = new ApiClient({
+  baseUrl: process.env.JETIFY_API_BASE_URL,
+  token: process.env.JETIFY_API_TOKEN,
 });
 
-const client = createPromiseClient(SandboxService, transport);
-
-const response = await client.createSandbox(
-  {
-    external_billing_tag: 'my-billing-tag',
-    repo: 'my-repo',
-    subdir: 'subdir-in-repo',
-    ref: 'branch-or-tag-or-commit',
-  },
-  {
-    headers: {
-      Authorization: `Token ${process.env.JETIFY_API_TOKEN}`,
-    },
-  },
-);
+const response = await client.sandboxService.createSandbox({
+  external_billing_tag: 'my-billing-tag',
+  repo: '',
+  subdir: '',
+  ref: '',
+});
 
 console.log(response);
+
 ```
