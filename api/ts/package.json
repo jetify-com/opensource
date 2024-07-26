@@ -1,6 +1,6 @@
 {
   "name": "@jetify/client",
-  "version": "0.2.0-dev",
+  "version": "0.3.0-dev",
   "description": "Jetify client library for Node.js and the browser",
   "keywords": [
     "jetify",
