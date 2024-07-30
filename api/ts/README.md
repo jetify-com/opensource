@@ -25,5 +25,4 @@ const response = await client.sandboxService.createSandbox({
 });
 
 console.log(response);
-
 ```

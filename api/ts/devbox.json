@@ -13,7 +13,7 @@
             // Run all checks before publishing the package
             "check": "devbox run typecheck && devbox run lint && devbox run fmt",
             // Publish the package to the npm registry. Access token is required.
-            "publish": "devbox run check && pnpm publish --access public $@",
+            "publish": "devbox run check && devbox run build && pnpm publish --access public $@",
         }
     }
 }
