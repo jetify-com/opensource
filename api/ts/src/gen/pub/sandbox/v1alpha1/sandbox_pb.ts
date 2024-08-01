@@ -7,7 +7,7 @@
 // @ts-nocheck
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
-import { Message, proto3 } from "@bufbuild/protobuf";
+import { Message, proto3, Timestamp } from "@bufbuild/protobuf";
 
 /**
  * SandboxState represents the state of a sandbox.
@@ -100,6 +100,20 @@ export class CreateSandboxRequest extends Message<CreateSandboxRequest> {
    */
   environmentVariables: { [key: string]: string } = {};
 
+  /**
+   * Optional, human readable name for the sandbox.
+   *
+   * @generated from field: string name = 6;
+   */
+  name = "";
+
+  /**
+   * Optional. Project must belong to organization.
+   *
+   * @generated from field: string project_id = 7;
+   */
+  projectId = "";
+
   constructor(data?: PartialMessage<CreateSandboxRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -113,6 +127,8 @@ export class CreateSandboxRequest extends Message<CreateSandboxRequest> {
     { no: 3, name: "subdir", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "ref", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "environment_variables", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
+    { no: 6, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 7, name: "project_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateSandboxRequest {
@@ -320,6 +336,14 @@ export class ListSandboxesRequest extends Message<ListSandboxesRequest> {
    */
   fetchStatusAndUrl = false;
 
+  /**
+   * Optional. If passed in, only sandboxes for this project are returned.
+   * Project must belong to organization
+   *
+   * @generated from field: string project_id = 2;
+   */
+  projectId = "";
+
   constructor(data?: PartialMessage<ListSandboxesRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -329,6 +353,7 @@ export class ListSandboxesRequest extends Message<ListSandboxesRequest> {
   static readonly typeName = "pub.sandbox.v1alpha1.ListSandboxesRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "fetch_status_and_url", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 2, name: "project_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListSandboxesRequest {
@@ -437,6 +462,25 @@ export class Sandbox extends Message<Sandbox> {
    */
   accessToken = "";
 
+  /**
+   * The time the sandbox was created.
+   *
+   * @generated from field: google.protobuf.Timestamp created_at = 9;
+   */
+  createdAt?: Timestamp;
+
+  /**
+   * The time the sandbox was last updated.
+   *
+   * @generated from field: google.protobuf.Timestamp updated_at = 10;
+   */
+  updatedAt?: Timestamp;
+
+  /**
+   * @generated from field: string name = 11;
+   */
+  name = "";
+
   constructor(data?: PartialMessage<Sandbox>) {
     super();
     proto3.util.initPartial(data, this);
@@ -453,6 +497,9 @@ export class Sandbox extends Message<Sandbox> {
     { no: 6, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 7, name: "state", kind: "enum", T: proto3.getEnumType(SandboxState) },
     { no: 8, name: "access_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 9, name: "created_at", kind: "message", T: Timestamp },
+    { no: 10, name: "updated_at", kind: "message", T: Timestamp },
+    { no: 11, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Sandbox {

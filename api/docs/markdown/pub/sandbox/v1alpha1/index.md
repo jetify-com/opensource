@@ -43,6 +43,8 @@ API to manage Jetify Sandbox environments
 | subdir | [string](#string) |  |  |
 | ref | [string](#string) |  |  |
 | environment_variables | [CreateSandboxRequest.EnvironmentVariablesEntry](#pub-sandbox-v1alpha1-CreateSandboxRequest-EnvironmentVariablesEntry) | repeated |  |
+| name | [string](#string) |  | Optional, human readable name for the sandbox. |
+| project_id | [string](#string) |  | Optional. Project must belong to organization. |
 
 
 
@@ -144,6 +146,7 @@ API to manage Jetify Sandbox environments
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | fetch_status_and_url | [bool](#bool) |  |  |
+| project_id | [string](#string) |  | Optional. If passed in, only sandboxes for this project are returned. Project must belong to organization |
 
 
 
@@ -181,6 +184,9 @@ API to manage Jetify Sandbox environments
 | url | [string](#string) |  | Will be empty if the sandbox is not running. If present, it will contain access token. |
 | state | [SandboxState](#pub-sandbox-v1alpha1-SandboxState) |  |  |
 | access_token | [string](#string) |  | Token used to make requests to the sandbox. Use in the Authorization header as a Bearer token. |
+| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | The time the sandbox was created. |
+| updated_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | The time the sandbox was last updated. |
+| name | [string](#string) |  |  |
 
 
 

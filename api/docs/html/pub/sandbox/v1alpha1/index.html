@@ -289,6 +289,20 @@
                   <td><p> </p></td>
                 </tr>
               
+                <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Optional, human readable name for the sandbox. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>project_id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Optional. Project must belong to organization. </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -447,6 +461,14 @@
                   <td><p> </p></td>
                 </tr>
               
+                <tr>
+                  <td>project_id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p>Optional. If passed in, only sandboxes for this project are returned.
+Project must belong to organization </p></td>
+                </tr>
+              
             </tbody>
           </table>
 
@@ -542,6 +564,27 @@
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>Token used to make requests to the sandbox. Use in the Authorization header as a Bearer token. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>created_at</td>
+                  <td><a href="#google.protobuf.Timestamp">google.protobuf.Timestamp</a></td>
+                  <td></td>
+                  <td><p>The time the sandbox was created. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>updated_at</td>
+                  <td><a href="#google.protobuf.Timestamp">google.protobuf.Timestamp</a></td>
+                  <td></td>
+                  <td><p>The time the sandbox was last updated. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>name</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
                 </tr>
               
             </tbody>
