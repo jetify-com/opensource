@@ -18,12 +18,12 @@ plugins:
   - remote: buf.build/connectrpc/go:v1.16.2
     out: go/gen
     opt: paths=source_relative
-  - remote: buf.build/bufbuild/es
+  - remote: buf.build/bufbuild/es:v1.10.0
     out: ts/src/gen
     opt: 
       - target=ts
       - js_import_style=module
-  - remote: buf.build/connectrpc/es
+  - remote: buf.build/connectrpc/es:v1.4.0
     out: ts/src/gen
     opt: 
       - target=ts
