@@ -411,6 +411,142 @@ export class ListSandboxesResponse extends Message<ListSandboxesResponse> {
 }
 
 /**
+ * @generated from message pub.sandbox.v1alpha1.StartSandboxRequest
+ */
+export class StartSandboxRequest extends Message<StartSandboxRequest> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  constructor(data?: PartialMessage<StartSandboxRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "pub.sandbox.v1alpha1.StartSandboxRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): StartSandboxRequest {
+    return new StartSandboxRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): StartSandboxRequest {
+    return new StartSandboxRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): StartSandboxRequest {
+    return new StartSandboxRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: StartSandboxRequest | PlainMessage<StartSandboxRequest> | undefined, b: StartSandboxRequest | PlainMessage<StartSandboxRequest> | undefined): boolean {
+    return proto3.util.equals(StartSandboxRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message pub.sandbox.v1alpha1.StartSandboxResponse
+ */
+export class StartSandboxResponse extends Message<StartSandboxResponse> {
+  constructor(data?: PartialMessage<StartSandboxResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "pub.sandbox.v1alpha1.StartSandboxResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): StartSandboxResponse {
+    return new StartSandboxResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): StartSandboxResponse {
+    return new StartSandboxResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): StartSandboxResponse {
+    return new StartSandboxResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: StartSandboxResponse | PlainMessage<StartSandboxResponse> | undefined, b: StartSandboxResponse | PlainMessage<StartSandboxResponse> | undefined): boolean {
+    return proto3.util.equals(StartSandboxResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message pub.sandbox.v1alpha1.StopSandboxRequest
+ */
+export class StopSandboxRequest extends Message<StopSandboxRequest> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  constructor(data?: PartialMessage<StopSandboxRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "pub.sandbox.v1alpha1.StopSandboxRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): StopSandboxRequest {
+    return new StopSandboxRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): StopSandboxRequest {
+    return new StopSandboxRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): StopSandboxRequest {
+    return new StopSandboxRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: StopSandboxRequest | PlainMessage<StopSandboxRequest> | undefined, b: StopSandboxRequest | PlainMessage<StopSandboxRequest> | undefined): boolean {
+    return proto3.util.equals(StopSandboxRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message pub.sandbox.v1alpha1.StopSandboxResponse
+ */
+export class StopSandboxResponse extends Message<StopSandboxResponse> {
+  constructor(data?: PartialMessage<StopSandboxResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "pub.sandbox.v1alpha1.StopSandboxResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): StopSandboxResponse {
+    return new StopSandboxResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): StopSandboxResponse {
+    return new StopSandboxResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): StopSandboxResponse {
+    return new StopSandboxResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: StopSandboxResponse | PlainMessage<StopSandboxResponse> | undefined, b: StopSandboxResponse | PlainMessage<StopSandboxResponse> | undefined): boolean {
+    return proto3.util.equals(StopSandboxResponse, a, b);
+  }
+}
+
+/**
  * @generated from message pub.sandbox.v1alpha1.Sandbox
  */
 export class Sandbox extends Message<Sandbox> {

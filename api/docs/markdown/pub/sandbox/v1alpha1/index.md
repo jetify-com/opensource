@@ -14,6 +14,10 @@
     - [ListSandboxesRequest](#pub-sandbox-v1alpha1-ListSandboxesRequest)
     - [ListSandboxesResponse](#pub-sandbox-v1alpha1-ListSandboxesResponse)
     - [Sandbox](#pub-sandbox-v1alpha1-Sandbox)
+    - [StartSandboxRequest](#pub-sandbox-v1alpha1-StartSandboxRequest)
+    - [StartSandboxResponse](#pub-sandbox-v1alpha1-StartSandboxResponse)
+    - [StopSandboxRequest](#pub-sandbox-v1alpha1-StopSandboxRequest)
+    - [StopSandboxResponse](#pub-sandbox-v1alpha1-StopSandboxResponse)
   
     - [SandboxState](#pub-sandbox-v1alpha1-SandboxState)
   
@@ -192,6 +196,56 @@ API to manage Jetify Sandbox environments
 
 
 
+
+<a name="pub-sandbox-v1alpha1-StartSandboxRequest"></a>
+
+### StartSandboxRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="pub-sandbox-v1alpha1-StartSandboxResponse"></a>
+
+### StartSandboxResponse
+
+
+
+
+
+
+
+<a name="pub-sandbox-v1alpha1-StopSandboxRequest"></a>
+
+### StopSandboxRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="pub-sandbox-v1alpha1-StopSandboxResponse"></a>
+
+### StopSandboxResponse
+
+
+
+
+
+
  
 
 
@@ -226,6 +280,8 @@ SandboxState represents the state of a sandbox.
 | GetSandbox | [GetSandboxRequest](#pub-sandbox-v1alpha1-GetSandboxRequest) | [GetSandboxResponse](#pub-sandbox-v1alpha1-GetSandboxResponse) |  |
 | DeleteSandbox | [DeleteSandboxRequest](#pub-sandbox-v1alpha1-DeleteSandboxRequest) | [DeleteSandboxResponse](#pub-sandbox-v1alpha1-DeleteSandboxResponse) |  |
 | ListSandboxes | [ListSandboxesRequest](#pub-sandbox-v1alpha1-ListSandboxesRequest) | [ListSandboxesResponse](#pub-sandbox-v1alpha1-ListSandboxesResponse) |  |
+| StartSandbox | [StartSandboxRequest](#pub-sandbox-v1alpha1-StartSandboxRequest) | [StartSandboxResponse](#pub-sandbox-v1alpha1-StartSandboxResponse) |  |
+| StopSandbox | [StopSandboxRequest](#pub-sandbox-v1alpha1-StopSandboxRequest) | [StopSandboxResponse](#pub-sandbox-v1alpha1-StopSandboxResponse) |  |
 
  
 

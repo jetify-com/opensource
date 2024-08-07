@@ -48,6 +48,12 @@ const (
 	// SandboxServiceListSandboxesProcedure is the fully-qualified name of the SandboxService's
 	// ListSandboxes RPC.
 	SandboxServiceListSandboxesProcedure = "/pub.sandbox.v1alpha1.SandboxService/ListSandboxes"
+	// SandboxServiceStartSandboxProcedure is the fully-qualified name of the SandboxService's
+	// StartSandbox RPC.
+	SandboxServiceStartSandboxProcedure = "/pub.sandbox.v1alpha1.SandboxService/StartSandbox"
+	// SandboxServiceStopSandboxProcedure is the fully-qualified name of the SandboxService's
+	// StopSandbox RPC.
+	SandboxServiceStopSandboxProcedure = "/pub.sandbox.v1alpha1.SandboxService/StopSandbox"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
@@ -57,6 +63,8 @@ var (
 	sandboxServiceGetSandboxMethodDescriptor    = sandboxServiceServiceDescriptor.Methods().ByName("GetSandbox")
 	sandboxServiceDeleteSandboxMethodDescriptor = sandboxServiceServiceDescriptor.Methods().ByName("DeleteSandbox")
 	sandboxServiceListSandboxesMethodDescriptor = sandboxServiceServiceDescriptor.Methods().ByName("ListSandboxes")
+	sandboxServiceStartSandboxMethodDescriptor  = sandboxServiceServiceDescriptor.Methods().ByName("StartSandbox")
+	sandboxServiceStopSandboxMethodDescriptor   = sandboxServiceServiceDescriptor.Methods().ByName("StopSandbox")
 )
 
 // SandboxServiceClient is a client for the pub.sandbox.v1alpha1.SandboxService service.
@@ -65,6 +73,8 @@ type SandboxServiceClient interface {
 	GetSandbox(context.Context, *connect.Request[v1alpha1.GetSandboxRequest]) (*connect.Response[v1alpha1.GetSandboxResponse], error)
 	DeleteSandbox(context.Context, *connect.Request[v1alpha1.DeleteSandboxRequest]) (*connect.Response[v1alpha1.DeleteSandboxResponse], error)
 	ListSandboxes(context.Context, *connect.Request[v1alpha1.ListSandboxesRequest]) (*connect.Response[v1alpha1.ListSandboxesResponse], error)
+	StartSandbox(context.Context, *connect.Request[v1alpha1.StartSandboxRequest]) (*connect.Response[v1alpha1.StartSandboxResponse], error)
+	StopSandbox(context.Context, *connect.Request[v1alpha1.StopSandboxRequest]) (*connect.Response[v1alpha1.StopSandboxResponse], error)
 }
 
 // NewSandboxServiceClient constructs a client for the pub.sandbox.v1alpha1.SandboxService service.
@@ -103,6 +113,18 @@ func NewSandboxServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
+		startSandbox: connect.NewClient[v1alpha1.StartSandboxRequest, v1alpha1.StartSandboxResponse](
+			httpClient,
+			baseURL+SandboxServiceStartSandboxProcedure,
+			connect.WithSchema(sandboxServiceStartSandboxMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		stopSandbox: connect.NewClient[v1alpha1.StopSandboxRequest, v1alpha1.StopSandboxResponse](
+			httpClient,
+			baseURL+SandboxServiceStopSandboxProcedure,
+			connect.WithSchema(sandboxServiceStopSandboxMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -112,6 +134,8 @@ type sandboxServiceClient struct {
 	getSandbox    *connect.Client[v1alpha1.GetSandboxRequest, v1alpha1.GetSandboxResponse]
 	deleteSandbox *connect.Client[v1alpha1.DeleteSandboxRequest, v1alpha1.DeleteSandboxResponse]
 	listSandboxes *connect.Client[v1alpha1.ListSandboxesRequest, v1alpha1.ListSandboxesResponse]
+	startSandbox  *connect.Client[v1alpha1.StartSandboxRequest, v1alpha1.StartSandboxResponse]
+	stopSandbox   *connect.Client[v1alpha1.StopSandboxRequest, v1alpha1.StopSandboxResponse]
 }
 
 // CreateSandbox calls pub.sandbox.v1alpha1.SandboxService.CreateSandbox.
@@ -134,12 +158,24 @@ func (c *sandboxServiceClient) ListSandboxes(ctx context.Context, req *connect.R
 	return c.listSandboxes.CallUnary(ctx, req)
 }
 
+// StartSandbox calls pub.sandbox.v1alpha1.SandboxService.StartSandbox.
+func (c *sandboxServiceClient) StartSandbox(ctx context.Context, req *connect.Request[v1alpha1.StartSandboxRequest]) (*connect.Response[v1alpha1.StartSandboxResponse], error) {
+	return c.startSandbox.CallUnary(ctx, req)
+}
+
+// StopSandbox calls pub.sandbox.v1alpha1.SandboxService.StopSandbox.
+func (c *sandboxServiceClient) StopSandbox(ctx context.Context, req *connect.Request[v1alpha1.StopSandboxRequest]) (*connect.Response[v1alpha1.StopSandboxResponse], error) {
+	return c.stopSandbox.CallUnary(ctx, req)
+}
+
 // SandboxServiceHandler is an implementation of the pub.sandbox.v1alpha1.SandboxService service.
 type SandboxServiceHandler interface {
 	CreateSandbox(context.Context, *connect.Request[v1alpha1.CreateSandboxRequest]) (*connect.Response[v1alpha1.CreateSandboxResponse], error)
 	GetSandbox(context.Context, *connect.Request[v1alpha1.GetSandboxRequest]) (*connect.Response[v1alpha1.GetSandboxResponse], error)
 	DeleteSandbox(context.Context, *connect.Request[v1alpha1.DeleteSandboxRequest]) (*connect.Response[v1alpha1.DeleteSandboxResponse], error)
 	ListSandboxes(context.Context, *connect.Request[v1alpha1.ListSandboxesRequest]) (*connect.Response[v1alpha1.ListSandboxesResponse], error)
+	StartSandbox(context.Context, *connect.Request[v1alpha1.StartSandboxRequest]) (*connect.Response[v1alpha1.StartSandboxResponse], error)
+	StopSandbox(context.Context, *connect.Request[v1alpha1.StopSandboxRequest]) (*connect.Response[v1alpha1.StopSandboxResponse], error)
 }
 
 // NewSandboxServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -174,6 +210,18 @@ func NewSandboxServiceHandler(svc SandboxServiceHandler, opts ...connect.Handler
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
+	sandboxServiceStartSandboxHandler := connect.NewUnaryHandler(
+		SandboxServiceStartSandboxProcedure,
+		svc.StartSandbox,
+		connect.WithSchema(sandboxServiceStartSandboxMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	sandboxServiceStopSandboxHandler := connect.NewUnaryHandler(
+		SandboxServiceStopSandboxProcedure,
+		svc.StopSandbox,
+		connect.WithSchema(sandboxServiceStopSandboxMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/pub.sandbox.v1alpha1.SandboxService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case SandboxServiceCreateSandboxProcedure:
@@ -184,6 +232,10 @@ func NewSandboxServiceHandler(svc SandboxServiceHandler, opts ...connect.Handler
 			sandboxServiceDeleteSandboxHandler.ServeHTTP(w, r)
 		case SandboxServiceListSandboxesProcedure:
 			sandboxServiceListSandboxesHandler.ServeHTTP(w, r)
+		case SandboxServiceStartSandboxProcedure:
+			sandboxServiceStartSandboxHandler.ServeHTTP(w, r)
+		case SandboxServiceStopSandboxProcedure:
+			sandboxServiceStopSandboxHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -207,4 +259,12 @@ func (UnimplementedSandboxServiceHandler) DeleteSandbox(context.Context, *connec
 
 func (UnimplementedSandboxServiceHandler) ListSandboxes(context.Context, *connect.Request[v1alpha1.ListSandboxesRequest]) (*connect.Response[v1alpha1.ListSandboxesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pub.sandbox.v1alpha1.SandboxService.ListSandboxes is not implemented"))
+}
+
+func (UnimplementedSandboxServiceHandler) StartSandbox(context.Context, *connect.Request[v1alpha1.StartSandboxRequest]) (*connect.Response[v1alpha1.StartSandboxResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pub.sandbox.v1alpha1.SandboxService.StartSandbox is not implemented"))
+}
+
+func (UnimplementedSandboxServiceHandler) StopSandbox(context.Context, *connect.Request[v1alpha1.StopSandboxRequest]) (*connect.Response[v1alpha1.StopSandboxResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("pub.sandbox.v1alpha1.SandboxService.StopSandbox is not implemented"))
 }
