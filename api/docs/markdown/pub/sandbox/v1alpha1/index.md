@@ -218,6 +218,11 @@ API to manage Jetify Sandbox environments
 
 
 
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| sandbox | [Sandbox](#pub-sandbox-v1alpha1-Sandbox) |  |  |
+
+
 
 
 
@@ -241,6 +246,11 @@ API to manage Jetify Sandbox environments
 
 ### StopSandboxResponse
 
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| sandbox | [Sandbox](#pub-sandbox-v1alpha1-Sandbox) |  |  |
 
 
 
@@ -280,8 +290,8 @@ SandboxState represents the state of a sandbox.
 | GetSandbox | [GetSandboxRequest](#pub-sandbox-v1alpha1-GetSandboxRequest) | [GetSandboxResponse](#pub-sandbox-v1alpha1-GetSandboxResponse) |  |
 | DeleteSandbox | [DeleteSandboxRequest](#pub-sandbox-v1alpha1-DeleteSandboxRequest) | [DeleteSandboxResponse](#pub-sandbox-v1alpha1-DeleteSandboxResponse) |  |
 | ListSandboxes | [ListSandboxesRequest](#pub-sandbox-v1alpha1-ListSandboxesRequest) | [ListSandboxesResponse](#pub-sandbox-v1alpha1-ListSandboxesResponse) |  |
-| StartSandbox | [StartSandboxRequest](#pub-sandbox-v1alpha1-StartSandboxRequest) | [StartSandboxResponse](#pub-sandbox-v1alpha1-StartSandboxResponse) |  |
-| StopSandbox | [StopSandboxRequest](#pub-sandbox-v1alpha1-StopSandboxRequest) | [StopSandboxResponse](#pub-sandbox-v1alpha1-StopSandboxResponse) |  |
+| StartSandbox | [StartSandboxRequest](#pub-sandbox-v1alpha1-StartSandboxRequest) | [StartSandboxResponse](#pub-sandbox-v1alpha1-StartSandboxResponse) | Starts sandbox. If sandbox is already starting or running, it does nothing. May return error if sandbox is stopping. |
+| StopSandbox | [StopSandboxRequest](#pub-sandbox-v1alpha1-StopSandboxRequest) | [StopSandboxResponse](#pub-sandbox-v1alpha1-StopSandboxResponse) | Stops sandbox. If sandbox is already stopped, it does nothing. May return error if sandbox is starting. |
 
  
 

@@ -451,6 +451,11 @@ export class StartSandboxRequest extends Message<StartSandboxRequest> {
  * @generated from message pub.sandbox.v1alpha1.StartSandboxResponse
  */
 export class StartSandboxResponse extends Message<StartSandboxResponse> {
+  /**
+   * @generated from field: pub.sandbox.v1alpha1.Sandbox sandbox = 1;
+   */
+  sandbox?: Sandbox;
+
   constructor(data?: PartialMessage<StartSandboxResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -459,6 +464,7 @@ export class StartSandboxResponse extends Message<StartSandboxResponse> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "pub.sandbox.v1alpha1.StartSandboxResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "sandbox", kind: "message", T: Sandbox },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): StartSandboxResponse {
@@ -519,6 +525,11 @@ export class StopSandboxRequest extends Message<StopSandboxRequest> {
  * @generated from message pub.sandbox.v1alpha1.StopSandboxResponse
  */
 export class StopSandboxResponse extends Message<StopSandboxResponse> {
+  /**
+   * @generated from field: pub.sandbox.v1alpha1.Sandbox sandbox = 1;
+   */
+  sandbox?: Sandbox;
+
   constructor(data?: PartialMessage<StopSandboxResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -527,6 +538,7 @@ export class StopSandboxResponse extends Message<StopSandboxResponse> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "pub.sandbox.v1alpha1.StopSandboxResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "sandbox", kind: "message", T: Sandbox },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): StopSandboxResponse {

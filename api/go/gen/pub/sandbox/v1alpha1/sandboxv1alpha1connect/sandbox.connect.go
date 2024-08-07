@@ -73,7 +73,11 @@ type SandboxServiceClient interface {
 	GetSandbox(context.Context, *connect.Request[v1alpha1.GetSandboxRequest]) (*connect.Response[v1alpha1.GetSandboxResponse], error)
 	DeleteSandbox(context.Context, *connect.Request[v1alpha1.DeleteSandboxRequest]) (*connect.Response[v1alpha1.DeleteSandboxResponse], error)
 	ListSandboxes(context.Context, *connect.Request[v1alpha1.ListSandboxesRequest]) (*connect.Response[v1alpha1.ListSandboxesResponse], error)
+	// Starts sandbox. If sandbox is already starting or running, it does nothing.
+	// May return error if sandbox is stopping.
 	StartSandbox(context.Context, *connect.Request[v1alpha1.StartSandboxRequest]) (*connect.Response[v1alpha1.StartSandboxResponse], error)
+	// Stops sandbox. If sandbox is already stopped, it does nothing.
+	// May return error if sandbox is starting.
 	StopSandbox(context.Context, *connect.Request[v1alpha1.StopSandboxRequest]) (*connect.Response[v1alpha1.StopSandboxResponse], error)
 }
 
@@ -174,7 +178,11 @@ type SandboxServiceHandler interface {
 	GetSandbox(context.Context, *connect.Request[v1alpha1.GetSandboxRequest]) (*connect.Response[v1alpha1.GetSandboxResponse], error)
 	DeleteSandbox(context.Context, *connect.Request[v1alpha1.DeleteSandboxRequest]) (*connect.Response[v1alpha1.DeleteSandboxResponse], error)
 	ListSandboxes(context.Context, *connect.Request[v1alpha1.ListSandboxesRequest]) (*connect.Response[v1alpha1.ListSandboxesResponse], error)
+	// Starts sandbox. If sandbox is already starting or running, it does nothing.
+	// May return error if sandbox is stopping.
 	StartSandbox(context.Context, *connect.Request[v1alpha1.StartSandboxRequest]) (*connect.Response[v1alpha1.StartSandboxResponse], error)
+	// Stops sandbox. If sandbox is already stopped, it does nothing.
+	// May return error if sandbox is starting.
 	StopSandbox(context.Context, *connect.Request[v1alpha1.StopSandboxRequest]) (*connect.Response[v1alpha1.StopSandboxResponse], error)
 }
 

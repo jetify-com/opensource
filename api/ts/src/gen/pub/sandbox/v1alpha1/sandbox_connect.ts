@@ -54,6 +54,9 @@ export const SandboxService = {
       idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
+     * Starts sandbox. If sandbox is already starting or running, it does nothing.
+     * May return error if sandbox is stopping.
+     *
      * @generated from rpc pub.sandbox.v1alpha1.SandboxService.StartSandbox
      */
     startSandbox: {
@@ -63,6 +66,9 @@ export const SandboxService = {
       kind: MethodKind.Unary,
     },
     /**
+     * Stops sandbox. If sandbox is already stopped, it does nothing.
+     * May return error if sandbox is starting.
+     *
      * @generated from rpc pub.sandbox.v1alpha1.SandboxService.StopSandbox
      */
     stopSandbox: {
