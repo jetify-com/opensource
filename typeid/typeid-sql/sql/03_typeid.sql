@@ -13,8 +13,8 @@ create or replace function typeid_generate(prefix text)
 returns typeid
 as $$
 begin
-  if (prefix is null) or not (prefix ~ '^[a-z]{0,63}$') then
-    raise exception 'typeid prefix must match the regular expression [a-z]{0,63}';
+  if (prefix is null) or not (prefix ~ '^[a-z_]{0,63}$') then
+    raise exception 'typeid prefix must match the regular expression [a-z_]{0,63}';
   end if;
   return (prefix, uuid_generate_v7())::typeid;
 end
@@ -27,8 +27,8 @@ create or replace function typeid_generate_text(prefix text)
 returns text
 as $$
 begin
-  if (prefix is null) or not (prefix ~ '^[a-z]{0,63}$') then
-    raise exception 'typeid prefix must match the regular expression [a-z]{0,63}';
+  if (prefix is null) or not (prefix ~ '^[a-z_]{0,63}$') then
+    raise exception 'typeid prefix must match the regular expression [a-z_]{0,63}';
   end if;
   return typeid_print((prefix, uuid_generate_v7())::typeid);
 end
@@ -80,14 +80,16 @@ begin
   if position('_' in typeid_str) = 0 then
     return ('', base32_decode(typeid_str))::typeid;
   end if;
-  prefix = split_part(typeid_str, '_', 1);
-  suffix = split_part(typeid_str, '_', 2);
+  matches = regexp_match(typeid_str, '^(.*)_(.*)$');
+  prefix = matches[1];
+  suffix = matches[2];
+
   if prefix is null or prefix = '' then
     raise exception 'typeid prefix cannot be empty with a delimiter';
   end if;
-  -- prefix must match the regular expression [a-z]{0,63}
-  if not prefix ~ '^[a-z]{0,63}$' then
-    raise exception 'typeid prefix must match the regular expression [a-z]{0,63}';
+  -- prefix must match the regular expression [a-z_]{0,63}
+  if not prefix ~ '^[a-z_]{0,63}$' then
+    raise exception 'typeid prefix must match the regular expression [a-z_]{0,63}';
   end if;
 
   return (prefix, base32_decode(suffix))::typeid;
@@ -109,8 +111,9 @@ begin
   end if;
   prefix = (tid).type;
   suffix = base32_encode((tid).uuid);
-  if (prefix is null) or not (prefix ~ '^[a-z]{0,63}$') then
-    raise exception 'typeid prefix must match the regular expression [a-z]{0,63}';
+  -- Added underscore to regex allowed characters to match spec
+  if (prefix is null) or not (prefix ~ '^[a-z_]{0,63}$') then
+    raise exception 'typeid prefix must match the regular expression [a-z_]{0,63}';
   end if;
   if prefix = '' then
     return suffix;
