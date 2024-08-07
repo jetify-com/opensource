@@ -6,7 +6,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateSandboxRequest, CreateSandboxResponse, DeleteSandboxRequest, DeleteSandboxResponse, GetSandboxRequest, GetSandboxResponse, ListSandboxesRequest, ListSandboxesResponse } from "./sandbox_pb.js";
+import { CreateSandboxRequest, CreateSandboxResponse, DeleteSandboxRequest, DeleteSandboxResponse, GetSandboxRequest, GetSandboxResponse, ListSandboxesRequest, ListSandboxesResponse, StartSandboxRequest, StartSandboxResponse, StopSandboxRequest, StopSandboxResponse } from "./sandbox_pb.js";
 import { MethodIdempotency, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -52,6 +52,30 @@ export const SandboxService = {
       O: ListSandboxesResponse,
       kind: MethodKind.Unary,
       idempotency: MethodIdempotency.NoSideEffects,
+    },
+    /**
+     * Starts sandbox. If sandbox is already starting or running, it does nothing.
+     * May return error if sandbox is stopping.
+     *
+     * @generated from rpc pub.sandbox.v1alpha1.SandboxService.StartSandbox
+     */
+    startSandbox: {
+      name: "StartSandbox",
+      I: StartSandboxRequest,
+      O: StartSandboxResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Stops sandbox. If sandbox is already stopped, it does nothing.
+     * May return error if sandbox is starting.
+     *
+     * @generated from rpc pub.sandbox.v1alpha1.SandboxService.StopSandbox
+     */
+    stopSandbox: {
+      name: "StopSandbox",
+      I: StopSandboxRequest,
+      O: StopSandboxResponse,
+      kind: MethodKind.Unary,
     },
   }
 } as const;

@@ -218,6 +218,22 @@
                   <a href="#pub.sandbox.v1alpha1.Sandbox"><span class="badge">M</span>Sandbox</a>
                 </li>
               
+                <li>
+                  <a href="#pub.sandbox.v1alpha1.StartSandboxRequest"><span class="badge">M</span>StartSandboxRequest</a>
+                </li>
+              
+                <li>
+                  <a href="#pub.sandbox.v1alpha1.StartSandboxResponse"><span class="badge">M</span>StartSandboxResponse</a>
+                </li>
+              
+                <li>
+                  <a href="#pub.sandbox.v1alpha1.StopSandboxRequest"><span class="badge">M</span>StopSandboxRequest</a>
+                </li>
+              
+                <li>
+                  <a href="#pub.sandbox.v1alpha1.StopSandboxResponse"><span class="badge">M</span>StopSandboxResponse</a>
+                </li>
+              
               
                 <li>
                   <a href="#pub.sandbox.v1alpha1.SandboxState"><span class="badge">E</span>SandboxState</a>
@@ -594,6 +610,102 @@ Project must belong to organization </p></td>
 
         
       
+        <h3 id="pub.sandbox.v1alpha1.StartSandboxRequest">StartSandboxRequest</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="pub.sandbox.v1alpha1.StartSandboxResponse">StartSandboxResponse</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>sandbox</td>
+                  <td><a href="#pub.sandbox.v1alpha1.Sandbox">Sandbox</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="pub.sandbox.v1alpha1.StopSandboxRequest">StopSandboxRequest</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
+        <h3 id="pub.sandbox.v1alpha1.StopSandboxResponse">StopSandboxResponse</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>sandbox</td>
+                  <td><a href="#pub.sandbox.v1alpha1.Sandbox">Sandbox</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
+      
 
       
         <h3 id="pub.sandbox.v1alpha1.SandboxState">SandboxState</h3>
@@ -683,6 +795,22 @@ it is started.</p></td>
                 <td><a href="#pub.sandbox.v1alpha1.ListSandboxesRequest">ListSandboxesRequest</a></td>
                 <td><a href="#pub.sandbox.v1alpha1.ListSandboxesResponse">ListSandboxesResponse</a></td>
                 <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>StartSandbox</td>
+                <td><a href="#pub.sandbox.v1alpha1.StartSandboxRequest">StartSandboxRequest</a></td>
+                <td><a href="#pub.sandbox.v1alpha1.StartSandboxResponse">StartSandboxResponse</a></td>
+                <td><p>Starts sandbox. If sandbox is already starting or running, it does nothing.
+May return error if sandbox is stopping.</p></td>
+              </tr>
+            
+              <tr>
+                <td>StopSandbox</td>
+                <td><a href="#pub.sandbox.v1alpha1.StopSandboxRequest">StopSandboxRequest</a></td>
+                <td><a href="#pub.sandbox.v1alpha1.StopSandboxResponse">StopSandboxResponse</a></td>
+                <td><p>Stops sandbox. If sandbox is already stopped, it does nothing.
+May return error if sandbox is starting.</p></td>
               </tr>
             
           </tbody>
