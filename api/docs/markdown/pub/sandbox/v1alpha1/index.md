@@ -11,6 +11,7 @@
     - [DeleteSandboxResponse](#pub-sandbox-v1alpha1-DeleteSandboxResponse)
     - [GetSandboxRequest](#pub-sandbox-v1alpha1-GetSandboxRequest)
     - [GetSandboxResponse](#pub-sandbox-v1alpha1-GetSandboxResponse)
+    - [ListSandboxesFilter](#pub-sandbox-v1alpha1-ListSandboxesFilter)
     - [ListSandboxesRequest](#pub-sandbox-v1alpha1-ListSandboxesRequest)
     - [ListSandboxesResponse](#pub-sandbox-v1alpha1-ListSandboxesResponse)
     - [Sandbox](#pub-sandbox-v1alpha1-Sandbox)
@@ -141,6 +142,22 @@ API to manage Jetify Sandbox environments
 
 
 
+<a name="pub-sandbox-v1alpha1-ListSandboxesFilter"></a>
+
+### ListSandboxesFilter
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| project_id | [string](#string) |  | Optional. If passed in, only sandboxes for this project are returned. Project must belong to organization |
+| member_id | [string](#string) |  | Optional. If passed in, only sandboxes for this member are returned. |
+
+
+
+
+
+
 <a name="pub-sandbox-v1alpha1-ListSandboxesRequest"></a>
 
 ### ListSandboxesRequest
@@ -150,7 +167,7 @@ API to manage Jetify Sandbox environments
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | fetch_status_and_url | [bool](#bool) |  |  |
-| project_id | [string](#string) |  | Optional. If passed in, only sandboxes for this project are returned. Project must belong to organization |
+| filter | [ListSandboxesFilter](#pub-sandbox-v1alpha1-ListSandboxesFilter) |  |  |
 
 
 

@@ -328,6 +328,54 @@ export class DeleteSandboxResponse extends Message<DeleteSandboxResponse> {
 }
 
 /**
+ * @generated from message pub.sandbox.v1alpha1.ListSandboxesFilter
+ */
+export class ListSandboxesFilter extends Message<ListSandboxesFilter> {
+  /**
+   * Optional. If passed in, only sandboxes for this project are returned.
+   * Project must belong to organization
+   *
+   * @generated from field: string project_id = 1;
+   */
+  projectId = "";
+
+  /**
+   * Optional. If passed in, only sandboxes for this member are returned.
+   *
+   * @generated from field: string member_id = 2;
+   */
+  memberId = "";
+
+  constructor(data?: PartialMessage<ListSandboxesFilter>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "pub.sandbox.v1alpha1.ListSandboxesFilter";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "project_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "member_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListSandboxesFilter {
+    return new ListSandboxesFilter().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListSandboxesFilter {
+    return new ListSandboxesFilter().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListSandboxesFilter {
+    return new ListSandboxesFilter().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListSandboxesFilter | PlainMessage<ListSandboxesFilter> | undefined, b: ListSandboxesFilter | PlainMessage<ListSandboxesFilter> | undefined): boolean {
+    return proto3.util.equals(ListSandboxesFilter, a, b);
+  }
+}
+
+/**
  * @generated from message pub.sandbox.v1alpha1.ListSandboxesRequest
  */
 export class ListSandboxesRequest extends Message<ListSandboxesRequest> {
@@ -337,12 +385,9 @@ export class ListSandboxesRequest extends Message<ListSandboxesRequest> {
   fetchStatusAndUrl = false;
 
   /**
-   * Optional. If passed in, only sandboxes for this project are returned.
-   * Project must belong to organization
-   *
-   * @generated from field: string project_id = 2;
+   * @generated from field: pub.sandbox.v1alpha1.ListSandboxesFilter filter = 2;
    */
-  projectId = "";
+  filter?: ListSandboxesFilter;
 
   constructor(data?: PartialMessage<ListSandboxesRequest>) {
     super();
@@ -353,7 +398,7 @@ export class ListSandboxesRequest extends Message<ListSandboxesRequest> {
   static readonly typeName = "pub.sandbox.v1alpha1.ListSandboxesRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "fetch_status_and_url", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 2, name: "project_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "filter", kind: "message", T: ListSandboxesFilter },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListSandboxesRequest {
