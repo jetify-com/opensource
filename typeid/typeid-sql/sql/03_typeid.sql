@@ -73,6 +73,7 @@ as $$
 declare
   prefix text;
   suffix text;
+  matches text[];
 begin
   if (typeid_str is null) then
     return null;
