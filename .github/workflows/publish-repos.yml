@@ -12,7 +12,6 @@ on:
   push:
     branches:
       - main # When we merge to main
-      - rodrigo/*
     tags:
       - "**" # If we added a tag (used for releases)
 
@@ -45,15 +44,14 @@ jobs:
           # if you relocate a subdirectory within the monorepo, you need to update this
           # yaml for things to continue to work.
           targets: >
-            action-publish-code:jetify-examples/test-repo
-#            envsec:envsec2
-#            nixtest:anotherorg/nixtest
-#            pkg
-#            typeid/typeid
-#            typeid/typeid-go
-#            typeid/typeid-sql
-#            typeid/typeid-js
-#            tyson
+            envsec:envsec2
+            nixtest:anotherorg/nixtest
+            pkg
+            typeid/typeid
+            typeid/typeid-go
+            typeid/typeid-sql
+            typeid/typeid-js
+            tyson
 
   create-dependency-update-pr:
     needs: publish-repos

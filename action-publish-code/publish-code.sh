@@ -1,18 +1,18 @@
 #!/bin/bash
 
-# Publishes a subdirectory in a given git repository as a standalone repository of it's own.
+# Publishes a subdirectory in a given git repository as a standalone repository of its own.
 
 set -euo pipefail
 set -o errexit
 set -o nounset
 
 if [ "$#" = 0 ]; then
-	echo "usage: $0 <org>/<repo> <dir1>[:<repo1>] [<dirN>[:<repoN>]]..." 1>&2
+	echo "usage: $0 <org>/<repo> <dir1>[:[<owner1>/]<repo1>] [<dirN>[:[<ownerN/]<repoN>]]..." 1>&2
 	exit 1
 fi
 
 if [[ "$1" != *"/"* ]]; then
-	echo "error: first argument must be in the form <owner>/<repo>" 1>&2
+	echo "error: first argument must be in the form <owner>/<repo>, where <repo> is [<org>/]<repo-name>" 1>&2
 	echo "usage: $0 <org>/<repo> <dir1>[:[<owner1>/]<repo1>] [<dirN>[:[<ownerN/]<repoN>]]..." 1>&2
 	echo "example: $0 org1/repo1 dir1 dir2:repo2 dir3:org2/repo3" 1>&2
 	exit 1
@@ -24,14 +24,14 @@ origin_repo="${1##*/}"
 shift
 
 function parse_target() {
-  # Valid target examples: dir1, dir2:repo2, dir3:org2/repo3
+  # Valid target examples: dir1/dir2, dir2:repo2, dir3:org2/repo3
   if [[ "$1" =~ ^([^:]+)(:([^/]+/)?([^/]+))?$ ]]; then
     dir="${BASH_REMATCH[1]}"
     target_org="${BASH_REMATCH[3]}"
     target_repo="${BASH_REMATCH[4]}"
 
     if [ -z "$target_repo" ]; then
-      target_repo="$dir"
+      target_repo=$(basename "$dir")
     fi
 
     target_org="${target_org%/}"  # remove trailing slash if present
@@ -45,14 +45,6 @@ function parse_target() {
     exit 1
   fi
 }
-
-#for arg in "$@"; do
-#  read -r dir target_org target_repo <<< "$(parse_target "$arg")"
-#	echo "Publishing ${org}/${origin_repo}'s dir '${dir}' to repo '${target_org}/${target_repo}' ..."
-#	continue
-#done
-#
-#exit 0
 
 # Create a temporary directory into which to clone the repos:
 TMPDIR=$(mktemp -d)
