@@ -65,7 +65,6 @@ for arg in "$@"; do
 		repo="${arg##*:}"
 	fi
 	echo "Publishing dir '${dir}' to repo '${repo}' ..."
-	continue
 
 	set -o xtrace # Print commands as they are executed
 
@@ -79,7 +78,7 @@ for arg in "$@"; do
 		--tag-name-filter "grep '^${repo}/' | cut -f 2- -d '/'" \
 		--subdirectory-filter "${dir}" --prune-empty -- --all
 
-	git clone "git@github.com:${org}/${repo}.git" "${TMPDIR}/${repo}"
+	git clone "git@github.com:jetify-examples/${repo}.git" "${TMPDIR}/${repo}"
 	pushd "${TMPDIR}/${repo}"
 
 	# Here is the trick. Connect your source repository as a remote using a local reference.
