@@ -35,7 +35,7 @@ function parse_target() {
 			target_repo=$(basename "$dir")
 		fi
 
-		target_org="${target_org%/}"	# remove trailing slash if present
+		target_org="${target_org%/}" # remove trailing slash if present
 		if [ -z "$target_org" ]; then
 			target_org="$org"
 		fi
@@ -122,7 +122,7 @@ for arg in "$@"; do
 	# Undo the filtering so we can re-use the source repo for another rewrite.
 	git for-each-ref --format="update %(refname:lstrip=2) %(objectname)" refs/original/ | git update-ref --stdin
 	git for-each-ref --format="delete %(refname) %(objectname)" refs/original/ | git update-ref --stdin
-	git fetch --tags --force	# Restore all tags
+	git fetch --tags --force # Restore all tags
 	git reset --hard HEAD
 
 	echo "[DONE] Published dir '${dir}' to repo '${target_org}/${target_repo}' ..."
