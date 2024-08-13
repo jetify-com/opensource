@@ -59,12 +59,23 @@ for arg in "$@"; do
 done
 
 for arg in "$@"; do
+  if [[ "$arg" =~ ^([^:]+)(:([^/]+/)?([^/]+))?$ ]]; then
+    dir="${BASH_REMATCH[1]}"      # Captures <dir>
+    target_org="${BASH_REMATCH[3]}"    # Captures <owner>/ (with trailing / if present)
+    target_repo="${BASH_REMATCH[4]}"     # Captures <name>
+
+    # Remove trailing slash from owner if it's present
+    target_org="${target_org%/}"
+  fi
+
 	dir="${arg%:*}"
 	repo="${dir##*/}"
 	if [[ "$arg" = *":"* ]]; then
 		repo="${arg##*:}"
 	fi
 	echo "Publishing dir '${dir}' to repo '${repo}' ..."
+	echo "Publishing dir '${dir}' to repo '${target_org}/${target_repo}' ..."
+	continue
 
 	set -o xtrace # Print commands as they are executed
 
