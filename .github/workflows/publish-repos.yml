@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - main # When we merge to main
+      - rodrigo/*
     tags:
       - "**" # If we added a tag (used for releases)
 
@@ -44,8 +45,8 @@ jobs:
           # if you relocate a subdirectory within the monorepo, you need to update this
           # yaml for things to continue to work.
           targets: >
-            envsec
-            nixtest
+            envsec:envsec2
+            nixtest:anotherorg/nixtest
             pkg
             typeid/typeid
             typeid/typeid-go

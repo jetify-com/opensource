@@ -65,6 +65,7 @@ for arg in "$@"; do
 		repo="${arg##*:}"
 	fi
 	echo "Publishing dir '${dir}' to repo '${repo}' ..."
+	continue
 
 	set -o xtrace # Print commands as they are executed
 
