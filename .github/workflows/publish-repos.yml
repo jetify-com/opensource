@@ -45,7 +45,7 @@ jobs:
           # if you relocate a subdirectory within the monorepo, you need to update this
           # yaml for things to continue to work.
           targets: >
-            action-publish-code:test-repo
+            action-publish-code:jetify-examples/test-repo
 #            envsec:envsec2
 #            nixtest:anotherorg/nixtest
 #            pkg

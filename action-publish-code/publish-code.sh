@@ -26,16 +26,15 @@ shift
 function parse_target() {
   # Valid target examples: dir1, dir2:repo2, dir3:org2/repo3
   if [[ "$1" =~ ^([^:]+)(:([^/]+/)?([^/]+))?$ ]]; then
-    dir="${BASH_REMATCH[1]}"      # Captures <dir>
-    target_org="${BASH_REMATCH[3]}"    # Captures <owner>/ (with trailing / if present)
-    target_repo="${BASH_REMATCH[4]}"     # Captures <name>
+    dir="${BASH_REMATCH[1]}"
+    target_org="${BASH_REMATCH[3]}"
+    target_repo="${BASH_REMATCH[4]}"
 
     if [ -z "$target_repo" ]; then
       target_repo="$dir"
     fi
 
-    # Remove trailing slash from owner if it's present
-    target_org="${target_org%/}"
+    target_org="${target_org%/}"  # remove trailing slash if present
     if [ -z "$target_org" ]; then
       target_org="$org"
     fi
@@ -43,6 +42,7 @@ function parse_target() {
     echo "$dir $target_org $target_repo"
   else
     echo "error: invalid target argument: $1"
+    exit 1
   fi
 }
 
