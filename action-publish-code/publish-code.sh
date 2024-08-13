@@ -24,26 +24,27 @@ origin_repo="${1##*/}"
 shift
 
 function parse_target() {
-  # Valid target examples: dir1/dir2, dir2:repo2, dir3:org2/repo3
-  if [[ "$1" =~ ^([^:]+)(:([^/]+/)?([^/]+))?$ ]]; then
-    dir="${BASH_REMATCH[1]}"
-    target_org="${BASH_REMATCH[3]}"
-    target_repo="${BASH_REMATCH[4]}"
+	# Valid target examples: dir1/dir2, dir2:repo2, dir3:org2/repo3
 
-    if [ -z "$target_repo" ]; then
-      target_repo=$(basename "$dir")
-    fi
+	if [[ "$1" =~ ^([^:]+)(:([^/]+/)?([^/]+))?$ ]]; then
+		dir="${BASH_REMATCH[1]}"
+		target_org="${BASH_REMATCH[3]}"
+		target_repo="${BASH_REMATCH[4]}"
 
-    target_org="${target_org%/}"  # remove trailing slash if present
-    if [ -z "$target_org" ]; then
-      target_org="$org"
-    fi
+		if [ -z "$target_repo" ]; then
+			target_repo=$(basename "$dir")
+		fi
 
-    echo "$dir $target_org $target_repo"
-  else
-    echo "error: invalid target argument: $1"
-    exit 1
-  fi
+		target_org="${target_org%/}"	# remove trailing slash if present
+		if [ -z "$target_org" ]; then
+			target_org="$org"
+		fi
+
+		echo "$dir $target_org $target_repo"
+	else
+		echo "error: invalid target argument: $1"
+		exit 1
+	fi
 }
 
 # Create a temporary directory into which to clone the repos:
@@ -63,7 +64,7 @@ echo -e "\n"
 cd "${TMPDIR}/${origin_repo}"
 for arg in "$@"; do
 	echo "Validating $arg"
-  read -r dir target_org target_repo <<< "$(parse_target "$arg")"
+	read -r dir target_org target_repo <<< "$(parse_target "$arg")"
 
 	# Just to be extra safe, make sure we're not trying to publish to origin repo itself
 	if [ "${target_org}/${target_repo}" = "${org}/${origin_repo}" ]; then
@@ -79,7 +80,7 @@ for arg in "$@"; do
 done
 
 for arg in "$@"; do
-  read -r dir target_org target_repo <<< "$(parse_target "$arg")"
+	read -r dir target_org target_repo <<< "$(parse_target "$arg")"
 
 	echo "Publishing dir '${dir}' to repo '${target_org}/${target_repo}' ..."
 
@@ -121,7 +122,7 @@ for arg in "$@"; do
 	# Undo the filtering so we can re-use the source repo for another rewrite.
 	git for-each-ref --format="update %(refname:lstrip=2) %(objectname)" refs/original/ | git update-ref --stdin
 	git for-each-ref --format="delete %(refname) %(objectname)" refs/original/ | git update-ref --stdin
-	git fetch --tags --force  # Restore all tags
+	git fetch --tags --force	# Restore all tags
 	git reset --hard HEAD
 
 	echo "[DONE] Published dir '${dir}' to repo '${target_org}/${target_repo}' ..."
