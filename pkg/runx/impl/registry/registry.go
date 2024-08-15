@@ -17,6 +17,7 @@ var xdgInstallationSubdir = "runx/pkgs"
 type Registry struct {
 	rootPath fileutil.Path
 	gh       *github.Client
+	download *download.Client
 }
 
 func NewLocalRegistry(ctx context.Context, githubAPIToken string) (*Registry, error) {
@@ -35,6 +36,7 @@ func NewLocalRegistry(ctx context.Context, githubAPIToken string) (*Registry, er
 	return &Registry{
 		rootPath: rootPath,
 		gh:       github.NewClient(ctx, githubAPIToken),
+		download: download.NewClient(githubAPIToken),
 	}, nil
 }
 
@@ -89,7 +91,7 @@ func (r *Registry) GetArtifact(ctx context.Context, ref types.PkgRef, platform t
 	}
 
 	path := r.rootPath.Subpath(resolvedRef.Owner, resolvedRef.Repo, resolvedRef.Version, metadata.Name)
-	err = download.DownloadOnce(metadata.DownloadURL, path.String())
+	err = r.download.DownloadOnce(metadata.URL, path.String())
 	if err != nil {
 		return "", err
 	}

@@ -9,7 +9,17 @@ import (
 	"go.jetpack.io/pkg/runx/impl/fileutil"
 )
 
-func DownloadOnce(url string, dest string) error {
+type Client struct {
+	githubAPIToken string
+}
+
+func NewClient(accessToken string) *Client {
+	return &Client{
+		githubAPIToken: accessToken,
+	}
+}
+
+func (c *Client) DownloadOnce(url string, dest string) error {
 	dir := filepath.Dir(dest)
 	if err := fileutil.EnsureDir(dir); err != nil {
 		return err
@@ -20,10 +30,10 @@ func DownloadOnce(url string, dest string) error {
 		// We've already downloaded it
 		return nil
 	}
-	return Download(url, dest)
+	return c.Download(url, dest)
 }
 
-func Download(url string, dest string) error {
+func (c *Client) Download(url string, dest string) error {
 	if fileutil.IsDir(dest) {
 		return errors.New("destination is a directory")
 	}
@@ -41,6 +51,11 @@ func Download(url string, dest string) error {
 	req, err := grab.NewRequest(tmpDest, url)
 	if err != nil {
 		return err
+	}
+
+	req.HTTPRequest.Header.Add("Accept", "application/octet-stream")
+	if c.githubAPIToken != "" {
+		req.HTTPRequest.Header.Add("Authorization", "Bearer "+c.githubAPIToken)
 	}
 
 	resp := client.Do(req)

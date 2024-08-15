@@ -34,13 +34,14 @@ func convertGithubAssets(assets []*githubimpl.ReleaseAsset) []types.ArtifactMeta
 			continue
 		}
 		result = append(result, types.ArtifactMetadata{
-			DownloadURL:   asset.GetBrowserDownloadURL(),
-			Name:          asset.GetName(),
-			DownloadCount: asset.GetDownloadCount(),
-			CreatedAt:     asset.GetCreatedAt().Time,
-			UpdatedAt:     asset.GetUpdatedAt().Time,
-			ContentType:   asset.GetContentType(),
-			Size:          asset.GetSize(),
+			URL:                asset.GetURL(),
+			BrowserDownloadURL: asset.GetBrowserDownloadURL(),
+			Name:               asset.GetName(),
+			DownloadCount:      asset.GetDownloadCount(),
+			CreatedAt:          asset.GetCreatedAt().Time,
+			UpdatedAt:          asset.GetUpdatedAt().Time,
+			ContentType:        asset.GetContentType(),
+			Size:               asset.GetSize(),
 		})
 	}
 	return result
