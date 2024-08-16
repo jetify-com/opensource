@@ -1,0 +1,69 @@
+name: Build and Push Image
+description: |
+  A Github action that builds a Docker image and pushes it to Artifact Registry in GCP.
+  Images are built either from an existing Dockerfile in the repo or from devbox.json.
+author: jetify
+
+inputs:
+  gcp_project:
+    description: The GCP project where the image will be published.
+    required: true
+  registry:
+    description: The registry where the image will be published.
+    required: false
+    default: us-east4-docker.pkg.dev
+  repository:
+    description: The repository where the image will be published.
+    required: false
+    default: github-public
+  template:
+    description: The path to the source code that will be built.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup git credentials
+      shell: bash
+      run: gh auth setup-git
+
+    - name: Authenticate with GCP (via Workload Federation)
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: projects/744310309265/locations/global/workloadIdentityPools/gha-oidc-pool/providers/gha-oidc-provider
+        service_account: ext-gha-jetify-examples@${{ inputs.gcp_project }}.iam.gserviceaccount.com
+        token_format: access_token
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ inputs.gcp_project }}
+
+    - name: Configure Docker credentials
+      shell: bash
+      run: gcloud auth configure-docker ${{ inputs.registry }}
+
+    - name: Install Devbox
+      uses: jetify-com/devbox-install-action@v0.11.0
+      with:
+        enable-cache: true
+        project-path: ${{ inputs.template }}
+
+    - name: Build and push
+      shell: bash
+      env:
+        IMAGE: "${{ inputs.registry }}/${{ inputs.gcp_project }}/${{ inputs.repository }}/${{ inputs.template }}"
+      run: |
+        echo "building and pushing to $IMAGE"
+        cd ${{ inputs.template }}
+        if [ ! -f Dockerfile ]; then
+          devbox generate dockerfile --for prod
+        fi
+        docker build . \
+          --label "repository=${{ github.repository }}" \
+          --label "revision=${{ github.sha }}" \
+          --label "ref=${{ github.ref_name }}" \
+          --label "workflow=${{ github.workflow_ref }}" \
+          -t ${{ env.IMAGE }}:${{ github.sha }} \
+          -t ${{ env.IMAGE }}:latest
+        docker push ${{ env.IMAGE }} --all-tags

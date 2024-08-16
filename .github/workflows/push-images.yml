@@ -1,0 +1,80 @@
+name: build-and-push-image
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  ID_PROVIDER: projects/744310309265/locations/global/workloadIdentityPools/gha-oidc-pool/providers/gha-oidc-provider
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  REPOSITORY: github-public
+  REGION: us-east4
+  REGISTRY: us-east4-docker.pkg.dev
+
+jobs:
+  push-image:
+    strategy:
+      matrix:
+        project_id: [dev-j3tpk] #, nonprod-j3tpk, prod-j3tpk]
+        template: [hello-go]
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      PROJECT_ID: ${{ matrix.project_id }}
+      SERVICE_ACCOUNT: ext-gha-jetify-examples@${{ matrix.project_id }}.iam.gserviceaccount.com
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure prod is only deployed from main
+        run: |-
+          if [ ${PROJECT_ID} == "prod-j3tpk" ] && [ "${{ github.ref_name }}" != "main" ]; then
+            echo "Cannot deploy to prod from non-main branch"
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup git credentials
+        run: gh auth setup-git
+
+      - name: Authenticate with GCP (via Workload Federation)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.ID_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+          token_format: access_token
+
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Configure Docker credentials
+        run: gcloud auth configure-docker us-east4-docker.pkg.dev
+
+      - name: Install Devbox
+        uses: jetify-com/devbox-install-action@v0.11.0
+        with:
+          enable-cache: true
+
+      - name: Build and push
+        env:
+          IMAGE: "${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/templates/${{ matrix.template }}"
+        run: |
+          cd templates/${{ matrix.template }}
+          if [ ! -f Dockerfile ]; then
+            devbox generate dockerfile --for prod
+          fi
+          docker build . \
+            --label "repository=${{ github.repository }}" \
+            --label "revision=${{ github.sha }}" \
+            --label "ref=${{ github.ref_name }}" \
+            --label "workflow=${{ github.workflow_ref }}" \
+            -t ${{ env.IMAGE }}:${{ github.sha }} \
+            -t ${{ env.IMAGE }}:latest
+          docker push ${{ env.IMAGE }} --all-tags

@@ -1,6 +1,54 @@
 {
   "lockfile_version": "1",
   "packages": {
+    "action-validator@latest": {
+      "last_modified": "2024-07-31T08:48:38Z",
+      "resolved": "github:NixOS/nixpkgs/c3392ad349a5227f4a3464dce87bcc5046692fce#action-validator",
+      "source": "devbox-search",
+      "version": "0.6.0",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/kihz5yzh2skhrhivq8x9223a2k3l7xps-action-validator-0.6.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/kihz5yzh2skhrhivq8x9223a2k3l7xps-action-validator-0.6.0"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/zxky68if3bnkciq1fha26wgk6s73i27f-action-validator-0.6.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/zxky68if3bnkciq1fha26wgk6s73i27f-action-validator-0.6.0"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/6xzy5y8dh92zfymv41b4pxzc0h7fm11h-action-validator-0.6.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/6xzy5y8dh92zfymv41b4pxzc0h7fm11h-action-validator-0.6.0"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/6g1f1sykh53kfffny6905mnzxf7b62b5-action-validator-0.6.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/6g1f1sykh53kfffny6905mnzxf7b62b5-action-validator-0.6.0"
+        }
+      }
+    },
     "go@latest": {
       "last_modified": "2024-04-19T17:36:04-04:00",
       "resolved": "github:NixOS/nixpkgs/92d295f588631b0db2da509f381b4fb1e74173c5#go",
