@@ -17,7 +17,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  id-token: write
+  id-token: write # needed to publish images
 
 jobs:
   go-tests:
