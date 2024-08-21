@@ -31,7 +31,7 @@ runs:
       uses: google-github-actions/auth@v2
       with:
         workload_identity_provider: projects/744310309265/locations/global/workloadIdentityPools/gha-oidc-pool/providers/gha-oidc-provider
-        service_account: ext-gha-jetify-examples@${{ inputs.gcp_project }}.iam.gserviceaccount.com
+        service_account: ext-gha-opensource@${{ inputs.gcp_project }}.iam.gserviceaccount.com
         token_format: access_token
 
     - name: Set up Cloud SDK
