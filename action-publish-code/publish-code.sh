@@ -1,19 +1,20 @@
 #!/bin/bash
 
-# Publishes a subdirectory in a given git repository as a standalone repository of it's own.
+# Publishes a subdirectory in a given git repository as a standalone repository of its own.
 
 set -euo pipefail
 set -o errexit
 set -o nounset
 
 if [ "$#" = 0 ]; then
-	echo "usage: $0 <org>/<repo> <dir1>[:<repo1>] [<dirN>[:<repoN>]]..." 1>&2
+	echo "usage: $0 <org>/<repo> <dir1>[:[<owner1>/]<repo1>] [<dirN>[:[<ownerN/]<repoN>]]..." 1>&2
 	exit 1
 fi
 
 if [[ "$1" != *"/"* ]]; then
-	echo "error: first argument must be in the form <owner>/<repo>" 1>&2
-	echo "usage: $0 <org>/<repo> <dir1>[:<repo1>] [<dirN>[:<repoN>]]..." 1>&2
+	echo "error: first argument must be in the form <owner>/<repo>, where <repo> is [<org>/]<repo-name>" 1>&2
+	echo "usage: $0 <org>/<repo> <dir1>[:[<owner1>/]<repo1>] [<dirN>[:[<ownerN/]<repoN>]]..." 1>&2
+	echo "example: $0 org1/repo1 dir1 dir2:repo2 dir3:org2/repo3" 1>&2
 	exit 1
 fi
 
@@ -21,6 +22,30 @@ fi
 org="${1%/*}"
 origin_repo="${1##*/}"
 shift
+
+function parse_target() {
+	# Valid target examples: dir1/dir2, dir2:repo2, dir3:org2/repo3
+
+	if [[ "$1" =~ ^([^:]+)(:([^/]+/)?([^/]+))?$ ]]; then
+		dir="${BASH_REMATCH[1]}"
+		target_org="${BASH_REMATCH[3]}"
+		target_repo="${BASH_REMATCH[4]}"
+
+		if [ -z "$target_repo" ]; then
+			target_repo=$(basename "$dir")
+		fi
+
+		target_org="${target_org%/}" # remove trailing slash if present
+		if [ -z "$target_org" ]; then
+			target_org="$org"
+		fi
+
+		echo "$dir $target_org $target_repo"
+	else
+		echo "error: invalid target argument: $1"
+		exit 1
+	fi
+}
 
 # Create a temporary directory into which to clone the repos:
 TMPDIR=$(mktemp -d)
@@ -38,16 +63,12 @@ git clone -b main --single-branch "git@github.com:${org}/${origin_repo}.git" "${
 echo -e "\n"
 cd "${TMPDIR}/${origin_repo}"
 for arg in "$@"; do
-	dir="${arg%:*}"
-	repo="${dir##*/}"
-	if [[ "$arg" != *":"* ]]; then
-		repo="${arg##*:}"
-	fi
-
 	echo "Validating $arg"
+	read -r dir target_org target_repo <<< "$(parse_target "$arg")"
+
 	# Just to be extra safe, make sure we're not trying to publish to origin repo itself
-	if [ "${repo}" = "${origin_repo}" ]; then
-		echo "Error: Cannot publish to the source repo: '${origin_repo}'" 1>&2
+	if [ "${target_org}/${target_repo}" = "${org}/${origin_repo}" ]; then
+		echo "Error: Cannot publish to the source repo: '${org}/${origin_repo}'" 1>&2
 		exit 1
 	fi
 
@@ -59,27 +80,24 @@ for arg in "$@"; do
 done
 
 for arg in "$@"; do
-	dir="${arg%:*}"
-	repo="${dir##*/}"
-	if [[ "$arg" = *":"* ]]; then
-		repo="${arg##*:}"
-	fi
-	echo "Publishing dir '${dir}' to repo '${repo}' ..."
+	read -r dir target_org target_repo <<< "$(parse_target "$arg")"
+
+	echo "Publishing dir '${dir}' to repo '${target_org}/${target_repo}' ..."
 
 	set -o xtrace # Print commands as they are executed
 
 	# Remove everything we don't want from the source repo:
  
 	# Only keep the tags belonging to the repo we care about
-	git tag -d $(git tag -l | grep -v "${repo}/*")
+	git tag -d $(git tag -l | grep -v "${target_repo}/*")
 	# TODO: Rewrite using https://github.com/newren/git-filter-repo since filter-branch is no longer
 	# recommended by git.
 	FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch \
-		--tag-name-filter "grep '^${repo}/' | cut -f 2- -d '/'" \
+		--tag-name-filter "grep '^${target_repo}/' | cut -f 2- -d '/'" \
 		--subdirectory-filter "${dir}" --prune-empty -- --all
 
-	git clone "git@github.com:${org}/${repo}.git" "${TMPDIR}/${repo}"
-	pushd "${TMPDIR}/${repo}"
+	git clone "git@github.com:${target_org}/${target_repo}.git" "${TMPDIR}/${target_repo}"
+	pushd "${TMPDIR}/${target_repo}"
 
 	# Here is the trick. Connect your source repository as a remote using a local reference.
 	git remote add "${origin_repo}" "../${origin_repo}/"
@@ -104,9 +122,9 @@ for arg in "$@"; do
 	# Undo the filtering so we can re-use the source repo for another rewrite.
 	git for-each-ref --format="update %(refname:lstrip=2) %(objectname)" refs/original/ | git update-ref --stdin
 	git for-each-ref --format="delete %(refname) %(objectname)" refs/original/ | git update-ref --stdin
-	git fetch --tags --force  # Restore all tags
+	git fetch --tags --force # Restore all tags
 	git reset --hard HEAD
 
-	echo "[DONE] Published dir '${dir}' to repo '${repo}' ..."
+	echo "[DONE] Published dir '${dir}' to repo '${target_org}/${target_repo}' ..."
 	echo -e "\n"
 done

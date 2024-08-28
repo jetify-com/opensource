@@ -21,7 +21,8 @@ type ArtifactMetadata struct {
 	// github api. But if we want to get releases from other sources, or allow publishes to embed
 	// this metadata with their releases, some of these won't apply (i.e. DownloadCount).
 
-	DownloadURL string `json:"download_url"`
+	URL                string `json:"url"`
+	BrowserDownloadURL string `json:"browser_download_url"`
 
 	Name          string    `json:"name"`
 	DownloadCount int       `json:"download_count"`

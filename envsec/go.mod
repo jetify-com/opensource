@@ -21,8 +21,8 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.39.0
 	github.com/spf13/cobra v1.8.0
-	go.jetify.com/typeid v1.3.0
-	go.jetpack.io/pkg v0.0.0-20240625214343-5582d7d229e2
+	go.jetify.com/typeid v1.3.1-0.20240815004735-a6a42f083c96
+	go.jetpack.io/pkg v0.0.0-20240815004735-7649b4283d51
 	golang.org/x/text v0.14.0
 )
 
@@ -42,7 +42,7 @@ require (
 	github.com/creack/pty v1.1.21 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
-	github.com/gofrs/uuid/v5 v5.2.0 // indirect
+	github.com/gofrs/uuid/v5 v5.3.0 // indirect
 	github.com/google/renameio/v2 v2.0.0 // indirect
 	github.com/gosimple/slug v1.14.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect

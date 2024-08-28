@@ -2,7 +2,7 @@ name: "Publish Code"
 description: |
   A Github action that makes it easy to publish code from one git repository to another
   while preserving history. The primary use case is to mirror code from a directory
-  in a monorepo, and publish it as a standalone repository."
+  in a monorepo, and publish it as a standalone repository.
 author: "jetify"
 inputs:
   origin:
