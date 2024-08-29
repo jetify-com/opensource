@@ -81,6 +81,7 @@ API to manage Jetify Sandbox environments
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | sandbox | [Sandbox](#pub-sandbox-v1alpha1-Sandbox) |  |  |
+| long_running_operation_id | [string](#string) |  | This field is experimental and may be removed in the future. |
 
 
 
@@ -121,6 +122,7 @@ API to manage Jetify Sandbox environments
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  |  |
+| wait_for_long_running_operation_id | [string](#string) |  | This field is experimental and may be removed in the future. |
 
 
 
@@ -238,6 +240,7 @@ API to manage Jetify Sandbox environments
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | sandbox | [Sandbox](#pub-sandbox-v1alpha1-Sandbox) |  |  |
+| long_running_operation_id | [string](#string) |  | This field is experimental and may be removed in the future. |
 
 
 

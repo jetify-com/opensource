@@ -157,6 +157,13 @@ export class CreateSandboxResponse extends Message<CreateSandboxResponse> {
    */
   sandbox?: Sandbox;
 
+  /**
+   * This field is experimental and may be removed in the future.
+   *
+   * @generated from field: string long_running_operation_id = 2;
+   */
+  longRunningOperationId = "";
+
   constructor(data?: PartialMessage<CreateSandboxResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -166,6 +173,7 @@ export class CreateSandboxResponse extends Message<CreateSandboxResponse> {
   static readonly typeName = "pub.sandbox.v1alpha1.CreateSandboxResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "sandbox", kind: "message", T: Sandbox },
+    { no: 2, name: "long_running_operation_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateSandboxResponse {
@@ -194,6 +202,13 @@ export class GetSandboxRequest extends Message<GetSandboxRequest> {
    */
   id = "";
 
+  /**
+   * This field is experimental and may be removed in the future.
+   *
+   * @generated from field: string wait_for_long_running_operation_id = 2;
+   */
+  waitForLongRunningOperationId = "";
+
   constructor(data?: PartialMessage<GetSandboxRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -203,6 +218,7 @@ export class GetSandboxRequest extends Message<GetSandboxRequest> {
   static readonly typeName = "pub.sandbox.v1alpha1.GetSandboxRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "wait_for_long_running_operation_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetSandboxRequest {
@@ -501,6 +517,13 @@ export class StartSandboxResponse extends Message<StartSandboxResponse> {
    */
   sandbox?: Sandbox;
 
+  /**
+   * This field is experimental and may be removed in the future.
+   *
+   * @generated from field: string long_running_operation_id = 2;
+   */
+  longRunningOperationId = "";
+
   constructor(data?: PartialMessage<StartSandboxResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -510,6 +533,7 @@ export class StartSandboxResponse extends Message<StartSandboxResponse> {
   static readonly typeName = "pub.sandbox.v1alpha1.StartSandboxResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "sandbox", kind: "message", T: Sandbox },
+    { no: 2, name: "long_running_operation_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): StartSandboxResponse {
