@@ -7,10 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      uuidv7:
-        specifier: ^0.6.2
-        version: 0.6.2
     devDependencies:
       '@jest/globals':
         specifier: ^29.5.0
@@ -1564,10 +1560,6 @@ packages:
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
-
-  uuidv7@0.6.2:
-    resolution: {integrity: sha512-VLVN90rtN2KFewkXa9T6WWGCnRbk4kiQpPpuL47S0jdMr1rDzOEBq8VJDK5f2ykmjlCZEPLTMTPLHwa+aj9JZg==}
-    hasBin: true
 
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
@@ -3353,8 +3345,6 @@ snapshots:
       browserslist: 4.21.7
       escalade: 3.1.1
       picocolors: 1.0.0
-
-  uuidv7@0.6.2: {}
 
   v8-compile-cache-lib@3.0.1: {}
 
