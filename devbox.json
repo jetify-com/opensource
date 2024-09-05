@@ -9,5 +9,8 @@
         "devbox run tidy"
       ]
     }
+  },
+  "packages": {
+    "action-validator": "latest"
   }
 }
