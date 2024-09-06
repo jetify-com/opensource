@@ -29,14 +29,16 @@ Once you've installed the TypeID types and functions in your Postgres instance,
 you have two options on how to encode TypeIDs in your database.
 
 ### 1. Text-based encoding
-This encoding is more inneficient than the alternative, but it's very straight-forward
+This encoding is more inefficient than the alternative, but it's very straight-forward
 to understand, it's easy to debug by simply inspecting the contents of your tables, and
 it works well with other tools you might be using to inspect your database.
 
 To use it:
 + Declare your `id` column using the `text` type.
 + Use the `typeid_generate_text` function to generate new default values.
-+ Use the `typeid_check_text` to enforce all strings in the column are valid typeids:
++ Use the `typeid_check_text` to enforce all strings in the column are valid typeids.
+
+Example:
 
 ```sql
 -- Define a `users` table that uses `user_id` as its primary key.
@@ -68,40 +70,12 @@ WHERE id = 'user_01h455vb4pex5vsknk084sn02q';
 ```
 
 ### 2. UUID-based encoding using compound types
-With this approach, we internally encode typeids as a `(prefix, uuid)` tuple. The
+In this approach, we internally encode typeids as a `(prefix, uuid)` tuple. The
 sql files in this library provide a predefined `typeid` type to represent
 said tuples.
 
-The advantage of this approach is that it is a more efficient encoding because the
-prefix of the typeid is stored using the native `uuid` type, which the database
-will store directly as the appropriate bytes.
-
-To define a new type of typeid with a specific prefix you can use the
-`typeid_check` function:
-```sql
--- Define a `user_id` type, which is a typeid with type prefix "user".
--- Using `user_id` throughout our schema, gives us type safety by guaranteeing
--- that the type prefix is always "user".
-CREATE DOMAIN user_id AS typeid CHECK (typeid_check(value, 'user'));
-```
-
-You can now use the newly defined type in your tables. The `typeid_generate` function
-makes it possible to automatically a new random typeid for each row:
-
-```sql
--- Define a `users` table that uses `user_id` as its primary key.
--- We use the `typeid_generate` function to randomly generate a new typeid of the
--- correct type for each user.
-CREATE TABLE users (
-    "id" user_id not null default typeid_generate('user'),
-    "name" text,
-    "email" text
-);
-
--- Now we can insert new uses and have the `id` column automatically generated.
-INSERT INTO users ("name", "email") VALUES ('Alice P. Hacker', 'alice@hacker.net');
-```
-
+The advantage of this approach is that it is a more efficient encoding because we
+store the uuid portion of the typeid using the native `uuid` type.
 
 The disadvanage is that it is harder to work with and debug.
 
@@ -109,7 +83,7 @@ If performance is a primary concern of yours, also consider using the native
 [postgres extension](https://github.com/blitss/typeid-postgres) for typeid,
 which exposes typeids as a "built-in" type.
 
-To define a new type of typeid with a specific prefix use the `typeid_check` function:
+To define a new typeid using this encoding, you can use the `typeid_check` function:
 ```sql
 -- Define a `user_id` type, which is a typeid with type prefix "user".
 -- Using `user_id` throughout our schema, gives us type safety by guaranteeing
@@ -130,14 +104,15 @@ CREATE TABLE users (
     "email" text
 );
 
--- Now we can insert new uses and have the `id` column automatically generated.
+-- Now we can insert new users and have the `id` column automatically generated.
 INSERT INTO users ("name", "email") VALUES ('Alice P. Hacker', 'alice@hacker.net');
 ```
+#### Querying
+To make it easy to query typeid tuples using the standard string representation, we
+provide two convenience functions: `typeid_parse` and `typeid_print`, which convert
+to and from the standard string representation.
 
-Because
-this is different than the standard string representation of typeids in other libraries,
-we provide a `typeid_parse` and a `typeid_print` function that can be used to write
-queries with the standard string representation of typeids:
+Example:
 
 ```sql
 -- Insert a user with a specific typeid that might have been generated elsewhere:
