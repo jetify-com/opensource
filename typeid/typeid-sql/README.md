@@ -139,7 +139,10 @@ SELECT * FROM users u WHERE u.id = 'user_01h455vb4pex5vsknk084sn02q';
 -- "(user,018962e7-3a6d-7290-b088-5c4e3bdf918c)",Ben Bitdiddle,ben@bitdiddle.com
 ```
 
-Then you can add in [the operator overload function for typeids](https://github.com/search?q=repo%3Ajetify-com%2Ftypeid-sql%20compare_type_id_equality&type=code):
+Then you can add in [the operator overload functions for typeid](https://github.com/jetify-com/typeid-sql/blob/main/sql/04_operator.sql).
+
+Some users have reported issues with the above operator when using Rails and ActiveRecord – we
+recommend removing `COMMUTATOR` from the operator definition if you encounter issues.
 
 ## Future work (contributions welcome)
 
