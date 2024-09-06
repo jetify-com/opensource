@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/main/.schema/devbox.schema.json",
+  "packages": ["deno@latest"],
+  "shell": {
+    "scripts": {
+      "build": "deno task build",
+      "start": "deno task start",
+    }
+  }
+}
