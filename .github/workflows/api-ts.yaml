@@ -1,0 +1,35 @@
+name: API TypeScript CI
+
+on:
+  pull_request:
+    paths:
+      - 'api/ts/**'
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install devbox
+      uses: jetify-com/devbox-install-action@v0.11.0
+      with:
+        enable-cache: true
+        project-path: './api/ts'
+
+    - name: Install dependencies
+      working-directory: ./api/ts
+      run: devbox run pnpm install
+    
+    - name: Check
+      working-directory: ./api/ts
+      run: |
+        devbox run check
+        git diff --exit-code
+    
+    - name: Build
+      working-directory: ./api/ts
+      run: devbox run build
+
+    
