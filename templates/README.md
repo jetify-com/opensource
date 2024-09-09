@@ -1,1 +1,0 @@
-An example template for testing. Will remove after moving the "real" templates here.
