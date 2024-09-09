@@ -698,6 +698,13 @@ export class Sandbox extends Message<Sandbox> {
    */
   name = "";
 
+  /**
+   * Optional. For sandboxes created with a project_id.
+   *
+   * @generated from field: string project_id = 12;
+   */
+  projectId = "";
+
   constructor(data?: PartialMessage<Sandbox>) {
     super();
     proto3.util.initPartial(data, this);
@@ -717,6 +724,7 @@ export class Sandbox extends Message<Sandbox> {
     { no: 9, name: "created_at", kind: "message", T: Timestamp },
     { no: 10, name: "updated_at", kind: "message", T: Timestamp },
     { no: 11, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 12, name: "project_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Sandbox {
