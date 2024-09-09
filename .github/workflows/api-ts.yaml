@@ -6,7 +6,7 @@ on:
       - 'api/ts/**'
 
 jobs:
-  build-and-test:
+  check-and-build:
     runs-on: ubuntu-latest
     
     steps:
@@ -17,6 +17,10 @@ jobs:
       with:
         enable-cache: true
         project-path: './api/ts'
+
+    - name: Install dependencies
+      working-directory: ./api/ts
+      run: devbox run pnpm install
     
     - name: Check
       working-directory: ./api/ts
