@@ -1,19 +1,19 @@
 {
-    "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/main/.schema/devbox.schema.json",
-    "packages": ["nodejs@18.12.1"],
-    "env": {
-        "DEVBOX_COREPACK_ENABLED": "true",
+  "$schema":  "https://raw.githubusercontent.com/jetify-com/devbox/main/.schema/devbox.schema.json",
+  "packages": ["nodejs@20.12.2"],
+  "env": {
+    "DEVBOX_COREPACK_ENABLED": "true",
+  },
+  "shell": {
+    "scripts": {
+      "build":     "pnpm run build",
+      "lint":      "pnpm run lint",
+      "fmt":       "pnpm run fmt",
+      "typecheck": "pnpm run typecheck",
+      // Run all checks before publishing the package
+      "check": "devbox run typecheck && devbox run lint && devbox run fmt",
+      // Publish the package to the npm registry. Access token is required.
+      "publish": "devbox run check && devbox run build && pnpm publish --access public $@",
     },
-    "shell": {
-        "scripts": {
-            "build": "pnpm run build",
-            "lint": "pnpm run lint",
-            "fmt": "pnpm run fmt",
-            "typecheck": "pnpm run typecheck",
-            // Run all checks before publishing the package
-            "check": "devbox run typecheck && devbox run lint && devbox run fmt",
-            // Publish the package to the npm registry. Access token is required.
-            "publish": "devbox run check && devbox run build && pnpm publish --access public $@",
-        }
-    }
+  },
 }
