@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.12.0/.schema/devbox.schema.json",
+  "packages": [
+    "php@latest",
+    "php83Packages.composer@latest"
+  ],
+  "shell": {
+    "scripts": {
+      "dev":   "php artisan serve",
+      "build": [
+        "cp .env.example .env",
+        "composer update",
+        "php artisan key:generate",
+        "php artisan config:cache",
+        "touch database/database.sqlite",
+        "php artisan migrate"
+      ],
+      "start": "php artisan serve --port=8080 --host=0.0.0.0"
+    }
+  }
+}

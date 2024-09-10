@@ -210,6 +210,7 @@ API to manage Jetify Sandbox environments
 | created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | The time the sandbox was created. |
 | updated_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | The time the sandbox was last updated. |
 | name | [string](#string) |  |  |
+| project_id | [string](#string) |  | Optional. For sandboxes created with a project_id. |
 
 
 
