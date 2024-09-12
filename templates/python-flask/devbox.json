@@ -4,7 +4,8 @@
   "shell": {
     "init_hook": [
       "echo 'in init hook'",
-      "which pip",
+      "echo $VENV_DIR",
+      "echo 'after echoing venv_dir'",
       ". $VENV_DIR/bin/activate",
       "which pip",
       "echo 'end of init hook'"
