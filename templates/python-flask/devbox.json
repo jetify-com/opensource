@@ -6,7 +6,9 @@
       "echo 'in init hook'",
       "echo $VENV_DIR",
       "echo 'after echoing venv_dir'",
-      "source $VENV_DIR/bin/activate",
+      "echo $SHELL",
+      "echo $0",
+      "./$VENV_DIR/bin/activate",
       "which pip",
       "echo 'end of init hook'"
     ],

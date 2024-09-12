@@ -61,6 +61,7 @@ runs:
         fi
         cat Dockerfile
         devbox version
+        pwd
         docker build . \
           --label "repository=${{ github.repository }}" \
           --label "revision=${{ github.sha }}" \
