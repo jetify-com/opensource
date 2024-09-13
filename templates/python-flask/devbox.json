@@ -8,6 +8,8 @@
       "echo 'after echoing venv_dir'",
       "ls -la $VENV_DIR",
       "ls -la $VENV_DIR/bin",
+      "sed -i '1i set -x' $VENV_DIR/bin/activate",
+      "cat $VENV_DIR/bin/activate",
       "echo 'before source'",
       ". $VENV_DIR/bin/activate",
       "which pip",
