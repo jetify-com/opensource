@@ -3,20 +3,10 @@
   "packages": ["python@3.11"],
   "shell": {
     "init_hook": [
-      "echo 'in init hook'",
-      "echo $VENV_DIR",
-      "echo 'after echoing venv_dir'",
-      "ls -la $VENV_DIR",
-      "ls -la $VENV_DIR/bin",
-      "sed -i '1i set -x' $VENV_DIR/bin/activate",
-      "cat $VENV_DIR/bin/activate",
-      "echo 'before source'",
-      ". $VENV_DIR/bin/activate",
-      "which pip",
-      "echo 'end of init hook'"
+      ". $VENV_DIR/bin/activate"
     ],
     "scripts": {
-      "install": ["echo 'START install'", "which pip", ". $VENV_DIR/bin/activate", "echo 'AFTER activate'", "which pip", "pip install -r requirements.txt"],
+      "install": "pip install -r requirements.txt",
       "start": "gunicorn -w 2 -b 0.0.0.0:8080 main:app"
     }
   }

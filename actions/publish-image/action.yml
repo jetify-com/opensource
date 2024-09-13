@@ -59,9 +59,6 @@ runs:
         if [ ! -f Dockerfile ]; then
           devbox generate dockerfile --for prod
         fi
-        cat Dockerfile
-        devbox version
-        pwd
         docker build . \
           --label "repository=${{ github.repository }}" \
           --label "revision=${{ github.sha }}" \
