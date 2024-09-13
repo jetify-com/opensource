@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         project_id: [dev-j3tpk] #, nonprod-j3tpk, prod-j3tpk]
-        template: [python-flask] #template: [deno-fresh, elixir-phoenix, php-laravel, python-flask]
+        template: [deno-fresh, elixir-phoenix, php-laravel]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
