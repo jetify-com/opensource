@@ -13,12 +13,13 @@ import (
 	"go.jetpack.io/pkg/auth/session"
 )
 
-type loginFlags struct {
+type sharedFlags struct {
 	client string
+	issuer string
 }
 
 func LoginCmd() *cobra.Command {
-	flags := &loginFlags{}
+	flags := &sharedFlags{}
 
 	command := &cobra.Command{
 		Use:   "login <issuer> --client <client-id>",
@@ -28,13 +29,14 @@ func LoginCmd() *cobra.Command {
 	}
 
 	command.Flags().StringVar(&flags.client, "client", "", "client id")
+	command.Flags().StringVar(&flags.issuer, "issuer", "", "issuer")
 
 	return command
 }
 
-func loginCmd(flags *loginFlags) func(cmd *cobra.Command, args []string) error {
+func loginCmd(flags *sharedFlags) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		issuer := args[0]
+		issuer := flags.issuer
 		clientID := flags.client
 
 		if clientID == "" {
@@ -45,13 +47,7 @@ func loginCmd(flags *loginFlags) func(cmd *cobra.Command, args []string) error {
 }
 
 func login(issuer, clientID string) error {
-	client, err := auth.NewClient(
-		issuer,
-		clientID,
-		[]string{"openid", "offline_access", "email", "profile"},
-		"",
-		[]string{}, // audience
-	)
+	client, err := buildClient(issuer, clientID)
 	if err != nil {
 		return err
 	}
@@ -104,4 +100,14 @@ func printJSON(v any) error {
 
 func isTerminal() bool {
 	return isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
+}
+
+func buildClient(issuer, clientID string) (*auth.Client, error) {
+	return auth.NewClient(
+		issuer,
+		clientID,
+		[]string{"openid", "offline_access", "email", "profile"},
+		"",
+		[]string{}, // audience
+	)
 }
