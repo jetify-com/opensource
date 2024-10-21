@@ -3,7 +3,6 @@ package registry
 import (
 	"errors"
 	"os"
-	"path/filepath"
 	"slices"
 	"testing"
 
@@ -60,7 +59,6 @@ func TestIsKnownArchive(t *testing.T) {
 	}
 	for _, test := range tests {
 		got := isKnownArchive(test.name)
-		t.Logf("%s", filepath.Ext(test.name))
 		if got != test.want {
 			t.Errorf("isKnownArchive(%s) = %v, want %v", test.name, got, test.want)
 		}
