@@ -12,7 +12,7 @@ func findArtifactForPlatform(artifacts []types.ArtifactMetadata, platform types.
 	knownArchive := false
 
 	for _, artifact := range artifacts {
-		if isArtifactForPlatform(artifact, platform) {
+		if isArtifactForPlatform(artifact.Name, platform) {
 			platformCompatible = true
 		}
 		if isKnownArchive(artifact.Name) {
@@ -33,7 +33,7 @@ func findArtifactForPlatform(artifacts []types.ArtifactMetadata, platform types.
 	return types.ArtifactMetadata{}, types.ErrNoKnownArchive
 }
 
-func isArtifactForPlatform(artifact types.ArtifactMetadata, platform types.Platform) bool {
+func isArtifactForPlatform(artifactName string, platform types.Platform) bool {
 	// Invalid platform:
 	if platform.Arch() == "" || platform.OS() == "" {
 		return false
@@ -44,10 +44,10 @@ func isArtifactForPlatform(artifact types.ArtifactMetadata, platform types.Platf
 
 	// We just check that the artifact name, forced to lowercase,
 	// contains the OS and architecture of the invoking system
-	if matchesOS(platform, strings.ToLower(artifact.Name)) {
+	if matchesOS(platform, strings.ToLower(artifactName)) {
 		hasOS = true
 	}
-	if matchesArch(platform, strings.ToLower(artifact.Name)) {
+	if matchesArch(platform, strings.ToLower(artifactName)) {
 		hasArch = true
 	}
 	return hasOS && hasArch

@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"go.jetpack.io/pkg/runx/impl/types"
 )
 
 func TestIsBinary(t *testing.T) {
@@ -59,6 +61,31 @@ func TestIsKnownArchive(t *testing.T) {
 		t.Logf("%s", filepath.Ext(test.name))
 		if got != test.want {
 			t.Errorf("isKnownArchive(%s) = %v, want %v", test.name, got, test.want)
+		}
+	}
+}
+
+func TestIsArtifactForPlatform(t *testing.T) {
+	tests := []struct {
+		name     string
+		platform types.Platform
+		want     bool
+	}{
+		{"linux-x86_64.tar.gz", types.NewPlatform("linux", "x86_64"), true},
+		{"linux_x86_64_1.1.0_SNAPSHOT-abcde12345.tar.gz", types.NewPlatform("linux", "x86_64"), true},
+		{"linux_x86_64-1.2.3-rc2.tar.gz", types.NewPlatform("linux", "amd64"), true},
+		{"no-os-no-arch", types.NewPlatform("", ""), false},
+		{"no-os-no-arch", types.NewPlatform("linux", "amd64"), false},
+		{"no_os_arm64", types.NewPlatform("linux", "arm64"), false},
+		{"linux_no-arch", types.NewPlatform("linux", "arm64"), false},
+		{"macos-universal-1.2.3.deb", types.NewPlatform("darwin", "arm64"), true},
+		{"mac_386-1.2.3-snapshot_abcdef123456", types.NewPlatform("darwin", "386"), true},
+	}
+
+	for _, test := range tests {
+		got := isArtifactForPlatform(test.name, test.platform)
+		if got != test.want {
+			t.Errorf("isArtifactForPlatform(%s) = %v, want %v", test.name, got, test.want)
 		}
 	}
 }
