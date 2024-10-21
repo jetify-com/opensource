@@ -2,6 +2,7 @@ package registry
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -40,5 +41,24 @@ func TestIsBinary(t *testing.T) {
 				t.Errorf("isBinary() = %v, want %v", got, test.want)
 			}
 		})
+	}
+}
+
+func TestIsKnownArchive(t *testing.T) {
+	tests := []struct {
+		name string
+		want bool
+	}{
+		{"archive.tar", true},
+		{"archive.tar.gz", true},
+		{"archive.deb", false},
+		{"archive", false},
+	}
+	for _, test := range tests {
+		got := isKnownArchive(test.name)
+		t.Logf("%s", filepath.Ext(test.name))
+		if got != test.want {
+			t.Errorf("isKnownArchive(%s) = %v, want %v", test.name, got, test.want)
+		}
 	}
 }

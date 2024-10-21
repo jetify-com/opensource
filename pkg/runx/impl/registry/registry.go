@@ -72,11 +72,7 @@ func (r *Registry) GetArtifactMetadata(ctx context.Context, ref types.PkgRef, pl
 		return types.ArtifactMetadata{}, err
 	}
 
-	artifact := findArtifactForPlatform(release.Artifacts, platform)
-	if artifact == nil {
-		return types.ArtifactMetadata{}, types.ErrPlatformNotSupported
-	}
-	return *artifact, nil
+	return findArtifactForPlatform(release.Artifacts, platform)
 }
 
 func (r *Registry) GetArtifact(ctx context.Context, ref types.PkgRef, platform types.Platform) (string, error) {
