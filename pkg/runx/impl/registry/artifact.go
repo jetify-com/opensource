@@ -8,26 +8,20 @@ import (
 )
 
 func findArtifactForPlatform(artifacts []types.ArtifactMetadata, platform types.Platform) (types.ArtifactMetadata, error) {
-	platformCompatible := false
-	knownArchive := false
-
+	foundPlatform := false
 	for _, artifact := range artifacts {
 		if isArtifactForPlatform(artifact.Name, platform) {
-			platformCompatible = true
-		}
-		if isKnownArchive(artifact.Name) {
-			// We only consider known archives because sometimes releases contain multiple files
-			// for the same platform. Some times those files are alternative installation methods
-			// like `.dmg`, `.msi`, or `.deb`, and sometimes they are metadata files like `.sha256`
-			// or a `.sig` file. We don't want to install those.
-			knownArchive = true
-		}
-
-		if platformCompatible && knownArchive {
-			return artifact, nil
+			foundPlatform = true
+			if isKnownArchive(artifact.Name) {
+				// We only consider known archives because sometimes releases contain multiple files
+				// for the same platform. Some times those files are alternative installation methods
+				// like `.dmg`, `.msi`, or `.deb`, and sometimes they are metadata files like `.sha256`
+				// or a `.sig` file. We don't want to install those.
+				return artifact, nil
+			}
 		}
 	}
-	if !platformCompatible {
+	if !foundPlatform {
 		return types.ArtifactMetadata{}, types.ErrPlatformNotSupported
 	}
 	return types.ArtifactMetadata{}, types.ErrNoKnownArchive
