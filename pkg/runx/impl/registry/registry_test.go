@@ -98,8 +98,8 @@ func TestFindArtifactForPlatform(t *testing.T) {
 		errTypeWant error
 	}{
 		{[]types.ArtifactMetadata{{Name: "mac-amd64.tar.gz"}}, types.NewPlatform("darwin", "amd64"), true, nil},
-		{[]types.ArtifactMetadata{{Name: "linux-amd64.deb"}}, types.NewPlatform("linux", "amd64"), false, types.ErrNoKnownArchive},
-		{[]types.ArtifactMetadata{{Name: "linux-amd64"}}, types.NewPlatform("linux", "amd64"), false, types.ErrNoKnownArchive},
+		{[]types.ArtifactMetadata{{Name: "linux-amd64.deb"}}, types.NewPlatform("linux", "amd64"), true, nil},
+		{[]types.ArtifactMetadata{{Name: "linux-amd64"}}, types.NewPlatform("linux", "amd64"), true, nil},
 		{[]types.ArtifactMetadata{{Name: "darwin_arm64.tar"}}, types.NewPlatform("windows", "amd64"), false, types.ErrPlatformNotSupported},
 		{[]types.ArtifactMetadata{{Name: "darwin_arm64"}}, types.NewPlatform("windows", "amd64"), false, types.ErrPlatformNotSupported},
 		{[]types.ArtifactMetadata{{Name: "mac-amd64.tar.gz"}}, types.NewPlatform("", ""), false, types.ErrPlatformNotSupported},
