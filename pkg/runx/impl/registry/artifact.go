@@ -3,55 +3,46 @@ package registry
 import (
 	"path/filepath"
 	"strings"
-	"unicode"
 
 	"go.jetpack.io/pkg/runx/impl/types"
 )
 
-func findArtifactForPlatform(artifacts []types.ArtifactMetadata, platform types.Platform) *types.ArtifactMetadata {
-	var artifactForPlatform types.ArtifactMetadata
+func findArtifactForPlatform(artifacts []types.ArtifactMetadata, platform types.Platform) (types.ArtifactMetadata, error) {
+	foundPlatform := false
 	for _, artifact := range artifacts {
-		if isArtifactForPlatform(artifact, platform) {
-			artifactForPlatform = artifact
+		if isArtifactForPlatform(artifact.Name, platform) {
+			foundPlatform = true
 			if isKnownArchive(artifact.Name) {
 				// We only consider known archives because sometimes releases contain multiple files
 				// for the same platform. Some times those files are alternative installation methods
 				// like `.dmg`, `.msi`, or `.deb`, and sometimes they are metadata files like `.sha256`
 				// or a `.sig` file. We don't want to install those.
-				return &artifact
+				return artifact, nil
 			}
 		}
 	}
-	// Best attempt:
-	return &artifactForPlatform
+	if !foundPlatform {
+		return types.ArtifactMetadata{}, types.ErrPlatformNotSupported
+	}
+	return types.ArtifactMetadata{}, types.ErrNoKnownArchive
 }
 
-func isArtifactForPlatform(artifact types.ArtifactMetadata, platform types.Platform) bool {
+func isArtifactForPlatform(artifactName string, platform types.Platform) bool {
 	// Invalid platform:
 	if platform.Arch() == "" || platform.OS() == "" {
 		return false
 	}
 
-	// As a heuristic we tokenize the name of the artifact, and return the artifact that has
-	// tokens for both the OS and the Architecture.
-	tokens := strings.FieldsFunc(strings.ToLower(artifact.Name), func(r rune) bool {
-		return !unicode.IsLetter(r) && !unicode.IsNumber(r)
-	})
 	hasOS := false
 	hasArch := false
 
-	for _, token := range tokens {
-		if matchesOS(platform, token) {
-			hasOS = true
-			continue
-		}
-		if matchesArch(platform, token) {
-			hasArch = true
-			continue
-		}
-		if hasOS && hasArch {
-			return true
-		}
+	// We just check that the artifact name, forced to lowercase,
+	// contains the OS and architecture of the invoking system
+	if matchesOS(platform, strings.ToLower(artifactName)) {
+		hasOS = true
+	}
+	if matchesArch(platform, strings.ToLower(artifactName)) {
+		hasArch = true
 	}
 	return hasOS && hasArch
 }
@@ -60,17 +51,14 @@ var alternateOSNames = map[string][]string{
 	"darwin": {"macos", "mac"},
 }
 
-func matchesOS(platform types.Platform, token string) bool {
-	if token == platform.OS() {
-		return true
-	}
+func matchesOS(platform types.Platform, artifactName string) bool {
 	alts := alternateOSNames[platform.OS()]
 	for _, alt := range alts {
-		if token == alt {
+		if strings.Contains(artifactName, alt) {
 			return true
 		}
 	}
-	return false
+	return strings.Contains(artifactName, platform.OS())
 }
 
 var alternateArchNames = map[string][]string{
@@ -79,17 +67,14 @@ var alternateArchNames = map[string][]string{
 	"amd64": {"x86_64", "universal"},
 }
 
-func matchesArch(platform types.Platform, token string) bool {
-	if token == platform.Arch() {
-		return true
-	}
+func matchesArch(platform types.Platform, artifactName string) bool {
 	alts := alternateArchNames[platform.Arch()]
 	for _, alt := range alts {
-		if token == alt {
+		if strings.Contains(artifactName, alt) {
 			return true
 		}
 	}
-	return false
+	return strings.Contains(artifactName, platform.Arch())
 }
 
 var knownExts = []string{
