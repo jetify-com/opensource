@@ -1,0 +1,11 @@
+{
+  "$schema":  "https://raw.githubusercontent.com/jetify-com/devbox/main/.schema/devbox.schema.json",
+  "packages": ["go@latest"],
+  "shell": {
+    "scripts": {
+      "build": [
+        "go build -o dist/auth ./cmd/auth/main.go"
+      ]
+    }
+  }
+}

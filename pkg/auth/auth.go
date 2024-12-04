@@ -143,6 +143,10 @@ func (c *Client) GetSessions() ([]refreshableTokenSource, error) {
 	return refreshableTokens, nil
 }
 
+func (c *Client) AddSession(tok *session.Token) error {
+	return c.store.WriteToken(c.issuer, c.clientID, tok, true /*makeDefault*/)
+}
+
 func (c *Client) refresh(
 	ctx context.Context,
 	tok *session.Token,
