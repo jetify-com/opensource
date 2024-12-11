@@ -47,5 +47,10 @@ jobs:
       - name: Build
         run: devbox run build
 
+      - name: Format
+        run: |
+          devbox run fmt
+          git diff --exit-code
+
       - name: Test
         run: devbox run test

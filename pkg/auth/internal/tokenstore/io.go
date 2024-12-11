@@ -23,7 +23,7 @@ func issuerSlug(issuer string) string {
 
 func ensureDir(path string) error {
 	dir := filepath.Dir(path)
-	return os.MkdirAll(dir, 0700)
+	return os.MkdirAll(dir, 0o700)
 }
 
 func writeJSONFile(path string, value storeData) error {
@@ -36,7 +36,7 @@ func writeJSONFile(path string, value storeData) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	return errors.WithStack(os.WriteFile(path, data, 0644))
+	return errors.WithStack(os.WriteFile(path, data, 0o644))
 }
 
 func readJSONFile(path string, value *storeData) error {
