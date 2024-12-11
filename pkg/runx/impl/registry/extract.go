@@ -57,10 +57,10 @@ func contentDir(path string) string {
 }
 
 func createSymbolicLink(src, dst, repoName string) error {
-	if err := os.MkdirAll(dst, 0700); err != nil {
+	if err := os.MkdirAll(dst, 0o700); err != nil {
 		return err
 	}
-	if err := os.Chmod(src, 0755); err != nil {
+	if err := os.Chmod(src, 0o755); err != nil {
 		return err
 	}
 	binaryName := filepath.Base(src)

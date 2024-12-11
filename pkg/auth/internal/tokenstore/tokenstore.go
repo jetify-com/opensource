@@ -22,7 +22,7 @@ type storeData struct {
 func New(rootDir string) (*Store, error) {
 	// The store contains tokens that enable a particular user to authenticate.
 	// It's important that the directory can only be read by that user.
-	err := os.MkdirAll(rootDir, 0700)
+	err := os.MkdirAll(rootDir, 0o700)
 	if err != nil {
 		return nil, err
 	}
