@@ -144,6 +144,10 @@
           "store_path": "/nix/store/n2ng9hhfwvr480wvv45837hqsivaaqdp-golangci-lint-1.57.2"
         }
       }
+    },
+    "runx:mvdan/gofumpt@latest": {
+      "resolved": "mvdan/gofumpt@v0.7.0",
+      "version": "v0.7.0"
     }
   }
 }
