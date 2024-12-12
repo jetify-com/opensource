@@ -23,7 +23,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	go.jetify.com/typeid v1.3.1-0.20241211224430-39758d55f188
 	go.jetpack.io/pkg v0.0.0-20241211224430-03854a8cb509
-	golang.org/x/text v0.14.0
+	golang.org/x/text v0.21.0
 )
 
 require (
@@ -62,11 +62,11 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/exp v0.0.0-20240409090435-93d18d7e34b8 // indirect
 	golang.org/x/oauth2 v0.19.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/term v0.19.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/term v0.27.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
