@@ -83,6 +83,7 @@ Latest spec version: v0.3.0
 | [T-SQL](https://github.com/uniteeio/typeid_tsql)              | [@uniteeio](https://github.com/uniteeio)                                                  | v0.2 on 2023-08-25                                                         |
 | [TypeScript](https://github.com/ongteckwu/typeid-ts)          | [@ongteckwu](https://github.com/ongteckwu)                                                | v0.2 on 2023-06-30                                                         |
 | [Zig](https://github.com/tensorush/zig-typeid)                | [@tensorush](https://github.com/tensorush)                                                | v0.2 on 2023-07-05                                                         |
+| [Zig](https://github.com/nikoksr/typeid-zig)                | [@nikoksr](https://github.com/nikoksr)                                                | v0.3 on 2024-12-29                                                         |
 
 We are looking for community contributions to implement TypeIDs in other languages.
 
