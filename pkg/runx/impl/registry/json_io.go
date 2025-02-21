@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"go.jetpack.io/pkg/runx/impl/fileutil"
+	"go.jetpack.io/pkg/fileutil"
 )
 
 // TODO: Generalize package by:

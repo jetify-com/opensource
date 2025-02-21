@@ -1,6 +1,8 @@
 module go.jetpack.io/pkg
 
-go 1.21
+go 1.23
+
+toolchain go1.23.6
 
 require (
 	connectrpc.com/connect v1.16.0
@@ -16,13 +18,16 @@ require (
 	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/mattn/go-isatty v0.0.20
+	github.com/pelletier/go-toml/v2 v2.2.3
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
+	github.com/tailscale/hujson v0.0.0-20241010212012-29efb4a0184b
 	go.jetify.com/typeid v1.1.0
 	golang.org/x/oauth2 v0.19.0
 	google.golang.org/protobuf v1.33.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -49,5 +54,4 @@ require (
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
