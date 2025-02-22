@@ -126,28 +126,28 @@ func (s *Server) VerifyComplete() error {
 }
 
 // requireRequestEq verifies that the actual HTTP request matches the expected request.
-func requireRequestEq(t T, expected Request, actual *http.Request) {
+func requireRequestEq(tester T, expected Request, actual *http.Request) {
 	// Check HTTP method.
-	require.Equal(t, expected.Method, actual.Method, "HTTP method mismatch")
+	require.Equal(tester, expected.Method, actual.Method, "HTTP method mismatch")
 	// Check path.
-	require.Equal(t, expected.Path, actual.URL.Path, "URL path mismatch")
+	require.Equal(tester, expected.Path, actual.URL.Path, "URL path mismatch")
 
 	// Check headers if provided.
 	for key, expectedValue := range expected.Headers {
-		require.Equal(t, expectedValue, actual.Header.Get(key), "Header %s mismatch", key)
+		require.Equal(tester, expectedValue, actual.Header.Get(key), "Header %s mismatch", key)
 	}
 
 	// Check body if provided.
 	if expected.Body != nil {
 		bodyBytes, err := io.ReadAll(actual.Body)
-		require.NoError(t, err, "error reading request body")
-		requireBodyEq(t, expected.Body, bodyBytes)
+		require.NoError(tester, err, "error reading request body")
+		requireBodyEq(tester, expected.Body, bodyBytes)
 	}
 
 	// Run additional validation if provided.
 	if expected.Validate != nil {
 		err := expected.Validate(actual)
-		require.NoError(t, err, "custom validation failed")
+		require.NoError(tester, err, "custom validation failed")
 	}
 }
 
@@ -190,7 +190,7 @@ func writeResponse(w http.ResponseWriter, response Response) error {
 
 // requireBodyEq verifies that the actual body matches the expected body.
 // The expected body can be either a string (for exact matches) or any JSON-marshalable type.
-func requireBodyEq(t T, expected any, actualBytes []byte) {
+func requireBodyEq(tester T, expected any, actualBytes []byte) {
 	if expected == nil {
 		return
 	}
@@ -199,15 +199,15 @@ func requireBodyEq(t T, expected any, actualBytes []byte) {
 	case string:
 		// Try JSON comparison first if it's valid JSON
 		if json.Valid([]byte(expected)) {
-			require.JSONEq(t, expected, string(actualBytes))
+			require.JSONEq(tester, expected, string(actualBytes))
 			return
 		}
 		// Not valid JSON, fall back to string comparison
-		require.Equal(t, expected, string(actualBytes))
+		require.Equal(tester, expected, string(actualBytes))
 	default:
 		expectedJSON, err := json.Marshal(expected)
-		require.NoError(t, err)
-		require.JSONEq(t, string(expectedJSON), string(actualBytes))
+		require.NoError(tester, err)
+		require.JSONEq(tester, string(expectedJSON), string(actualBytes))
 	}
 }
 

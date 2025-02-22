@@ -17,7 +17,7 @@ import (
 
 // 1. Examples
 func ExampleServer_basic() {
-	ts := NewServer(&mockT{}, []Exchange{{
+	testServer := NewServer(&mockT{}, []Exchange{{
 		Request: Request{
 			Method: "GET",
 			Path:   "/hello",
@@ -26,16 +26,16 @@ func ExampleServer_basic() {
 			Body: "world",
 		},
 	}})
-	defer ts.Close()
+	defer testServer.Close()
 
-	resp, _ := http.Get(ts.Path("/hello"))
+	resp, _ := http.Get(testServer.Path("/hello"))
 	body, _ := io.ReadAll(resp.Body)
 	fmt.Println(string(body))
 	// Output: world
 }
 
 func ExampleServer_jsonRequest() {
-	ts := NewServer(&mockT{}, []Exchange{{
+	testServer := NewServer(&mockT{}, []Exchange{{
 		Request: Request{
 			Method: "POST",
 			Path:   "/api/users",
@@ -52,9 +52,9 @@ func ExampleServer_jsonRequest() {
 			},
 		},
 	}})
-	defer ts.Close()
+	defer testServer.Close()
 
-	resp, _ := http.Post(ts.Path("/api/users"),
+	resp, _ := http.Post(testServer.Path("/api/users"),
 		"application/json",
 		strings.NewReader(`{"name":"Alice"}`))
 	body, _ := io.ReadAll(resp.Body)
@@ -66,7 +66,7 @@ func ExampleServer_jsonRequest() {
 }
 
 func ExampleServer_sequence() {
-	ts := NewServer(&mockT{}, []Exchange{
+	testServer := NewServer(&mockT{}, []Exchange{
 		{
 			Request: Request{
 				Method: "POST",
@@ -90,10 +90,10 @@ func ExampleServer_sequence() {
 			},
 		},
 	})
-	defer ts.Close()
+	defer testServer.Close()
 
 	// Login
-	resp, _ := http.Post(ts.Path("/login"),
+	resp, _ := http.Post(testServer.Path("/login"),
 		"application/json",
 		strings.NewReader(`{"username":"alice","password":"secret"}`))
 	var loginResp struct{ Token string }
@@ -105,7 +105,7 @@ func ExampleServer_sequence() {
 	resp.Body.Close()
 
 	// Get profile using token
-	req, _ := http.NewRequest("GET", ts.Path("/profile"), nil)
+	req, _ := http.NewRequest(http.MethodGet, testServer.Path("/profile"), nil)
 	req.Header.Set("Authorization", "Bearer "+loginResp.Token)
 	resp, _ = http.DefaultClient.Do(req)
 	body, _ := io.ReadAll(resp.Body)
@@ -114,7 +114,7 @@ func ExampleServer_sequence() {
 }
 
 func ExampleServer_validation() {
-	ts := NewServer(&mockT{}, []Exchange{{
+	testServer := NewServer(&mockT{}, []Exchange{{
 		Request: Request{
 			Method: "POST",
 			Path:   "/upload",
@@ -130,10 +130,10 @@ func ExampleServer_validation() {
 			Body:       "uploaded",
 		},
 	}})
-	defer ts.Close()
+	defer testServer.Close()
 
 	// Send non-empty request
-	resp, _ := http.Post(ts.Path("/upload"),
+	resp, _ := http.Post(testServer.Path("/upload"),
 		"text/plain",
 		strings.NewReader("some data"))
 	body, _ := io.ReadAll(resp.Body)
@@ -252,30 +252,30 @@ func TestServer_Request(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mt := newMockT(t)
-			ts := NewServer(mt, []Exchange{tt.expect})
-			defer ts.Close()
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockTester := newMockT(t)
+			testServer := NewServer(mockTester, []Exchange{testCase.expect})
+			defer testServer.Close()
 
-			reqToSend := tt.expect.Request
-			if tt.send != nil {
-				reqToSend = *tt.send
+			reqToSend := testCase.expect.Request
+			if testCase.send != nil {
+				reqToSend = *testCase.send
 			}
 
-			req, err := buildRequest(ts.BaseURL(), reqToSend)
+			req, err := buildRequest(testServer.BaseURL(), reqToSend)
 			require.NoError(t, err)
 
 			resp, err := http.DefaultClient.Do(req)
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
-			if tt.wantFail {
-				assert.True(t, mt.failed)
+			if testCase.wantFail {
+				assert.True(t, mockTester.failed)
 				assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 			} else {
-				assert.False(t, mt.failed)
-				assertResponseEq(t, tt.expect.Response, resp)
+				assert.False(t, mockTester.failed)
+				assertResponseEq(t, testCase.expect.Response, resp)
 			}
 		})
 	}
@@ -344,24 +344,24 @@ func TestServer_VerifyComplete(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mt := newMockT(t)
-			ts := NewServer(mt, tt.expect)
-			defer ts.Close()
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockTester := newMockT(t)
+			testServer := NewServer(mockTester, testCase.expect)
+			defer testServer.Close()
 
 			// Send all requests in order
-			for _, req := range tt.send {
-				r, err := buildRequest(ts.BaseURL(), req)
+			for _, req := range testCase.send {
+				r, err := buildRequest(testServer.BaseURL(), req)
 				require.NoError(t, err)
 				resp, err := http.DefaultClient.Do(r)
 				require.NoError(t, err)
 				resp.Body.Close()
 			}
 
-			err := ts.VerifyComplete()
-			if tt.wantErr != "" {
-				assert.EqualError(t, err, tt.wantErr)
+			err := testServer.VerifyComplete()
+			if testCase.wantErr != "" {
+				assert.EqualError(t, err, testCase.wantErr)
 			} else {
 				assert.NoError(t, err)
 			}
@@ -402,14 +402,14 @@ func TestServer_BodyComparison(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mt := newMockT(t)
-			mt.failed = false
-			mt.errors = nil
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockTester := newMockT(t)
+			mockTester.failed = false
+			mockTester.errors = nil
 
-			requireBodyEq(mt, tt.expected, []byte(tt.actual))
-			assert.Equal(t, tt.wantFail, mt.failed)
+			requireBodyEq(mockTester, testCase.expected, []byte(testCase.actual))
+			assert.Equal(t, testCase.wantFail, mockTester.failed)
 		})
 	}
 }
@@ -459,15 +459,15 @@ func TestServer_Path(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
 			// Create a server with a custom base URL for testing
 			s := &Server{server: httptest.NewServer(nil)}
-			s.server.URL = tt.baseURL // override the random port with our test URL
+			s.server.URL = testCase.baseURL // override the random port with our test URL
 			defer s.server.Close()
 
-			got := s.Path(tt.path)
-			assert.Equal(t, tt.expected, got)
+			got := s.Path(testCase.path)
+			assert.Equal(t, testCase.expected, got)
 		})
 	}
 }
@@ -526,19 +526,19 @@ func assertResponseEq(t *testing.T, expected Response, actual *http.Response) {
 }
 
 // buildRequest creates an http.Request from a base URL and Request struct.
-func buildRequest(baseURL string, r Request) (*http.Request, error) {
-	u, err := url.JoinPath(baseURL, r.Path)
+func buildRequest(baseURL string, request Request) (*http.Request, error) {
+	u, err := url.JoinPath(baseURL, request.Path)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(r.Method, u, buildBody(r.Body))
+	req, err := http.NewRequest(request.Method, u, buildBody(request.Body))
 	if err != nil {
 		return nil, err
 	}
 
 	// Set headers from the request
-	for k, v := range r.Headers {
+	for k, v := range request.Headers {
 		req.Header.Set(k, v)
 	}
 
@@ -624,10 +624,10 @@ func TestMergeRequests_TwoRequests(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := MergeRequests(tt.base, tt.override)
-			assert.Equal(t, tt.want, got)
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			got := MergeRequests(testCase.base, testCase.override)
+			assert.Equal(t, testCase.want, got)
 		})
 	}
 }
@@ -675,22 +675,22 @@ func TestServer_ResponseHeaders(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ts := NewServer(t, []Exchange{{
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			testServer := NewServer(t, []Exchange{{
 				Request: Request{
 					Method: "GET",
 					Path:   "/test",
 				},
-				Response: tt.response,
+				Response: testCase.response,
 			}})
-			defer ts.Close()
+			defer testServer.Close()
 
-			resp, err := http.Get(ts.Path("/test"))
+			resp, err := http.Get(testServer.Path("/test"))
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
-			for k, want := range tt.wantHeaders {
+			for k, want := range testCase.wantHeaders {
 				assert.Equal(t, want, resp.Header.Get(k))
 			}
 		})
