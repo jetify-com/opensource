@@ -27,7 +27,7 @@ func TestIsBinary(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			file, err := os.CreateTemp("", "testfile")
+			file, err := os.CreateTemp(t.TempDir(), "testfile")
 			if err != nil {
 				t.Fatalf("Could not create temp file: %v", err)
 			}

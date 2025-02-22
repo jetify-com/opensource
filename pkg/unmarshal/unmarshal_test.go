@@ -64,7 +64,7 @@ func TestUnmarshal(t *testing.T) {
 id: test1
 input: hello
 expected: 42
-tags: 
+tags:
   - test
   - example`,
 			format: ".yaml",
@@ -89,19 +89,19 @@ tags:
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := strings.NewReader(tt.input)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			r := strings.NewReader(test.input)
 			var got testRecord
-			err := Reader(r, &got, tt.format)
+			err := Reader(r, &got, test.format)
 
-			if tt.wantErr {
+			if test.wantErr {
 				assert.Error(t, err)
 				return
 			}
 
 			assert.NoError(t, err)
-			assert.Equal(t, tt.want, &got)
+			assert.Equal(t, test.want, &got)
 		})
 	}
 }
@@ -177,20 +177,20 @@ func TestFindFiles(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := findFiles(fsys, tt.paths, tt.exts)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := findFiles(fsys, test.paths, test.exts)
 
-			if tt.wantErr {
+			if test.wantErr {
 				assert.Error(t, err)
-				if tt.errPath != "" {
-					assert.Contains(t, err.Error(), tt.errPath)
+				if test.errPath != "" {
+					assert.Contains(t, err.Error(), test.errPath)
 				}
 				return
 			}
 
 			assert.NoError(t, err)
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, test.want, got)
 		})
 	}
 }

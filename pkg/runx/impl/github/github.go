@@ -55,7 +55,7 @@ func (c *Client) GetRelease(ctx context.Context, ref types.PkgRef) (types.Releas
 		return types.ReleaseMetadata{}, err
 	}
 
-	if resp == nil || release == nil || resp.StatusCode == 404 {
+	if resp == nil || release == nil || resp.StatusCode == http.StatusNotFound {
 		return types.ReleaseMetadata{}, types.ErrPackageNotFound
 	}
 

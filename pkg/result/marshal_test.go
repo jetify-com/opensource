@@ -44,25 +44,25 @@ func TestMarshaling(t *testing.T) {
 		"yaml": &yamlEncoder{},
 	}
 
-	for _, tt := range tests {
+	for _, test := range tests {
 		for encName, enc := range encoders {
-			t.Run(tt.name+"_"+encName, func(t *testing.T) {
+			t.Run(test.name+"_"+encName, func(t *testing.T) {
 				// Test marshaling
-				data, err := enc.Marshal(tt.input)
+				data, err := enc.Marshal(test.input)
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expected[encName], string(data))
+				assert.Equal(t, test.expected[encName], string(data))
 
 				// Test unmarshaling
 				var actual Result[string]
-				err = enc.Unmarshal([]byte(tt.expected[encName]), &actual)
+				err = enc.Unmarshal([]byte(test.expected[encName]), &actual)
 				assert.NoError(t, err)
 
-				if tt.input.IsErr() {
+				if test.input.IsErr() {
 					assert.True(t, actual.IsErr())
-					assert.Equal(t, tt.input.Err(), actual.Err())
+					assert.Equal(t, test.input.Err(), actual.Err())
 				} else {
 					assert.False(t, actual.IsErr())
-					assert.Equal(t, tt.input.value, actual.value)
+					assert.Equal(t, test.input.value, actual.value)
 				}
 			})
 		}
@@ -152,11 +152,11 @@ func TestStructRoundtrip(t *testing.T) {
 		"yaml": &yamlEncoder{},
 	}
 
-	for _, tt := range tests {
+	for _, test := range tests {
 		for encName, enc := range encoders {
-			t.Run(tt.name+"_"+encName, func(t *testing.T) {
+			t.Run(test.name+"_"+encName, func(t *testing.T) {
 				// Marshal the original value
-				data, err := enc.Marshal(tt.input)
+				data, err := enc.Marshal(test.input)
 				require.NoError(t, err)
 
 				// Unmarshal back into a new value
@@ -165,12 +165,12 @@ func TestStructRoundtrip(t *testing.T) {
 				require.NoError(t, err)
 
 				// Verify the roundtrip
-				if tt.input.IsErr() {
+				if test.input.IsErr() {
 					assert.True(t, result.IsErr())
-					assert.Equal(t, tt.input.Err().Error(), result.Err().Error())
+					assert.Equal(t, test.input.Err().Error(), result.Err().Error())
 				} else {
 					assert.False(t, result.IsErr())
-					assert.Equal(t, tt.input.value, result.value)
+					assert.Equal(t, test.input.value, result.value)
 				}
 			})
 		}
