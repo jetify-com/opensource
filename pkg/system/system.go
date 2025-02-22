@@ -10,7 +10,7 @@ import (
 // allowing for easier testing and dependency injection. It wraps the standard
 // filesystem, stdin, stdout, and stderr functionality.
 type System struct {
-	fs        fs.FS
+	fs        fs.StatFS
 	inReader  io.Reader
 	outWriter io.Writer
 	errWriter io.Writer
@@ -28,7 +28,7 @@ func (s *System) GetFS() fs.FS {
 }
 
 // SetFS sets the filesystem interface to be used by the System.
-func (s *System) SetFS(fs fs.FS) {
+func (s *System) SetFS(fs fs.StatFS) {
 	s.fs = fs
 }
 

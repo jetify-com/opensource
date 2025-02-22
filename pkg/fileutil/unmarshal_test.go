@@ -1,4 +1,4 @@
-package unmarshal
+package fileutil
 
 import (
 	"io/fs"
@@ -93,7 +93,7 @@ tags:
 		t.Run(test.name, func(t *testing.T) {
 			r := strings.NewReader(test.input)
 			var got testRecord
-			err := Reader(r, &got, test.format)
+			err := unmarshalReader(r, &got, test.format)
 
 			if test.wantErr {
 				assert.Error(t, err)
