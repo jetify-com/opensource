@@ -6,10 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"go.jetpack.io/pkg/fileutil"
-	"go.jetpack.io/pkg/runx/impl/download"
-	"go.jetpack.io/pkg/runx/impl/github"
-	"go.jetpack.io/pkg/runx/impl/types"
+	"go.jetify.com/pkg/fileutil"
+	"go.jetify.com/pkg/runx/impl/download"
+	"go.jetify.com/pkg/runx/impl/github"
+	"go.jetify.com/pkg/runx/impl/types"
 )
 
 var xdgInstallationSubdir = "runx/pkgs"

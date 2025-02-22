@@ -17,7 +17,7 @@ import (
 	"strings"
 
 	"github.com/gosimple/slug"
-	"go.jetpack.io/pkg/redact"
+	"go.jetify.com/pkg/redact"
 )
 
 // Bytes returns a hex-encoded hash of b.

@@ -2,7 +2,7 @@ package github
 
 import (
 	githubimpl "github.com/google/go-github/v53/github"
-	"go.jetpack.io/pkg/runx/impl/types"
+	"go.jetify.com/pkg/runx/impl/types"
 )
 
 func convertGithubReleases(releases []*githubimpl.RepositoryRelease) []types.ReleaseMetadata {

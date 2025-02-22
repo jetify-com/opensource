@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/coreos/go-oidc/v3/oidc"
-	"go.jetpack.io/pkg/auth/session"
+	"go.jetify.com/pkg/auth/session"
 	"golang.org/x/oauth2"
 
-	"go.jetpack.io/pkg/auth/internal/authflow"
-	"go.jetpack.io/pkg/auth/internal/callbackserver"
-	"go.jetpack.io/pkg/auth/internal/tokenstore"
+	"go.jetify.com/pkg/auth/internal/authflow"
+	"go.jetify.com/pkg/auth/internal/callbackserver"
+	"go.jetify.com/pkg/auth/internal/tokenstore"
 )
 
 var ErrNotLoggedIn = fmt.Errorf("not logged in")

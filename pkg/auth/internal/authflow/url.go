@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/coreos/go-oidc/v3/oidc"
-	"go.jetpack.io/pkg/auth/internal/pkce"
+	"go.jetify.com/pkg/auth/internal/pkce"
 	"golang.org/x/oauth2"
 )
 

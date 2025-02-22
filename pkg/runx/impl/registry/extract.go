@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/codeclysm/extract/v3"
-	"go.jetpack.io/pkg/fileutil"
+	"go.jetify.com/pkg/fileutil"
 )
 
 func Extract(ctx context.Context, src string, dest string) error {

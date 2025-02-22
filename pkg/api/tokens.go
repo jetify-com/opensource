@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"connectrpc.com/connect"
-	tokenservicev1alpha1 "go.jetpack.io/pkg/api/gen/priv/tokenservice/v1alpha1"
-	"go.jetpack.io/pkg/ids"
+	tokenservicev1alpha1 "go.jetify.com/pkg/api/gen/priv/tokenservice/v1alpha1"
+	"go.jetify.com/pkg/ids"
 )
 
 func (c *Client) GetAccessToken(

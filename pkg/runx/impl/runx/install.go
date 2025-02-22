@@ -3,8 +3,8 @@ package runx
 import (
 	"context"
 
-	"go.jetpack.io/pkg/runx/impl/registry"
-	"go.jetpack.io/pkg/runx/impl/types"
+	"go.jetify.com/pkg/runx/impl/registry"
+	"go.jetify.com/pkg/runx/impl/types"
 )
 
 func (r *RunX) Install(ctx context.Context, pkgs ...string) ([]string, error) {
