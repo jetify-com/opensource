@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"go.jetpack.io/pkg/fileutil"
 	"go.jetpack.io/pkg/runx/impl/download"
-	"go.jetpack.io/pkg/runx/impl/fileutil"
 	"go.jetpack.io/pkg/runx/impl/github"
 	"go.jetpack.io/pkg/runx/impl/types"
 )

@@ -196,7 +196,10 @@ func (c *Client) login() (*session.Token, error) {
 	// TODO: Automatically open the browser at this URL or prompt the user.
 	// TODO: handle non-interactive login flows.
 	fmt.Printf("Press Enter to open your browser and login...")
-	fmt.Scanln()
+	_, err = fmt.Scanln()
+	if err != nil {
+		return nil, err
+	}
 
 	err = flow.OpenBrowser()
 	if err != nil {
