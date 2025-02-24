@@ -1,8 +1,6 @@
 module go.jetify.com/pkg
 
-go 1.23
-
-toolchain go1.23.6
+go 1.24.0
 
 require (
 	connectrpc.com/connect v1.16.0
