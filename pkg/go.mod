@@ -1,4 +1,4 @@
-module go.jetpack.io/pkg
+module go.jetify.com/pkg
 
 go 1.23
 

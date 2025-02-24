@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"go.jetpack.io/pkg/fileutil"
+	"go.jetify.com/pkg/fileutil"
 )
 
 // TODO: Generalize package by:

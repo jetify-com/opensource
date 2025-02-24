@@ -1,6 +1,6 @@
 package main
 
-import "go.jetpack.io/pkg/runx/cmd/runx/cli"
+import "go.jetify.com/pkg/runx/cmd/runx/cli"
 
 func main() {
 	cli.Main()

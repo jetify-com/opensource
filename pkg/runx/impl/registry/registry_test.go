@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"go.jetpack.io/pkg/runx/impl/types"
+	"go.jetify.com/pkg/runx/impl/types"
 )
 
 func TestIsBinary(t *testing.T) {

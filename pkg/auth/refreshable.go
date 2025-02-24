@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"go.jetpack.io/pkg/auth/session"
+	"go.jetify.com/pkg/auth/session"
 )
 
 // Implements something similar to oauth2.TokenSource, but with a session.Token

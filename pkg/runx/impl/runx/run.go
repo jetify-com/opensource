@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"go.jetpack.io/pkg/runx/impl/types"
+	"go.jetify.com/pkg/runx/impl/types"
 )
 
 func (r *RunX) Run(ctx context.Context, args ...string) error {

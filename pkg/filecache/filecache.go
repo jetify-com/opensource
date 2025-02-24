@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"go.jetpack.io/pkg/cachehash"
+	"go.jetify.com/pkg/cachehash"
 )
 
 var (

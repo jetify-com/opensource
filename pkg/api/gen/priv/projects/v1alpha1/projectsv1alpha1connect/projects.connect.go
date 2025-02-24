@@ -17,7 +17,7 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	v1alpha1 "go.jetpack.io/pkg/api/gen/priv/projects/v1alpha1"
+	v1alpha1 "go.jetify.com/pkg/api/gen/priv/projects/v1alpha1"
 	http "net/http"
 	strings "strings"
 )

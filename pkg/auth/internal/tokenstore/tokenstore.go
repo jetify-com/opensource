@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	"go.jetpack.io/pkg/auth/session"
+	"go.jetify.com/pkg/auth/session"
 )
 
 const storeDataVersion = "1"

@@ -4,12 +4,12 @@ import (
 	"context"
 	"sync"
 
-	"go.jetpack.io/pkg/api/gen/priv/members/v1alpha1/membersv1alpha1connect"
-	"go.jetpack.io/pkg/api/gen/priv/nix/v1alpha1/nixv1alpha1connect"
-	"go.jetpack.io/pkg/api/gen/priv/projects/v1alpha1/projectsv1alpha1connect"
-	"go.jetpack.io/pkg/api/gen/priv/secrets/v1alpha1/secretsv1alpha1connect"
-	"go.jetpack.io/pkg/api/gen/priv/tokenservice/v1alpha1/tokenservicev1alpha1connect"
-	"go.jetpack.io/pkg/auth/session"
+	"go.jetify.com/pkg/api/gen/priv/members/v1alpha1/membersv1alpha1connect"
+	"go.jetify.com/pkg/api/gen/priv/nix/v1alpha1/nixv1alpha1connect"
+	"go.jetify.com/pkg/api/gen/priv/projects/v1alpha1/projectsv1alpha1connect"
+	"go.jetify.com/pkg/api/gen/priv/secrets/v1alpha1/secretsv1alpha1connect"
+	"go.jetify.com/pkg/api/gen/priv/tokenservice/v1alpha1/tokenservicev1alpha1connect"
+	"go.jetify.com/pkg/auth/session"
 	"golang.org/x/oauth2"
 )
 
