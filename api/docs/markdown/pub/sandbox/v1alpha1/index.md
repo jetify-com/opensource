@@ -20,6 +20,8 @@
     - [StopSandboxRequest](#pub-sandbox-v1alpha1-StopSandboxRequest)
     - [StopSandboxResponse](#pub-sandbox-v1alpha1-StopSandboxResponse)
   
+    - [MachineType](#pub-sandbox-v1alpha1-MachineType)
+    - [Mode](#pub-sandbox-v1alpha1-Mode)
     - [SandboxState](#pub-sandbox-v1alpha1-SandboxState)
   
     - [SandboxService](#pub-sandbox-v1alpha1-SandboxService)
@@ -50,6 +52,9 @@ API to manage Jetify Sandbox environments
 | environment_variables | [CreateSandboxRequest.EnvironmentVariablesEntry](#pub-sandbox-v1alpha1-CreateSandboxRequest-EnvironmentVariablesEntry) | repeated |  |
 | name | [string](#string) |  | Optional, human readable name for the sandbox. |
 | project_id | [string](#string) |  | Optional. Project must belong to organization. |
+| machine_type | [MachineType](#pub-sandbox-v1alpha1-MachineType) |  | Optional. The machine type to use for the sandbox. Defaults to MACHINE_TYPE_4CPU_16MEM. |
+| github_token | [string](#string) |  |  |
+| mode | [Mode](#pub-sandbox-v1alpha1-Mode) |  |  |
 
 
 
@@ -168,7 +173,7 @@ API to manage Jetify Sandbox environments
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| fetch_status_and_url | [bool](#bool) |  |  |
+| fetch_status_and_url | [bool](#bool) |  | fetch_status_and_url could be renamed to `fetch_workstation` to populate fields dependent on the cloud resource (i.e. Cloud Workstation) |
 | filter | [ListSandboxesFilter](#pub-sandbox-v1alpha1-ListSandboxesFilter) |  |  |
 
 
@@ -201,7 +206,7 @@ API to manage Jetify Sandbox environments
 | ----- | ---- | ----- | ----------- |
 | id | [string](#string) |  |  |
 | external_billing_tag | [string](#string) |  |  |
-| repo | [string](#string) |  |  |
+| repo | [string](#string) |  | repo is the github repository that is cloned. This may be user owned, or the template repo. |
 | subdir | [string](#string) |  | The subdirectory within the repo to checkout. Defaults to the root of the repo. |
 | ref | [string](#string) |  | The git ref to checkout. This can be a branch, tag, or commit hash. Defaults to the default branch. |
 | url | [string](#string) |  | Will be empty if the sandbox is not running. If present, it will contain access token. |
@@ -211,6 +216,9 @@ API to manage Jetify Sandbox environments
 | updated_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | The time the sandbox was last updated. |
 | name | [string](#string) |  |  |
 | project_id | [string](#string) |  | Optional. For sandboxes created with a project_id. |
+| is_trial | [bool](#bool) |  | True if the sandbox is a trial sandbox. Trial sandboxes are deleted after 14 days and have other restrictions. |
+| mode | [Mode](#pub-sandbox-v1alpha1-Mode) |  |  |
+| has_gpu | [bool](#bool) |  |  |
 
 
 
@@ -278,6 +286,33 @@ API to manage Jetify Sandbox environments
 
 
  
+
+
+<a name="pub-sandbox-v1alpha1-MachineType"></a>
+
+### MachineType
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| MACHINE_TYPE_UNSPECIFIED | 0 | Do not use. |
+| MACHINE_TYPE_2CPU_8MEM | 1 |  |
+| MACHINE_TYPE_4CPU_16MEM | 2 |  |
+| MACHINE_TYPE_4CPU_15MEM_1T4 | 3 |  |
+
+
+
+<a name="pub-sandbox-v1alpha1-Mode"></a>
+
+### Mode
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| MODE_UNSPECIFIED | 0 |  |
+| MODE_GIT_REPO | 1 | MODE_GIT_REPO sets up a sandbox with the provided git repo (at specified `ref`), and the working directory set to the `subdir` in the repo. |
+| MODE_TEMPLATE | 2 | MODE_TEMPLATE sets up a sandbox to use a template. The code from the git repo (at specified `ref`) is checked out and the root of the sandbox code folder is set to the `subdir` in the repo. The original git repo is discarded. A new git repo is initialized. |
+
 
 
 <a name="pub-sandbox-v1alpha1-SandboxState"></a>
