@@ -67,14 +67,14 @@ func Cause(err error) error {
 }
 
 // Is reports whether any error in err's chain matches target.
-// It is a wrapper around errors.Is from the standard library
+// It is a wrapper around github.com/pkg/errors.Is
 func Is(err, target error) bool {
 	return errors.Is(err, target)
 }
 
 // As finds the first error in err's chain that matches target, and if so, sets
 // target to that error value and returns true. Otherwise, it returns false.
-// It is a wrapper around errors.As from the standard library
+// It is a wrapper around github.com/pkg/errors.As
 func As(err error, target interface{}) bool {
 	return errors.As(err, target)
 }

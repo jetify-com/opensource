@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"connectrpc.com/connect"
-	nixv1alpha1 "go.jetpack.io/pkg/api/gen/priv/nix/v1alpha1"
+	nixv1alpha1 "go.jetify.com/pkg/api/gen/priv/nix/v1alpha1"
 )
 
 func (c *Client) GetAWSCredentials(ctx context.Context) (*nixv1alpha1.AWSCredentials, error) {

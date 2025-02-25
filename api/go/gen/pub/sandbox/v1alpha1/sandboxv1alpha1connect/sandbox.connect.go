@@ -11,7 +11,7 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	v1alpha1 "go.jetpack.io/axiom/api/gen/pub/sandbox/v1alpha1"
+	v1alpha1 "go.jetify.com/axiom/api/gen/pub/sandbox/v1alpha1"
 	http "net/http"
 	strings "strings"
 )

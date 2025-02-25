@@ -1,7 +1,7 @@
 # TODO(Landau): Turn on all linters
 # TODO(Landau): move this to top level of opensource?
 run:
-  go: "1.21"
+  go: "1.23"
 linters:
   disable-all: true
   enable:
@@ -20,16 +20,16 @@ linters:
     - revive
     - staticcheck
     - stylecheck
-    - tenv
     - typecheck
     - unconvert
     - unparam
     - unused
     - usestdlibvars
+    - usetesting
     - varnamelen
     # If we're going to use github.com/pkg/errors we should probably turn this on?
     # Let's adopt new stackerr lib and we can turn this on.
-    # - wrapcheck 
+    # - wrapcheck
     - unused
 
 linters-settings:
@@ -62,6 +62,7 @@ linters-settings:
       - r *http.Request
       - r io.Reader
       - t testing.T
+      - v any
       - w http.ResponseWriter
       - w io.Writer
   # TODO: enable this

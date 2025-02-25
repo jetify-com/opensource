@@ -3,7 +3,6 @@ description: |
   A Github action that builds a Docker image and pushes it to Artifact Registry in GCP.
   Images are built either from an existing Dockerfile in the repo or from devbox.json.
 author: jetify
-
 inputs:
   gcp_project:
     description: The GCP project where the image will be published.
@@ -44,7 +43,7 @@ runs:
       run: gcloud auth configure-docker ${{ inputs.registry }}
 
     - name: Install Devbox
-      uses: jetify-com/devbox-install-action@v0.11.0
+      uses: jetify-com/devbox-install-action@v0.12.0
       with:
         enable-cache: true
         project-path: ${{ inputs.template }}

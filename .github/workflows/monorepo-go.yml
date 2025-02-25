@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install devbox
-        uses: jetify-com/devbox-install-action@v0.11.0
+        uses: jetify-com/devbox-install-action@v0.12.0
         with:
           enable-cache: true
 
@@ -27,7 +27,6 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/.cache/golangci-lint
             ~/.cache/go-build
             ~/go/pkg
           key: ${{ runner.os }}-${{ hashFiles('**/*.sum') }}
@@ -40,12 +39,14 @@ jobs:
       #   run: |
       #     devbox run tidy
       #     git diff --exit-code
-          
-      - name: Lint
-        run: devbox run lint
 
+      - name: Format
+        run: |
+          devbox run fmt
+          git diff --exit-code
+          
       - name: Build
-        run: devbox run build
+        run: devbox run build          
 
       - name: Test
         run: devbox run test

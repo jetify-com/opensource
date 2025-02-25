@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"go.jetpack.io/pkg/runx/impl/types"
+	"go.jetify.com/pkg/runx/impl/types"
 )
 
 func findArtifactForPlatform(artifacts []types.ArtifactMetadata, platform types.Platform) (types.ArtifactMetadata, error) {

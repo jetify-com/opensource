@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"connectrpc.com/connect"
-	projectsv1alpha1 "go.jetpack.io/pkg/api/gen/priv/projects/v1alpha1"
-	"go.jetpack.io/pkg/id"
+	projectsv1alpha1 "go.jetify.com/pkg/api/gen/priv/projects/v1alpha1"
+	"go.jetify.com/pkg/id"
 )
 
 func (c *Client) ListProjects(

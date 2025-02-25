@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/cavaliergopher/grab/v3"
-	"go.jetpack.io/pkg/runx/impl/fileutil"
+	"go.jetify.com/pkg/fileutil"
 )
 
 type Client struct {

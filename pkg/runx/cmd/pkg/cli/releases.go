@@ -8,8 +8,8 @@ import (
 
 	"github.com/k0kubun/pp"
 	"github.com/spf13/cobra"
-	"go.jetpack.io/pkg/runx/impl/github"
-	"go.jetpack.io/pkg/runx/impl/types"
+	"go.jetify.com/pkg/runx/impl/github"
+	"go.jetify.com/pkg/runx/impl/types"
 )
 
 func ReleasesCmd() *cobra.Command {

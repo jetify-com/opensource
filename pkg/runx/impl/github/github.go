@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	githubimpl "github.com/google/go-github/v53/github"
-	"go.jetpack.io/pkg/runx/impl/httpcacher"
-	"go.jetpack.io/pkg/runx/impl/types"
+	"go.jetify.com/pkg/runx/impl/httpcacher"
+	"go.jetify.com/pkg/runx/impl/types"
 	"golang.org/x/oauth2"
 )
 
@@ -55,7 +55,7 @@ func (c *Client) GetRelease(ctx context.Context, ref types.PkgRef) (types.Releas
 		return types.ReleaseMetadata{}, err
 	}
 
-	if resp == nil || release == nil || resp.StatusCode == 404 {
+	if resp == nil || release == nil || resp.StatusCode == http.StatusNotFound {
 		return types.ReleaseMetadata{}, types.ErrPackageNotFound
 	}
 
