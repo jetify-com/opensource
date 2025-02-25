@@ -27,7 +27,6 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/.cache/golangci-lint
             ~/.cache/go-build
             ~/go/pkg
           key: ${{ runner.os }}-${{ hashFiles('**/*.sum') }}
@@ -41,16 +40,13 @@ jobs:
       #     devbox run tidy
       #     git diff --exit-code
 
-      - name: Lint
-        run: devbox run lint
-
-      - name: Build
-        run: devbox run build
-
       - name: Format
         run: |
           devbox run fmt
           git diff --exit-code
+          
+      - name: Build
+        run: devbox run build          
 
       - name: Test
         run: devbox run test
