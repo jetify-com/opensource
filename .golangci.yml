@@ -1,7 +1,7 @@
 # TODO(Landau): Turn on all linters
 # TODO(Landau): move this to top level of opensource?
 run:
-  go: "1.21"
+  go: "1.23"
 linters:
   disable-all: true
   enable:
