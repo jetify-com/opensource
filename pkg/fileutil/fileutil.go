@@ -1,7 +1,3 @@
-// TODO: publish as it's own shared package that other binaries can use.
-// Right now we have other copies in other binaries. For example, devbox
-// has its own copy.
-
 package fileutil
 
 import (
@@ -9,52 +5,43 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/google/renameio/v2"
 )
 
-type Path string
+type osFS struct{}
 
-func (p Path) String() string {
-	return string(p)
+func (osFS) Open(name string) (fs.File, error) {
+	return os.Open(name)
 }
 
-func (p Path) Subpath(elements ...string) Path {
-	all := append([]string{p.String()}, elements...)
-	return Path(filepath.Join(all...))
-}
-
+// IsDir returns true if the path exists and is a directory.
 func IsDir(path string) bool {
-	info := FileInfo(path)
-	if info == nil {
-		return false
-	}
-	return info.IsDir()
+	return isDir(osFS{}, path)
 }
 
-func (p Path) IsDir() bool {
-	return IsDir(p.String())
-}
-
+// IsFile returns true if the path exists and is a regular file.
 func IsFile(path string) bool {
-	info := FileInfo(path)
-	if info == nil {
-		return false
-	}
-	return info.Mode().IsRegular()
+	return isFile(osFS{}, path)
 }
 
-func (p Path) IsFile() bool {
-	return IsFile(p.String())
-}
-
+// Exists returns true if the path exists.
 func Exists(path string) bool {
-	return FileInfo(path) != nil
+	return exists(osFS{}, path)
 }
 
-func (p Path) Exists() bool {
-	return Exists(p.String())
+// FileInfo returns the fs.FileInfo for the given path.
+func FileInfo(path string) fs.FileInfo {
+	return fileInfo(osFS{}, path)
 }
 
+// Glob returns all files that match the given pattern.
+func Glob(pattern string) ([]string, error) {
+	return doublestar.Glob(osFS{}, pattern)
+}
+
+// EnsureDir ensures that the directory at the given path exists,
+// creating it and any parent directories if necessary.
 func EnsureDir(path string) error {
 	if IsDir(path) {
 		return nil
@@ -62,22 +49,9 @@ func EnsureDir(path string) error {
 	return os.MkdirAll(path, 0o700 /* as suggested by xdg spec */)
 }
 
-func (p Path) EnsureDir() error {
-	return EnsureDir(p.String())
-}
-
-func FileInfo(path string) fs.FileInfo {
-	info, err := os.Stat(path)
-	if err != nil {
-		return nil
-	}
-	return info
-}
-
-func (p Path) FileInfo() fs.FileInfo {
-	return FileInfo(p.String())
-}
-
+// WriteFile writes data to the named file, creating it if necessary.
+// If the file already exists, it is replaced.
+// The file is written atomically by writing to a temporary file and renaming it.
 func WriteFile(path string, data []byte) error {
 	// First ensure the directory exists:
 	dir := filepath.Dir(path)
@@ -85,6 +59,39 @@ func WriteFile(path string, data []byte) error {
 	if err != nil {
 		return err
 	}
-	// Write using `renameio` to ensure an atomic write:
+
 	return renameio.WriteFile(path, data, 0o600)
+}
+
+// isDir returns true if the path exists and is a directory in the given filesystem.
+func isDir(fsys fs.FS, path string) bool {
+	info := fileInfo(fsys, path)
+	if info == nil {
+		return false
+	}
+	return info.IsDir()
+}
+
+// isFile returns true if the path exists and is a regular file in the given filesystem.
+func isFile(fsys fs.FS, path string) bool {
+	info := fileInfo(fsys, path)
+	if info == nil {
+		return false
+	}
+	return info.Mode().IsRegular()
+}
+
+// exists returns true if the path exists in the given filesystem.
+func exists(fsys fs.FS, path string) bool {
+	return fileInfo(fsys, path) != nil
+}
+
+// fileInfo returns the fs.FileInfo for the given path in the given filesystem.
+// Returns nil if the path does not exist or cannot be accessed.
+func fileInfo(fsys fs.FS, path string) fs.FileInfo {
+	info, err := fs.Stat(fsys, path)
+	if err != nil {
+		return nil
+	}
+	return info
 }

@@ -1,4 +1,4 @@
-package unmarshal
+package fileutil
 
 import (
 	"encoding/json"
@@ -19,10 +19,60 @@ var ErrUnsupportedFormat = errors.New("unsupported file format")
 // supportedExtensions is the list of file extensions that can be processed
 var supportedExtensions = []string{".json", ".jsonc", ".yml", ".yaml", ".toml"}
 
-// Reader reads and parses data from an io.Reader into v based on the format specified.
+// UnmarshalFile reads and parses a single file into v.
+func UnmarshalFile(path string, v any) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	return unmarshalReader(f, v, filepath.Ext(path))
+}
+
+// UnmarshalPaths reads and parses files from the given paths in the filesystem
+// into a slice of type T.
+func UnmarshalPaths[T any](fsys fs.FS, paths []string) ([]T, error) {
+	results := []T{}
+
+	filePaths, err := findFiles(fsys, paths, supportedExtensions)
+	if err != nil {
+		return nil, err
+	}
+
+	// Process all files
+	for _, filePath := range filePaths {
+		result, err := unmarshalPath[T](fsys, filePath)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, result)
+	}
+
+	return results, nil
+}
+
+// unmarshalPath reads and parses a single file into type T.
+func unmarshalPath[T any](fsys fs.FS, path string) (T, error) {
+	var result T
+
+	f, err := fsys.Open(path)
+	if err != nil {
+		return result, err
+	}
+	defer f.Close()
+
+	if err := unmarshalReader(f, &result, filepath.Ext(path)); err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
+
+// unmarshalReader reads and parses data from an io.Reader into v based on the format specified.
 // Supported formats: json, jsonc, yml, yaml, and toml.
 // The format string can be a file extension (e.g. ".json") or a format name (e.g. "json").
-func Reader(r io.Reader, v any, format string) error {
+func unmarshalReader(r io.Reader, v any, format string) error {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
@@ -55,46 +105,6 @@ func hujsonUnmarshal(data []byte, v any) error {
 	}
 	ast.Standardize()
 	return json.Unmarshal(ast.Pack(), v)
-}
-
-// File reads and parses a single file into v.
-func File(path string, v any) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	return Reader(f, v, filepath.Ext(path))
-}
-
-// Paths reads and parses files from the given paths in the filesystem into a slice of type T.
-func Paths[T any](fsys fs.FS, paths []string) ([]T, error) {
-	results := []T{}
-
-	filePaths, err := findFiles(fsys, paths, supportedExtensions)
-	if err != nil {
-		return nil, err
-	}
-
-	// Process all files
-	for _, filePath := range filePaths {
-		f, err := fsys.Open(filePath)
-		if err != nil {
-			return nil, err
-		}
-
-		var result T
-		if err := Reader(f, &result, filepath.Ext(filePath)); err != nil {
-			f.Close()
-			return nil, err
-		}
-		f.Close()
-
-		results = append(results, result)
-	}
-
-	return results, nil
 }
 
 // findFiles returns a list of files with the given extensions from the paths in the filesystem.
