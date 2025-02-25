@@ -9,29 +9,35 @@ import (
 	"github.com/google/renameio/v2"
 )
 
+type osFS struct{}
+
+func (osFS) Open(name string) (fs.File, error) {
+	return os.Open(name)
+}
+
 // IsDir returns true if the path exists and is a directory.
 func IsDir(path string) bool {
-	return isDir(os.DirFS("."), path)
+	return isDir(osFS{}, path)
 }
 
 // IsFile returns true if the path exists and is a regular file.
 func IsFile(path string) bool {
-	return isFile(os.DirFS("."), path)
+	return isFile(osFS{}, path)
 }
 
 // Exists returns true if the path exists.
 func Exists(path string) bool {
-	return exists(os.DirFS("."), path)
+	return exists(osFS{}, path)
 }
 
 // FileInfo returns the fs.FileInfo for the given path.
 func FileInfo(path string) fs.FileInfo {
-	return fileInfo(os.DirFS("."), path)
+	return fileInfo(osFS{}, path)
 }
 
 // Glob returns all files that match the given pattern.
 func Glob(pattern string) ([]string, error) {
-	return doublestar.Glob(os.DirFS("."), pattern)
+	return doublestar.Glob(osFS{}, pattern)
 }
 
 // EnsureDir ensures that the directory at the given path exists,
