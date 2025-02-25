@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"go.jetpack.io/pkg/runx/impl/runx"
+	"go.jetify.com/pkg/runx/impl/runx"
 )
 
 func Help() {

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/coreos/go-oidc/v3/oidc"
-	"go.jetpack.io/pkg/auth/internal/callbackserver"
+	"go.jetify.com/pkg/auth/internal/callbackserver"
 	"golang.org/x/oauth2"
 )
 

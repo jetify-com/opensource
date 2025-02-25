@@ -9,8 +9,8 @@ import (
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
-	"go.jetpack.io/pkg/auth"
-	"go.jetpack.io/pkg/auth/session"
+	"go.jetify.com/pkg/auth"
+	"go.jetify.com/pkg/auth/session"
 )
 
 type sharedFlags struct {

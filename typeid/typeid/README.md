@@ -26,6 +26,7 @@ Here's an example of a TypeID of type `user`:
 A [formal specification](./spec) defines the encoding in more detail.
 
 ## Online Converter
+
 You can try converting UUID to TypeID and back using Jetify's TypeID Converter. Paste your TypeID string to convert to UUID or put your prefix and UUID in this format: `prefix:UUID` to convert to TypeID.
 
 ### [jetify.com/typeid](https://www.jetify.com/typeid)
@@ -64,14 +65,15 @@ Latest spec version: v0.3.0
 | [Dart](https://github.com/TBD54566975/typeid-dart)            | [@mistermoe](https://github.com/mistermoe) [@tbd54566975](https://github.com/tbd54566975) | [v0.3 on 2024-07-02](https://github.com/TBD54566975/typeid-dart/actions/runs/9755701869/job/26924658060#step:6:10)                                                         |
 | [Elixir](https://github.com/sloanelybutsurely/typeid-elixir)  | [@sloanelybutsurely](https://github.com/sloanelybutsurely)                                | v0.3 on 2024-04-22                                                         |
 | [Elixir](https://github.com/xinz/elixir_typeid)               | [@xinz](https://github.com/xinz)                                                          | v0.1 on 2024-06-03                                                         |
+| [Erlang](https://github.com/eproxus/keysmith)                 | [@eproxus](https://github.com/eproxus)                                                    | v0.3 on 2024-09-25                                                         |
 | [Haskell](https://github.com/MMZK1526/mmzk-typeid)            | [@MMZK1526](https://github.com/MMZK1526)                                                  | v0.3 on 2024-04-19                                                         |
 | [Java](https://github.com/fxlae/typeid-java)                  | [@fxlae](https://github.com/fxlae)                                                        | v0.3 on 2024-04-14                                                         |
 | [Java](https://github.com/softprops/typeid-java)              | [@softprops](https://github.com/softprops)                                                | v0.2 on 2023-07-04                                                         |
 | [Kotlin](https://github.com/aleris/typeid-kotlin)             | [@aleris](https://github.com/aleris)                                                      | v0.3 on 2024-05-18                                                         |
 | [OCaml](https://github.com/titouancreach/typeid-ocaml)        | [@titouancreach](https://github.com/titouancreach)                                        | v0.3 on 2024-04-22                                                         |
-| [PHP](https://github.com/BombenProdukt/typeid)                | [@BombenProdukt](https://github.com/BombenProdukt)                                        | v0.2 on 2023-07-03                                                         |
+| [PHP](https://github.com/basecodeoy/typeid)                | [@BaseCodeOy](https://github.com/basecodeoy)                                        | v0.3 on 2024-12-06                                                         |
 | [Postgres](https://github.com/blitss/typeid-postgres)         | [@blitss](https://github.com/blitss)                                                      | [v0.3 on 2024-06-24](https://github.com/blitss/typeid-postgres/actions/runs/9637303320/job/26576304134#step:11:288)                                                                                                                                                                            |
-| [Python](https://github.com/akhundMurad/typeid-python)        | [@akhundMurad](https://github.com/akhundMurad)                                            | v0.2 on 2023-06-30                                                         |
+| [Python](https://github.com/akhundMurad/typeid-python)        | [@akhundMurad](https://github.com/akhundMurad)                                            | [v0.3 on 2024-04-19](https://github.com/akhundMurad/typeid-python/releases/tag/v0.3.0)                                                       |
 | [Ruby](https://github.com/broothie/typeid-ruby)               | [@broothie](https://github.com/broothie)                                                  | [v0.3 on 2024-04-13](https://github.com/broothie/typeid-ruby/pull/17)      |
 | [Rust](https://github.com/conradludgate/type-safe-id)         | [@conradludgate](https://github.com/conradludgate)                                        | [v0.3 on 2024-04-12](https://github.com/conradludgate/type-safe-id/pull/1) |
 | [Rust](https://github.com/johnnynotsolucky/strong_id)         | [@johnnynotsolucky](https://github.com/johnnynotsolucky)                                  | [v0.3 on 2024-05-17](https://github.com/johnnynotsolucky/strong_id/commit/10aa50487bbdd851c58a2ed73071a50452441370) |
@@ -81,7 +83,7 @@ Latest spec version: v0.3.0
 | [Swift](https://github.com/Frizlab/swift-typeid)              | [@Frizlab](https://github.com/Frizlab)                                                    | v0.3 on 2024-04-19                                                         |
 | [T-SQL](https://github.com/uniteeio/typeid_tsql)              | [@uniteeio](https://github.com/uniteeio)                                                  | v0.2 on 2023-08-25                                                         |
 | [TypeScript](https://github.com/ongteckwu/typeid-ts)          | [@ongteckwu](https://github.com/ongteckwu)                                                | v0.2 on 2023-06-30                                                         |
-| [Zig](https://github.com/tensorush/zig-typeid)                | [@tensorush](https://github.com/tensorush)                                                | v0.2 on 2023-07-05                                                         |
+| [Zig](https://github.com/nikoksr/typeid-zig)                | [@nikoksr](https://github.com/nikoksr)                                                | v0.3 on 2024-12-29                                                         |
 
 We are looking for community contributions to implement TypeIDs in other languages.
 

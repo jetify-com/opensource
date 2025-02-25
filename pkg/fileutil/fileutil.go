@@ -59,7 +59,7 @@ func EnsureDir(path string) error {
 	if IsDir(path) {
 		return nil
 	}
-	return os.MkdirAll(path, 0700 /* as suggested by xdg spec */)
+	return os.MkdirAll(path, 0o700 /* as suggested by xdg spec */)
 }
 
 func (p Path) EnsureDir() error {
@@ -86,5 +86,5 @@ func WriteFile(path string, data []byte) error {
 		return err
 	}
 	// Write using `renameio` to ensure an atomic write:
-	return renameio.WriteFile(path, data, 0600)
+	return renameio.WriteFile(path, data, 0o600)
 }

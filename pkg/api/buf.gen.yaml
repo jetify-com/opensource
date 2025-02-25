@@ -2,7 +2,7 @@ version: v1
 managed:
   enabled: true
   go_package_prefix:
-    default: go.jetpack.io/pkg/api/gen
+    default: go.jetify.com/pkg/api/gen
 
 plugins:
   - plugin: go

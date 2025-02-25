@@ -240,6 +240,14 @@
               
               
                 <li>
+                  <a href="#pub.sandbox.v1alpha1.MachineType"><span class="badge">E</span>MachineType</a>
+                </li>
+              
+                <li>
+                  <a href="#pub.sandbox.v1alpha1.Mode"><span class="badge">E</span>Mode</a>
+                </li>
+              
+                <li>
                   <a href="#pub.sandbox.v1alpha1.SandboxState"><span class="badge">E</span>SandboxState</a>
                 </li>
               
@@ -321,6 +329,27 @@
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>Optional. Project must belong to organization. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>machine_type</td>
+                  <td><a href="#pub.sandbox.v1alpha1.MachineType">MachineType</a></td>
+                  <td></td>
+                  <td><p>Optional. The machine type to use for the sandbox. Defaults to MACHINE_TYPE_4CPU_16MEM. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>github_token</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>mode</td>
+                  <td><a href="#pub.sandbox.v1alpha1.Mode">Mode</a></td>
+                  <td></td>
+                  <td><p> </p></td>
                 </tr>
               
             </tbody>
@@ -524,7 +553,8 @@ Project must belong to organization </p></td>
                   <td>fetch_status_and_url</td>
                   <td><a href="#bool">bool</a></td>
                   <td></td>
-                  <td><p> </p></td>
+                  <td><p>fetch_status_and_url could be renamed to `fetch_workstation` to populate fields dependent
+on the cloud resource (i.e. Cloud Workstation) </p></td>
                 </tr>
               
                 <tr>
@@ -593,7 +623,7 @@ Project must belong to organization </p></td>
                   <td>repo</td>
                   <td><a href="#string">string</a></td>
                   <td></td>
-                  <td><p> </p></td>
+                  <td><p>repo is the github repository that is cloned. This may be user owned, or the template repo. </p></td>
                 </tr>
               
                 <tr>
@@ -657,6 +687,28 @@ Project must belong to organization </p></td>
                   <td><a href="#string">string</a></td>
                   <td></td>
                   <td><p>Optional. For sandboxes created with a project_id. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>is_trial</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p>True if the sandbox is a trial sandbox. Trial sandboxes are deleted after 14 days and
+have other restrictions. </p></td>
+                </tr>
+              
+                <tr>
+                  <td>mode</td>
+                  <td><a href="#pub.sandbox.v1alpha1.Mode">Mode</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>has_gpu</td>
+                  <td><a href="#bool">bool</a></td>
+                  <td></td>
+                  <td><p> </p></td>
                 </tr>
               
             </tbody>
@@ -770,6 +822,74 @@ Project must belong to organization </p></td>
         
       
 
+      
+        <h3 id="pub.sandbox.v1alpha1.MachineType">MachineType</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>MACHINE_TYPE_UNSPECIFIED</td>
+                <td>0</td>
+                <td><p>Do not use.</p></td>
+              </tr>
+            
+              <tr>
+                <td>MACHINE_TYPE_2CPU_8MEM</td>
+                <td>1</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>MACHINE_TYPE_4CPU_16MEM</td>
+                <td>2</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>MACHINE_TYPE_4CPU_15MEM_1T4</td>
+                <td>3</td>
+                <td><p></p></td>
+              </tr>
+            
+          </tbody>
+        </table>
+      
+        <h3 id="pub.sandbox.v1alpha1.Mode">Mode</h3>
+        <p></p>
+        <table class="enum-table">
+          <thead>
+            <tr><td>Name</td><td>Number</td><td>Description</td></tr>
+          </thead>
+          <tbody>
+            
+              <tr>
+                <td>MODE_UNSPECIFIED</td>
+                <td>0</td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
+                <td>MODE_GIT_REPO</td>
+                <td>1</td>
+                <td><p>MODE_GIT_REPO sets up a sandbox with the provided git repo (at specified `ref`),
+and the working directory set to the `subdir` in the repo.</p></td>
+              </tr>
+            
+              <tr>
+                <td>MODE_TEMPLATE</td>
+                <td>2</td>
+                <td><p>MODE_TEMPLATE sets up a sandbox to use a template. The code from the
+git repo (at specified `ref`) is checked out and the root of the sandbox
+code folder is set to the `subdir` in the repo. The original git repo is
+discarded. A new git repo is initialized.</p></td>
+              </tr>
+            
+          </tbody>
+        </table>
       
         <h3 id="pub.sandbox.v1alpha1.SandboxState">SandboxState</h3>
         <p>SandboxState represents the state of a sandbox.</p>

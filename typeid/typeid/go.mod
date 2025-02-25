@@ -1,16 +1,15 @@
-module go.jetpack.io/typeid-cli
+module go.jetify.com/typeid-cli
 
-go 1.21
-
-toolchain go1.22.1
+go 1.24.0
 
 require (
-	github.com/spf13/cobra v1.8.0
-	go.jetify.com/typeid v1.3.1-0.20240906154819-1fff36d79f37
+	github.com/spf13/cobra v1.9.1
+	go.jetify.com/typeid v1.3.0
 )
 
 require (
-	github.com/gofrs/uuid/v5 v5.3.0 // indirect
+	github.com/gofrs/uuid/v5 v5.3.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
+	github.com/stretchr/testify v1.10.0 // indirect
 )

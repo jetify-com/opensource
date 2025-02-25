@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"connectrpc.com/connect"
-	membersv1alpha1 "go.jetpack.io/pkg/api/gen/priv/members/v1alpha1"
+	membersv1alpha1 "go.jetify.com/pkg/api/gen/priv/members/v1alpha1"
 )
 
 func (c *Client) GetMember(

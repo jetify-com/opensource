@@ -10,7 +10,7 @@
 package membersv1alpha1
 
 import (
-	v1alpha1 "go.jetpack.io/pkg/api/gen/priv/organizations/v1alpha1"
+	v1alpha1 "go.jetify.com/pkg/api/gen/priv/organizations/v1alpha1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

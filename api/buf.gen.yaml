@@ -5,7 +5,7 @@ managed:
   enabled: true
   override:
     - file_option: go_package_prefix
-      value: go.jetpack.io/axiom/api/gen
+      value: go.jetify.com/axiom/api/gen
 inputs:
   - directory: proto
   - module: buf.build/googleapis/googleapis

@@ -70,6 +70,74 @@ proto3.util.setEnumType(SandboxState, "pub.sandbox.v1alpha1.SandboxState", [
 ]);
 
 /**
+ * @generated from enum pub.sandbox.v1alpha1.MachineType
+ */
+export enum MachineType {
+  /**
+   * Do not use.
+   *
+   * @generated from enum value: MACHINE_TYPE_UNSPECIFIED = 0;
+   */
+  MACHINE_TYPE_UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: MACHINE_TYPE_2CPU_8MEM = 1;
+   */
+  MACHINE_TYPE_2CPU_8MEM = 1,
+
+  /**
+   * @generated from enum value: MACHINE_TYPE_4CPU_16MEM = 2;
+   */
+  MACHINE_TYPE_4CPU_16MEM = 2,
+
+  /**
+   * @generated from enum value: MACHINE_TYPE_4CPU_15MEM_1T4 = 3;
+   */
+  MACHINE_TYPE_4CPU_15MEM_1T4 = 3,
+}
+// Retrieve enum metadata with: proto3.getEnumType(MachineType)
+proto3.util.setEnumType(MachineType, "pub.sandbox.v1alpha1.MachineType", [
+  { no: 0, name: "MACHINE_TYPE_UNSPECIFIED" },
+  { no: 1, name: "MACHINE_TYPE_2CPU_8MEM" },
+  { no: 2, name: "MACHINE_TYPE_4CPU_16MEM" },
+  { no: 3, name: "MACHINE_TYPE_4CPU_15MEM_1T4" },
+]);
+
+/**
+ * @generated from enum pub.sandbox.v1alpha1.Mode
+ */
+export enum Mode {
+  /**
+   * @generated from enum value: MODE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * MODE_GIT_REPO sets up a sandbox with the provided git repo (at specified `ref`),
+   * and the working directory set to the `subdir` in the repo.
+   *
+   * @generated from enum value: MODE_GIT_REPO = 1;
+   */
+  GIT_REPO = 1,
+
+  /**
+   * MODE_TEMPLATE sets up a sandbox to use a template. The code from the
+   * git repo (at specified `ref`) is checked out and the root of the sandbox
+   * code folder is set to the `subdir` in the repo. The original git repo is
+   * discarded. A new git repo is initialized.
+   *
+   * @generated from enum value: MODE_TEMPLATE = 2;
+   */
+  TEMPLATE = 2,
+}
+// Retrieve enum metadata with: proto3.getEnumType(Mode)
+proto3.util.setEnumType(Mode, "pub.sandbox.v1alpha1.Mode", [
+  { no: 0, name: "MODE_UNSPECIFIED" },
+  { no: 1, name: "MODE_GIT_REPO" },
+  { no: 2, name: "MODE_TEMPLATE" },
+]);
+
+/**
  * @generated from message pub.sandbox.v1alpha1.CreateSandboxRequest
  */
 export class CreateSandboxRequest extends Message<CreateSandboxRequest> {
@@ -114,6 +182,23 @@ export class CreateSandboxRequest extends Message<CreateSandboxRequest> {
    */
   projectId = "";
 
+  /**
+   * Optional. The machine type to use for the sandbox. Defaults to MACHINE_TYPE_4CPU_16MEM.
+   *
+   * @generated from field: pub.sandbox.v1alpha1.MachineType machine_type = 8;
+   */
+  machineType = MachineType.MACHINE_TYPE_UNSPECIFIED;
+
+  /**
+   * @generated from field: string github_token = 9;
+   */
+  githubToken = "";
+
+  /**
+   * @generated from field: pub.sandbox.v1alpha1.Mode mode = 10;
+   */
+  mode = Mode.UNSPECIFIED;
+
   constructor(data?: PartialMessage<CreateSandboxRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -129,6 +214,9 @@ export class CreateSandboxRequest extends Message<CreateSandboxRequest> {
     { no: 5, name: "environment_variables", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
     { no: 6, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 7, name: "project_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 8, name: "machine_type", kind: "enum", T: proto3.getEnumType(MachineType) },
+    { no: 9, name: "github_token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateSandboxRequest {
@@ -396,6 +484,9 @@ export class ListSandboxesFilter extends Message<ListSandboxesFilter> {
  */
 export class ListSandboxesRequest extends Message<ListSandboxesRequest> {
   /**
+   * fetch_status_and_url could be renamed to `fetch_workstation` to populate fields dependent
+   * on the cloud resource (i.e. Cloud Workstation)
+   *
    * @generated from field: bool fetch_status_and_url = 1;
    */
   fetchStatusAndUrl = false;
@@ -642,6 +733,8 @@ export class Sandbox extends Message<Sandbox> {
   externalBillingTag = "";
 
   /**
+   * repo is the github repository that is cloned. This may be user owned, or the template repo.
+   *
    * @generated from field: string repo = 3;
    */
   repo = "";
@@ -705,6 +798,24 @@ export class Sandbox extends Message<Sandbox> {
    */
   projectId = "";
 
+  /**
+   * True if the sandbox is a trial sandbox. Trial sandboxes are deleted after 14 days and
+   * have other restrictions.
+   *
+   * @generated from field: bool is_trial = 13;
+   */
+  isTrial = false;
+
+  /**
+   * @generated from field: pub.sandbox.v1alpha1.Mode mode = 14;
+   */
+  mode = Mode.UNSPECIFIED;
+
+  /**
+   * @generated from field: bool has_gpu = 15;
+   */
+  hasGpu = false;
+
   constructor(data?: PartialMessage<Sandbox>) {
     super();
     proto3.util.initPartial(data, this);
@@ -725,6 +836,9 @@ export class Sandbox extends Message<Sandbox> {
     { no: 10, name: "updated_at", kind: "message", T: Timestamp },
     { no: 11, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 12, name: "project_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 13, name: "is_trial", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 14, name: "mode", kind: "enum", T: proto3.getEnumType(Mode) },
+    { no: 15, name: "has_gpu", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Sandbox {
