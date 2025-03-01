@@ -279,6 +279,8 @@ A list of helpful articles and resources about error handling in Go.
   by Carl Scharenberg\
   A practical guide to using Go 1.13's errors.As() function to safely
   type-assert wrapped errors.
+- [Making Go errors play nice with Sentry](https://incident.io/blog/golang-errors) by Lawrence Jones\
+  Explains how to optimize error reporting in Go with Sentry, focusing on creating consistent stacktraces and building custom error handling solutions.
 
 ### Talks
 
