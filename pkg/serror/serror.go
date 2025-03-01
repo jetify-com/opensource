@@ -12,31 +12,6 @@ import (
 	"github.com/lmittmann/tint"
 )
 
-// Well-known keys for structured error attributes
-const (
-	// MessageKey is the key used for the main error message.
-	// The associated value is a string.
-	MessageKey = "msg"
-
-	// CauseKey is the key used for the underlying wrapped error.
-	// The associated value is an error.
-	CauseKey = "cause"
-
-	// SourceKey is the key used for for the source file and line of the error site.
-	// The associated value is a *[Source].
-	SourceKey = "source"
-
-	// ErrorCodeKey is the key used for the status code associated with the error.
-	// In the context of HTTP, this is the status code. In the context of
-	// an application, this is an application-specific error code.
-	// The associated value is an int.
-	ErrorCodeKey = "code"
-
-	// TimeKey is the key used for the time when the error was created.
-	// The associated value is a [time.Time].
-	TimeKey = "time"
-)
-
 // Error represents a structured error with attributes that conform to slog conventions.
 // Error is immutable - methods like With() return new instances rather than
 // modifying the original error.
