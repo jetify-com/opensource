@@ -10,13 +10,14 @@ import (
 	"time"
 
 	"github.com/lmittmann/tint"
+	"go.jetify.com/pkg/serror/internal/record"
 )
 
 // Error represents a structured error with attributes that conform to slog conventions.
 // Error is immutable - methods like With() return new instances rather than
 // modifying the original error.
 type Error struct {
-	record slog.Record
+	record record.Record
 	cause  error
 }
 
@@ -45,7 +46,7 @@ func New(msg string, args ...any) Error {
 func new(t time.Time, msg string, cause error, pc uintptr) Error {
 	return Error{
 		cause:  cause,
-		record: slog.NewRecord(t, slog.LevelError, msg, pc),
+		record: record.NewRecord(t, msg, pc),
 	}
 }
 
@@ -76,8 +77,8 @@ func (e Error) Error() string {
 }
 
 func (e Error) format(w io.Writer) {
-	// Create a new record with all the information
-	record := e.record.Clone()
+	// Create an slog.Record
+	record := e.record.ToSlog()
 	record.Time = time.Time{} // Set time to zero so we don't print it
 
 	// If we have a cause, add it as an error attribute
@@ -131,15 +132,18 @@ func (e Error) clone() Error {
 // It returns a structured representation of the error including its message, attributes,
 // and cause if present.
 func (e Error) LogValue() slog.Value {
-	attrs := make([]slog.Attr, 0)
-	e.record.Attrs(func(a slog.Attr) bool {
-		attrs = append(attrs, a)
-		return true
-	})
+	attrs := make([]slog.Attr, e.record.NumAttrs()+2)
 
 	// Add the message
 	attrs = append(attrs, slog.String("msg", e.record.Message))
 
+	e.record.Attrs(func(a record.Attr) bool {
+		attrs = append(attrs, a.ToSlog())
+		return true
+	})
+	// TODO: Change to use.Error as the message?
+
+	// Add the cause
 	if e.cause != nil {
 		attrs = append(attrs, slog.Any("cause", e.cause))
 	}

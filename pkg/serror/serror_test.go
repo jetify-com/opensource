@@ -282,8 +282,8 @@ func TestLogValue(t *testing.T) {
 		{
 			name: "basic error",
 			err:  New("operation failed", "status", 500),
-			wantLogs: `level=ERROR msg="log error" error.status=500 ` +
-				`error.msg="operation failed"` + "\n",
+			wantLogs: `level=ERROR msg="log error" error.msg="operation failed" ` +
+				`error.status=500` + "\n",
 		},
 		{
 			name: "error with cause",
@@ -292,9 +292,9 @@ func TestLogValue(t *testing.T) {
 				"query failed",
 				"query_id", "abc123",
 			),
-			wantLogs: `level=ERROR msg="log error" error.query_id=abc123 ` +
-				`error.msg="query failed" error.cause.table=users ` +
-				`error.cause.msg="database error"` + "\n",
+			wantLogs: `level=ERROR msg="log error" error.msg="query failed" ` +
+				`error.query_id=abc123 error.cause.msg="database error" ` +
+				`error.cause.table=users` + "\n",
 		},
 		{
 			name: "error with groups",
@@ -308,9 +308,9 @@ func TestLogValue(t *testing.T) {
 					String("path", "/api/v1/users"),
 				),
 			),
-			wantLogs: `level=ERROR msg="log error" error.user.id=123 ` +
-				`error.user.name=alice error.request.status=400 ` +
-				`error.request.path=/api/v1/users error.msg="validation failed"` + "\n",
+			wantLogs: `level=ERROR msg="log error" error.msg="validation failed" ` +
+				`error.user.id=123 error.user.name=alice error.request.status=400 ` +
+				`error.request.path=/api/v1/users` + "\n",
 		},
 		{
 			name: "deeply nested error",
@@ -323,10 +323,10 @@ func TestLogValue(t *testing.T) {
 				"init failed",
 				"service", "api",
 			),
-			wantLogs: `level=ERROR msg="log error" error.service=api ` +
-				`error.msg="init failed" error.cause.type=config ` +
-				`error.cause.msg="load failed" error.cause.cause.file=config.json ` +
-				`error.cause.cause.msg="root cause"` + "\n",
+			wantLogs: `level=ERROR msg="log error" error.msg="init failed" ` +
+				`error.service=api error.cause.msg="load failed" ` +
+				`error.cause.type=config error.cause.cause.msg="root cause" ` +
+				`error.cause.cause.file=config.json` + "\n",
 		},
 	}
 
@@ -355,7 +355,7 @@ func assertError(t *testing.T, err Error, want expectedError) {
 	}
 
 	var flattened []Attr
-	err.record.Attrs(func(a slog.Attr) bool {
+	err.record.Attrs(func(a Attr) bool {
 		flattened = append(flattened, flattenAttrs(a)...)
 		return true
 	})
@@ -367,8 +367,8 @@ func assertError(t *testing.T, err Error, want expectedError) {
 	}
 }
 
-func flattenAttrs(attr slog.Attr) []Attr {
-	if attr.Value.Kind() == slog.KindGroup {
+func flattenAttrs(attr Attr) []Attr {
+	if attr.Value.Kind() == KindGroup {
 		var results []Attr
 		for _, ga := range attr.Value.Group() {
 			for _, sub := range flattenAttrs(ga) {

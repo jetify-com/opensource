@@ -3,7 +3,6 @@ package serror
 import (
 	"encoding/json"
 	"errors"
-	"log/slog"
 	"time"
 )
 
@@ -49,7 +48,7 @@ func (e Error) toMap() map[string]any {
 	}
 
 	// Walk through all attributes and add them to the map
-	e.record.Attrs(func(a slog.Attr) bool {
+	e.record.Attrs(func(a Attr) bool {
 		addAttr(jsonMap, a)
 		return true
 	})
@@ -96,8 +95,8 @@ func extractCause(jsonMap map[string]any) error {
 
 // addAttr adds an Attr to a map, handling groups recursively.
 // Special types (Int64, Uint64, Duration, Time) are wrapped to preserve their type information.
-func addAttr(attrMap map[string]any, attr slog.Attr) {
-	if attr.Value.Kind() == slog.KindGroup {
+func addAttr(attrMap map[string]any, attr Attr) {
+	if attr.Value.Kind() == KindGroup {
 		groupMap := make(map[string]any)
 		for _, groupAttr := range attr.Value.Group() {
 			addAttr(groupMap, groupAttr)
@@ -107,17 +106,17 @@ func addAttr(attrMap map[string]any, attr slog.Attr) {
 	}
 
 	switch attr.Value.Kind() {
-	case slog.KindInt64, slog.KindUint64:
+	case KindInt64, KindUint64:
 		attrMap[attr.Key] = typedValue{
 			Kind:  attr.Value.Kind().String(),
 			Value: attr.Value.Any(),
 		}
-	case slog.KindDuration:
+	case KindDuration:
 		attrMap[attr.Key] = typedValue{
 			Kind:  attr.Value.Kind().String(),
 			Value: attr.Value.Duration().String(),
 		}
-	case slog.KindTime:
+	case KindTime:
 		attrMap[attr.Key] = typedValue{
 			Kind:  attr.Value.Kind().String(),
 			Value: attr.Value.Time().Format(time.RFC3339),

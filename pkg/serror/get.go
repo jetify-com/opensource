@@ -1,8 +1,9 @@
 package serror
 
 import (
-	"log/slog"
 	"strings"
+
+	"go.jetify.com/pkg/serror/internal/record"
 )
 
 // Get returns the Value for a given path using dot notation.
@@ -12,9 +13,9 @@ import (
 func (e Error) Get(path string) Value {
 	parts := strings.Split(path, ".")
 
-	result := slog.Value{}
-	e.record.Attrs(func(attr slog.Attr) bool {
-		if value := findValue(attr, parts); !value.Equal(slog.Value{}) {
+	result := record.Value{}
+	e.record.Attrs(func(attr Attr) bool {
+		if value := findValue(attr, parts); !value.Equal(Value{}) {
 			result = value
 			return false // stop iteration
 		}
@@ -25,14 +26,14 @@ func (e Error) Get(path string) Value {
 }
 
 // findValue recursively searches for a value in an Attr using the path parts
-func findValue(attr slog.Attr, parts []string) slog.Value {
+func findValue(attr Attr, parts []string) Value {
 	if len(parts) == 0 {
-		return slog.Value{}
+		return Value{}
 	}
 
 	// Check if this attribute matches the first part
 	if attr.Key != parts[0] {
-		return slog.Value{}
+		return Value{}
 	}
 
 	// If this is the last part, return the value
@@ -41,16 +42,16 @@ func findValue(attr slog.Attr, parts []string) slog.Value {
 	}
 
 	// If we have more parts, this must be a group
-	if attr.Value.Kind() != slog.KindGroup {
-		return slog.Value{}
+	if attr.Value.Kind() != KindGroup {
+		return Value{}
 	}
 
 	// Search through the group's attributes
 	for _, groupAttr := range attr.Value.Group() {
-		if value := findValue(groupAttr, parts[1:]); !value.Equal(slog.Value{}) {
+		if value := findValue(groupAttr, parts[1:]); !value.Equal(Value{}) {
 			return value
 		}
 	}
 
-	return slog.Value{}
+	return Value{}
 }

@@ -1,5 +1,8 @@
 package serror
 
-import "log/slog"
+import "go.jetify.com/pkg/serror/internal/record"
 
-type Value = slog.Value
+type (
+	Value  = record.Value
+	Record = record.Record
+)
