@@ -94,7 +94,7 @@ func extractCause(jsonMap map[string]any) error {
 }
 
 // addAttr adds an Attr to a map, handling groups recursively.
-// Special types (Int64, Uint64, Duration, Time) are wrapped to preserve their type information.
+// Special types (Int, Int64, Uint64, Duration, Time) are wrapped to preserve their type information.
 func addAttr(attrMap map[string]any, attr Attr) {
 	if attr.Value.Kind() == KindGroup {
 		groupMap := make(map[string]any)
@@ -106,7 +106,7 @@ func addAttr(attrMap map[string]any, attr Attr) {
 	}
 
 	switch attr.Value.Kind() {
-	case KindInt64, KindUint64:
+	case KindInt, KindInt64, KindUint64:
 		attrMap[attr.Key] = typedValue{
 			Kind:  attr.Value.Kind().String(),
 			Value: attr.Value.Any(),
@@ -129,65 +129,76 @@ func addAttr(attrMap map[string]any, attr Attr) {
 // mapToAttrs converts a map to a slice of attribute arguments.
 // It handles nested groups and unwraps specially encoded values.
 func mapToAttrs(jsonMap map[string]any) []any {
-	attrs := make([]any, 0, len(jsonMap)*2)
-	for key, v := range jsonMap {
-		if groupMap, ok := v.(map[string]any); ok {
-			if val, ok := handleTypedValue(groupMap); ok {
-				attrs = append(attrs, key, val)
-				continue
-			}
-			groupAttrs := mapToAttrs(groupMap)
-			attrs = append(attrs, Group(key, groupAttrs...))
+	var attrs []any
+	for k, v := range jsonMap {
+		if k == "message" || k == "cause" {
 			continue
 		}
-		attrs = append(attrs, key, v)
+
+		if vMap, ok := v.(map[string]any); ok {
+			// Check if it's a typed value
+			if kind, hasKind := vMap["kind"].(string); hasKind && vMap["value"] != nil {
+				switch kind {
+				case "Int":
+					if num, ok := toNumber(vMap["value"]); ok {
+						attrs = append(attrs, k, int(num))
+						continue
+					}
+				case "Int64":
+					if num, ok := toNumber(vMap["value"]); ok {
+						attrs = append(attrs, k, int64(num))
+						continue
+					}
+				case "Uint64":
+					if num, ok := toNumber(vMap["value"]); ok {
+						attrs = append(attrs, k, uint64(num))
+						continue
+					}
+				case "Duration":
+					if s, ok := vMap["value"].(string); ok {
+						if d, err := time.ParseDuration(s); err == nil {
+							attrs = append(attrs, k, d)
+							continue
+						}
+					}
+				case "Time":
+					if s, ok := vMap["value"].(string); ok {
+						if t, err := time.Parse(time.RFC3339, s); err == nil {
+							attrs = append(attrs, k, t)
+							continue
+						}
+					}
+				}
+			}
+
+			// It's a regular map/group - handle it as a group
+			groupAttrs := mapToAttrs(vMap)
+			attrs = append(attrs, Group(k, groupAttrs...))
+		} else {
+			// It's a regular attribute
+			attrs = append(attrs, k, v)
+		}
 	}
 	return attrs
 }
 
-// handleTypedValue attempts to convert a map to a typed value.
-// Returns the value and true if the map represents a supported type
-// (Int64, Uint64, Duration, or Time), otherwise returns nil and false.
-func handleTypedValue(groupMap map[string]any) (any, bool) {
-	kind, ok := groupMap["kind"].(string)
-	if !ok || groupMap["value"] == nil {
-		return nil, false
+// toNumber converts various JSON number formats to float64
+func toNumber(v any) (float64, bool) {
+	switch n := v.(type) {
+	case float64:
+		return n, true
+	case float32:
+		return float64(n), true
+	case int:
+		return float64(n), true
+	case int64:
+		return float64(n), true
+	case uint64:
+		return float64(n), true
+	case json.Number:
+		if f, err := n.Float64(); err == nil {
+			return f, true
+		}
 	}
-
-	switch kind {
-	case "Int64":
-		n, ok := groupMap["value"].(float64)
-		if !ok {
-			return nil, false
-		}
-		return int64(n), true
-	case "Uint64":
-		n, ok := groupMap["value"].(float64)
-		if !ok {
-			return nil, false
-		}
-		return uint64(n), true
-	case "Duration":
-		s, ok := groupMap["value"].(string)
-		if !ok {
-			return nil, false
-		}
-		d, err := time.ParseDuration(s)
-		if err != nil {
-			return nil, false
-		}
-		return d, true
-	case "Time":
-		s, ok := groupMap["value"].(string)
-		if !ok {
-			return nil, false
-		}
-		t, err := time.Parse(time.RFC3339, s)
-		if err != nil {
-			return nil, false
-		}
-		return t, true
-	default:
-		return nil, false
-	}
+	return 0, false
 }

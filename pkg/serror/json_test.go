@@ -52,7 +52,7 @@ func TestJSON(t *testing.T) {
 			wantJSON: `{
 				"message": "test int",
 				"field": {
-					"kind": "Int64",
+					"kind": "Int",
 					"value": -123
 				}
 			}`,
@@ -100,7 +100,7 @@ func TestJSON(t *testing.T) {
 				"outer": {
 					"inner": "value",
 					"number": {
-						"kind": "Int64",
+						"kind": "Int",
 						"value": 42
 					}
 				}
@@ -116,7 +116,7 @@ func TestJSON(t *testing.T) {
 			wantJSON: `{
 				"message": "outer error",
 				"code": {
-					"kind": "Int64",
+					"kind": "Int",
 					"value": 500
 				},
 				"cause": {
