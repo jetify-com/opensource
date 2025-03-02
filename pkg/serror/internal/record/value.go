@@ -250,11 +250,11 @@ func AnyValue(v any) Value {
 	case uintptr:
 		return Uint64Value(uint64(v))
 	case int8:
-		return Int64Value(int64(v))
+		return IntValue(int(v))
 	case int16:
-		return Int64Value(int64(v))
+		return IntValue(int(v))
 	case int32:
-		return Int64Value(int64(v))
+		return IntValue(int(v))
 	case float64:
 		return Float64Value(v)
 	case float32:

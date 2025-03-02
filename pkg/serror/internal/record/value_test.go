@@ -129,6 +129,7 @@ func TestValueNoAlloc(t *testing.T) {
 }
 
 func TestAnyValue(t *testing.T) {
+	testTime := time.Date(2000, 1, 2, 3, 4, 5, 6, time.UTC)
 	for _, test := range []struct {
 		in   any
 		want Value
@@ -148,9 +149,9 @@ func TestAnyValue(t *testing.T) {
 		{uint32(5), Uint64Value(5)},
 		{uint64(6), Uint64Value(6)},
 		{uintptr(7), Uint64Value(7)},
-		{int8(8), Int64Value(8)},
-		{int16(9), Int64Value(9)},
-		{int32(10), Int64Value(10)},
+		{int8(8), IntValue(8)},
+		{int16(9), IntValue(9)},
+		{int32(10), IntValue(10)},
 		{int64(11), Int64Value(11)},
 	} {
 		got := AnyValue(test.in)
@@ -294,4 +295,35 @@ func BenchmarkUnsafeStrings(b *testing.B) {
 		}
 	}
 	_ = d
+}
+
+func TestIntegerTypeConversions(t *testing.T) {
+	// Test all integer types to confirm consistent conversion behavior
+	tests := []struct {
+		name     string
+		value    any
+		expected Kind
+	}{
+		{"int", int(42), KindInt},
+		{"int8", int8(8), KindInt},
+		{"int16", int16(16), KindInt},
+		{"int32", int32(32), KindInt},
+		{"int64", int64(64), KindInt64},
+		{"uint", uint(42), KindUint64},
+		{"uint8", uint8(8), KindUint64},
+		{"uint16", uint16(16), KindUint64},
+		{"uint32", uint32(32), KindUint64},
+		{"uint64", uint64(64), KindUint64},
+		{"uintptr", uintptr(100), KindUint64},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			value := AnyValue(tc.value)
+			got := value.Kind()
+			if got != tc.expected {
+				t.Errorf("Expected %v to be converted to Kind %v, got %v", tc.value, tc.expected, got)
+			}
+		})
+	}
 }
