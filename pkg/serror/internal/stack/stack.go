@@ -27,14 +27,14 @@ func (s Stack) format(sep string, invert bool) []string {
 
 // StackFrame stores a frame's runtime information in a human readable format.
 type StackFrame struct {
-	Name string
-	File string
-	Line int
+	Function string
+	File     string
+	Line     int
 }
 
 // format returns a formatted stack frame.
 func (f *StackFrame) format(sep string) string {
-	return fmt.Sprintf("%v%v%v%v%v", f.Name, sep, f.File, sep, f.Line)
+	return fmt.Sprintf("%v%v%v%v%v", f.Function, sep, f.File, sep, f.Line)
 }
 
 // caller returns a single stack frame. the argument skip is the number of stack frames
@@ -60,12 +60,12 @@ func (f frame) get() StackFrame {
 	frame, _ := frames.Next()
 
 	i := strings.LastIndex(frame.Function, "/")
-	name := frame.Function[i+1:]
+	function := frame.Function[i+1:]
 
 	return StackFrame{
-		Name: name,
-		File: frame.File,
-		Line: frame.Line,
+		Function: function,
+		File:     frame.File,
+		Line:     frame.Line,
 	}
 }
 
@@ -111,11 +111,11 @@ func (s *stack) get() []StackFrame {
 	for {
 		frame, more := frames.Next()
 		i := strings.LastIndex(frame.Function, "/")
-		name := frame.Function[i+1:]
+		function := frame.Function[i+1:]
 		stackFrames = append(stackFrames, StackFrame{
-			Name: name,
-			File: frame.File,
-			Line: frame.Line,
+			Function: function,
+			File:     frame.File,
+			Line:     frame.Line,
 		})
 		if !more {
 			break
@@ -129,7 +129,7 @@ func (s *stack) get() []StackFrame {
 func (s *stack) isGlobal() bool {
 	frames := s.get()
 	for _, f := range frames {
-		if strings.ToLower(f.Name) == "runtime.doinit" {
+		if strings.ToLower(f.Function) == "runtime.doinit" {
 			return true
 		}
 	}

@@ -11,9 +11,9 @@ import (
 func TestStackFormat(t *testing.T) {
 	// Create a test stack
 	testStack := Stack{
-		{Name: "function1", File: "file1.go", Line: 10},
-		{Name: "function2", File: "file2.go", Line: 20},
-		{Name: "function3", File: "file3.go", Line: 30},
+		{Function: "function1", File: "file1.go", Line: 10},
+		{Function: "function2", File: "file2.go", Line: 20},
+		{Function: "function3", File: "file3.go", Line: 30},
 	}
 
 	tests := []struct {
@@ -54,9 +54,9 @@ func TestStackFormat(t *testing.T) {
 
 func TestStackFrameFormat(t *testing.T) {
 	frame := StackFrame{
-		Name: "TestFunction",
-		File: "test_file.go",
-		Line: 42,
+		Function: "TestFunction",
+		File:     "test_file.go",
+		Line:     42,
 	}
 
 	tests := []struct {
@@ -95,7 +95,7 @@ func TestCaller(t *testing.T) {
 	assert.NotNil(t, c, "Caller should return a non-nil frame")
 
 	frame := c.get()
-	assert.NotEmpty(t, frame.Name, "Frame name should not be empty")
+	assert.NotEmpty(t, frame.Function, "Frame name should not be empty")
 	assert.NotEmpty(t, frame.File, "Frame file should not be empty")
 	assert.Greater(t, frame.Line, 0, "Line number should be positive")
 }
@@ -110,7 +110,7 @@ func TestCallers(t *testing.T) {
 	assert.GreaterOrEqual(t, len(stackFrames), 1, "Stack should contain at least the test function frame")
 
 	// First frame should be the current test function
-	assert.Contains(t, stackFrames[0].Name, "TestCallers", "First frame should be TestCallers")
+	assert.Contains(t, stackFrames[0].Function, "TestCallers", "First frame should be TestCallers")
 }
 
 func TestStackGet(t *testing.T) {
@@ -123,7 +123,7 @@ func TestStackGet(t *testing.T) {
 	assert.GreaterOrEqual(t, len(stackFrames), 1, "Stack should contain at least the test function frame")
 
 	// Basic validation
-	assert.Contains(t, stackFrames[0].Name, "TestStackGet", "First frame should refer to the test function")
+	assert.Contains(t, stackFrames[0].Function, "TestStackGet", "First frame should refer to the test function")
 }
 
 func TestFramePC(t *testing.T) {
@@ -146,7 +146,7 @@ func TestFrameGet(t *testing.T) {
 	stackFrame := f.get()
 
 	// Check if frame contains expected data for the current function
-	assert.Contains(t, stackFrame.Name, "TestFrameGet", "Frame name should contain TestFrameGet")
+	assert.Contains(t, stackFrame.Function, "TestFrameGet", "Frame name should contain TestFrameGet")
 	assert.Contains(t, stackFrame.File, "stack_test.go", "Frame file should contain stack_test.go")
 	assert.Greater(t, stackFrame.Line, 0, "Line number should be positive")
 }
@@ -219,14 +219,14 @@ func TestStackIsGlobal(t *testing.T) {
 	// More direct test approach for the positive case
 	// Create a small helper function that just tests the logic directly
 	testStack := []StackFrame{
-		{Name: "some.function", File: "file.go", Line: 10},
-		{Name: "runtime.doinit", File: "runtime.go", Line: 100}, // This should trigger isGlobal
-		{Name: "other.function", File: "other.go", Line: 20},
+		{Function: "some.function", File: "file.go", Line: 10},
+		{Function: "runtime.doinit", File: "runtime.go", Line: 100}, // This should trigger isGlobal
+		{Function: "other.function", File: "other.go", Line: 20},
 	}
 
 	isGlobalResult := func(frames []StackFrame) bool {
 		for _, f := range frames {
-			if strings.ToLower(f.Name) == "runtime.doinit" {
+			if strings.ToLower(f.Function) == "runtime.doinit" {
 				return true
 			}
 		}
