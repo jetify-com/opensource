@@ -26,6 +26,8 @@ func TestValueEqual(t *testing.T) {
 	var x, y int
 	vals := []Value{
 		{},
+		IntValue(1),
+		IntValue(2),
 		Int64Value(1),
 		Int64Value(2),
 		Float64Value(3.5),
@@ -73,6 +75,7 @@ func TestValueString(t *testing.T) {
 		v    Value
 		want string
 	}{
+		{IntValue(-2), "-2"},
 		{Int64Value(-3), "-3"},
 		{Uint64Value(1), "1"},
 		{Float64Value(.15), "0.15"},
@@ -91,6 +94,7 @@ func TestValueString(t *testing.T) {
 func TestValueNoAlloc(t *testing.T) {
 	// Assign values just to make sure the compiler doesn't optimize away the statements.
 	var (
+		n  int
 		i  int64
 		u  uint64
 		f  float64
@@ -102,6 +106,7 @@ func TestValueNoAlloc(t *testing.T) {
 		tm time.Time
 	)
 	a := int(testing.AllocsPerRun(5, func() {
+		n = IntValue(1).Int()
 		i = Int64Value(1).Int64()
 		u = Uint64Value(1).Uint64()
 		f = Float64Value(1).Float64()
@@ -114,6 +119,7 @@ func TestValueNoAlloc(t *testing.T) {
 	if a != 0 {
 		t.Errorf("got %d allocs, want zero", a)
 	}
+	_ = n
 	_ = u
 	_ = f
 	_ = b
@@ -162,6 +168,7 @@ func TestValueAny(t *testing.T) {
 		time.UTC, // time.Locations treated specially...
 		KindBool, // ...as are Kinds
 		[]Attr{Int("a", 1)},
+		int(2),
 		int64(2),
 		uint64(3),
 		true,

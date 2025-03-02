@@ -27,7 +27,7 @@ func Int64(key string, value int64) Attr {
 // Int converts an int to an int64 and returns
 // an Attr with that value.
 func Int(key string, value int) Attr {
-	return Int64(key, int64(value))
+	return Attr{key, IntValue(value)}
 }
 
 // Uint64 returns an Attr for a uint64.

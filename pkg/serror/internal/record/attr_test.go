@@ -12,6 +12,7 @@ import (
 func TestAttrNoAlloc(t *testing.T) {
 	// Assign values just to make sure the compiler doesn't optimize away the statements.
 	var (
+		n int
 		i int64
 		u uint64
 		f float64
@@ -22,6 +23,7 @@ func TestAttrNoAlloc(t *testing.T) {
 		d time.Duration
 	)
 	a := int(testing.AllocsPerRun(5, func() {
+		n = Int("key", 1).Value.Int()
 		i = Int64("key", 1).Value.Int64()
 		u = Uint64("key", 1).Value.Uint64()
 		f = Float64("key", 1).Value.Float64()
@@ -33,6 +35,7 @@ func TestAttrNoAlloc(t *testing.T) {
 	if a != 0 {
 		t.Errorf("got %d allocs, want zero", a)
 	}
+	_ = n
 	_ = u
 	_ = f
 	_ = b
@@ -42,6 +45,7 @@ func TestAttrNoAlloc(t *testing.T) {
 
 func BenchmarkAttrString(b *testing.B) {
 	var (
+		ns string
 		is string
 		u  string
 		f  string
@@ -54,6 +58,7 @@ func BenchmarkAttrString(b *testing.B) {
 	)
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
+		ns = Int("key", 1).String()
 		is = Int64("key", 1).String()
 		u = Uint64("key", 1).String()
 		f = Float64("key", 1).String()
@@ -62,6 +67,7 @@ func BenchmarkAttrString(b *testing.B) {
 		ds = Duration("key", d).String()
 		x = Any("key", p).String()
 	}
+	_ = ns
 	_ = u
 	_ = f
 	_ = bn

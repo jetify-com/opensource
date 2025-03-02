@@ -22,6 +22,7 @@ const (
 	KindUint64    = record.KindUint64
 	KindGroup     = record.KindGroup
 	KindLogValuer = record.KindLogValuer
+	KindInt       = record.KindInt
 )
 
 // An Attr is a key-value pair.

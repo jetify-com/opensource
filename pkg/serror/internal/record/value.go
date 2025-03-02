@@ -57,6 +57,8 @@ const (
 	KindUint64
 	KindGroup
 	KindLogValuer
+	// New types added for serror (not in slog)
+	KindInt
 )
 
 var kindStrings = []string{
@@ -70,6 +72,7 @@ var kindStrings = []string{
 	"Uint64",
 	"Group",
 	"LogValuer",
+	"Int",
 }
 
 func (k Kind) String() string {
@@ -98,6 +101,8 @@ func (v Value) Kind() Kind {
 		return KindLogValuer
 	case kind: // a kind is just a wrapper for a Kind
 		return KindAny
+	case int:
+		return KindInt
 	default:
 		return KindAny
 	}
@@ -112,7 +117,7 @@ func StringValue(value string) Value {
 
 // IntValue returns a [Value] for an int.
 func IntValue(v int) Value {
-	return Int64Value(int64(v))
+	return Value{num: uint64(v), any: KindInt}
 }
 
 // Int64Value returns a [Value] for an int64.
@@ -223,7 +228,7 @@ func AnyValue(v any) Value {
 	case string:
 		return StringValue(v)
 	case int:
-		return Int64Value(int64(v))
+		return IntValue(v)
 	case uint:
 		return Uint64Value(uint64(v))
 	case int64:
@@ -245,11 +250,11 @@ func AnyValue(v any) Value {
 	case uintptr:
 		return Uint64Value(uint64(v))
 	case int8:
-		return Int64Value(int64(v))
+		return IntValue(int(v))
 	case int16:
-		return Int64Value(int64(v))
+		return IntValue(int(v))
 	case int32:
-		return Int64Value(int64(v))
+		return IntValue(int(v))
 	case float64:
 		return Float64Value(v)
 	case float32:
@@ -293,6 +298,8 @@ func (v Value) Any() any {
 		return v.duration()
 	case KindTime:
 		return v.time()
+	case KindInt:
+		return int(v.num)
 	default:
 		panic(fmt.Sprintf("bad kind: %s", v.Kind()))
 	}
@@ -311,6 +318,13 @@ func (v Value) String() string {
 
 func (v Value) str() string {
 	return unsafe.String(v.any.(stringptr), v.num)
+}
+
+func (v Value) Int() int {
+	if g, w := v.Kind(), KindInt; g != w {
+		panic(fmt.Sprintf("Value kind is %s, not %s", g, w))
+	}
+	return int(v.num)
 }
 
 // Int64 returns v's value as an int64. It panics
@@ -425,7 +439,7 @@ func (v Value) Equal(w Value) bool {
 		return false
 	}
 	switch k1 {
-	case KindInt64, KindUint64, KindBool, KindDuration:
+	case KindInt, KindInt64, KindUint64, KindBool, KindDuration:
 		return v.num == w.num
 	case KindString:
 		return v.str() == w.str()
@@ -459,7 +473,7 @@ func (v Value) append(dst []byte) []byte {
 	switch v.Kind() {
 	case KindString:
 		return append(dst, v.str()...)
-	case KindInt64:
+	case KindInt, KindInt64:
 		return strconv.AppendInt(dst, int64(v.num), 10)
 	case KindUint64:
 		return strconv.AppendUint(dst, v.num, 10)

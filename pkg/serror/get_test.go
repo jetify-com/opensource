@@ -27,7 +27,7 @@ func TestGet(t *testing.T) {
 		),
 		Group("request",
 			String("path", "/api/users"),
-			Int("size", 256),
+			Int64("size", 3000000000),
 		),
 	)
 
@@ -36,15 +36,15 @@ func TestGet(t *testing.T) {
 		want     any
 		wantKind Kind
 	}{
-		{"code", int64(400), KindInt64},
+		{"code", 400, KindInt},
 		{"time", fixedTime, KindTime},
 		{"enabled", true, KindBool},
-		{"user.id", int64(123), KindInt64},
+		{"user.id", 123, KindInt},
 		{"user.name", "alice", KindString},
 		{"user.address.city", "Portland", KindString},
 		{"user.address.state", "OR", KindString},
 		{"request.path", "/api/users", KindString},
-		{"request.size", int64(256), KindInt64},
+		{"request.size", 3000000000, KindInt64},
 		{"custom", customValue, KindAny},
 		{"nonexistent", nil, KindAny},
 		{"user.nonexistent", nil, KindAny},
@@ -64,7 +64,7 @@ func TestGet(t *testing.T) {
 		}, KindGroup},
 		{"request", []Attr{
 			String("path", "/api/users"),
-			Int("size", 256),
+			Int64("size", 3000000000),
 		}, KindGroup},
 	}
 
