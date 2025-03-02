@@ -44,7 +44,7 @@ func TestGet(t *testing.T) {
 		{"user.address.city", "Portland", KindString},
 		{"user.address.state", "OR", KindString},
 		{"request.path", "/api/users", KindString},
-		{"request.size", 3000000000, KindInt64},
+		{"request.size", int64(3000000000), KindInt64},
 		{"custom", customValue, KindAny},
 		{"nonexistent", nil, KindAny},
 		{"user.nonexistent", nil, KindAny},

@@ -24,6 +24,8 @@ func (v Value) ToSlog() slog.Value {
 		return slog.StringValue(v.String())
 	case KindInt64:
 		return slog.Int64Value(v.Int64())
+	case KindInt:
+		return slog.IntValue(v.Int())
 	case KindUint64:
 		return slog.Uint64Value(v.Uint64())
 	case KindDuration:
