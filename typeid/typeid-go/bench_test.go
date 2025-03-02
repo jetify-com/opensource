@@ -3,10 +3,13 @@ package typeid_test
 
 import (
 	"fmt"
+	"runtime"
+	"sync"
 	"testing"
 
 	"github.com/gofrs/uuid/v5"
 	"go.jetify.com/typeid"
+	"go.jetify.com/typeid/base32"
 )
 
 func BenchmarkNew(b *testing.B) {
@@ -26,6 +29,25 @@ func BenchmarkNew(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			uuid.NewV7()
+		}
+	})
+	// Add benchmark for different prefix lengths
+	b.Run("prefix=short", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			typeid.WithPrefix("s")
+		}
+	})
+	b.Run("prefix=medium", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			typeid.WithPrefix("medium")
+		}
+	})
+	b.Run("prefix=long", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			typeid.WithPrefix("thisislongprefix")
 		}
 	})
 }
@@ -347,6 +369,150 @@ func BenchmarkEncodeDecode(b *testing.B) {
 		tid := typeid.Must(typeid.WithPrefix("prefix"))
 		_ = typeid.Must(typeid.FromString(tid.String()))
 	}
+}
+
+// Benchmark Base32 operations directly
+func BenchmarkBase32(b *testing.B) {
+	b.Run("encode", func(b *testing.B) {
+		uid := uuid.Must(uuid.NewV7())
+		var bytes [16]byte
+		copy(bytes[:], uid.Bytes())
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = base32.Encode(bytes)
+		}
+	})
+	b.Run("decode", func(b *testing.B) {
+		uid := uuid.Must(uuid.NewV7())
+		var bytes [16]byte
+		copy(bytes[:], uid.Bytes())
+		encoded := base32.Encode(bytes)
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_, _ = base32.Decode(encoded)
+		}
+	})
+}
+
+// Benchmark memory usage with different batch sizes
+func BenchmarkMemoryUsage(b *testing.B) {
+	benchSizes := []int{100, 1000, 10000}
+	for _, size := range benchSizes {
+		b.Run(fmt.Sprintf("size=%d", size), func(b *testing.B) {
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				ids := make([]typeid.AnyID, size)
+				for j := range ids {
+					ids[j] = typeid.Must(typeid.WithPrefix("prefix"))
+				}
+				runtime.KeepAlive(ids)
+			}
+		})
+	}
+}
+
+// Benchmark parallel ID generation
+func BenchmarkParallelGeneration(b *testing.B) {
+	benchCases := []struct {
+		name       string
+		goroutines int
+		batchSize  int
+	}{
+		{"small_batch_few_goroutines", 4, 100},
+		{"small_batch_many_goroutines", runtime.GOMAXPROCS(0) * 2, 100},
+		{"large_batch_few_goroutines", 4, 1000},
+		{"large_batch_many_goroutines", runtime.GOMAXPROCS(0) * 2, 1000},
+	}
+
+	for _, bc := range benchCases {
+		b.Run(bc.name, func(b *testing.B) {
+			b.ReportAllocs()
+			b.ResetTimer()
+
+			for i := 0; i < b.N; i++ {
+				var wg sync.WaitGroup
+				wg.Add(bc.goroutines)
+
+				for g := 0; g < bc.goroutines; g++ {
+					go func() {
+						defer wg.Done()
+						for j := 0; j < bc.batchSize; j++ {
+							_ = typeid.Must(typeid.WithPrefix("prefix"))
+						}
+					}()
+				}
+
+				wg.Wait()
+			}
+		})
+	}
+}
+
+// Benchmark validation
+func BenchmarkValidation(b *testing.B) {
+	validIDs := make([]string, 100)
+	invalidIDs := make([]string, 100)
+
+	for i := range validIDs {
+		validIDs[i] = typeid.Must(typeid.WithPrefix("prefix")).String()
+		// Create invalid IDs by corrupting valid ones
+		if i < len(invalidIDs) {
+			invalidID := []byte(validIDs[i])
+			// Replace a character in the suffix to make it invalid
+			invalidID[len(invalidID)-1] = 'z'
+			invalidIDs[i] = string(invalidID)
+		}
+	}
+
+	b.Run("valid", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			idx := i % len(validIDs)
+			_, err := typeid.FromString(validIDs[idx])
+			if err != nil {
+				b.Fatalf("Expected valid ID to pass validation: %v", err)
+			}
+		}
+	})
+
+	b.Run("invalid", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			idx := i % len(invalidIDs)
+			_, err := typeid.FromString(invalidIDs[idx])
+			if err == nil {
+				b.Fatalf("Expected invalid ID to fail validation")
+			}
+		}
+	})
+}
+
+// Benchmark mixed operations to simulate real-world usage patterns
+func BenchmarkMixedOperations(b *testing.B) {
+	operations := []string{"create", "parse", "toString", "validate"}
+
+	b.Run("random_mix", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			op := operations[i%len(operations)]
+
+			switch op {
+			case "create":
+				_ = typeid.Must(typeid.WithPrefix("prefix"))
+			case "parse":
+				id := typeid.Must(typeid.WithPrefix("prefix"))
+				_, _ = typeid.FromString(id.String())
+			case "toString":
+				id := typeid.Must(typeid.WithPrefix("prefix"))
+				_ = id.String()
+			case "validate":
+				id := typeid.Must(typeid.WithPrefix("prefix"))
+				_, _ = typeid.FromString(id.String())
+			}
+		}
+	})
 }
 
 // TODO: define these in a shared file if we're gonna use in several tests.
