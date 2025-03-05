@@ -2,11 +2,11 @@
   "lockfile_version": "1",
   "packages": {
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "resolved": "github:NixOS/nixpkgs/2d068ae5c6516b2d04562de50a58c682540de9bf?lastModified=1740303746&narHash=sha256-XcdiWLEhjJkMxDLKQJ0CCivmYYCvA5MDxu9pMybM5kM%3D"
+      "resolved": "github:NixOS/nixpkgs/02032da4af073d0f6110540c8677f16d4be0117f?lastModified=1741037377&narHash=sha256-SvtvVKHaUX4Owb%2BPasySwZsoc5VUeTf1px34BByiOxw%3D"
     },
     "php83Packages.composer@latest": {
-      "last_modified": "2025-02-07T20:06:47Z",
-      "resolved": "github:NixOS/nixpkgs/e8d0b02af0958823c955aaab3c82b03f54411d91#php83Packages.composer",
+      "last_modified": "2025-02-18T07:26:52Z",
+      "resolved": "github:NixOS/nixpkgs/632f04521e847173c54fa72973ec6c39a371211c#php83Packages.composer",
       "source": "devbox-search",
       "version": "2.8.5",
       "systems": {
@@ -14,41 +14,41 @@
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/nlwdpblf0s0yj78snv0fpa8w1yl9vz73-composer-2.8.5",
+              "path": "/nix/store/cy614vcp03c49qi6cc40ys6663m31qvh-composer-2.8.5",
               "default": true
             }
           ],
-          "store_path": "/nix/store/nlwdpblf0s0yj78snv0fpa8w1yl9vz73-composer-2.8.5"
+          "store_path": "/nix/store/cy614vcp03c49qi6cc40ys6663m31qvh-composer-2.8.5"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/3ljp6h2p7wgi3jj14ry735h8j1wm0s2r-composer-2.8.5",
+              "path": "/nix/store/n1lscb1q8jpq4gq678fpblz5ixpgipd6-composer-2.8.5",
               "default": true
             }
           ],
-          "store_path": "/nix/store/3ljp6h2p7wgi3jj14ry735h8j1wm0s2r-composer-2.8.5"
+          "store_path": "/nix/store/n1lscb1q8jpq4gq678fpblz5ixpgipd6-composer-2.8.5"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/hb80sxmsnyncx1wiqilx1q5gjv8bsjij-composer-2.8.5",
+              "path": "/nix/store/bnxq04x2x2nr4yn1mj0nc2fh55higa3c-composer-2.8.5",
               "default": true
             }
           ],
-          "store_path": "/nix/store/hb80sxmsnyncx1wiqilx1q5gjv8bsjij-composer-2.8.5"
+          "store_path": "/nix/store/bnxq04x2x2nr4yn1mj0nc2fh55higa3c-composer-2.8.5"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/xavp4568sz1xfah3pgviikpvvd9g2h1f-composer-2.8.5",
+              "path": "/nix/store/fwa994i97hznpxw4i6l04l88igf60ch8-composer-2.8.5",
               "default": true
             }
           ],
-          "store_path": "/nix/store/xavp4568sz1xfah3pgviikpvvd9g2h1f-composer-2.8.5"
+          "store_path": "/nix/store/fwa994i97hznpxw4i6l04l88igf60ch8-composer-2.8.5"
         }
       }
     },
