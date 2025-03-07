@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/codeclysm/extract/v3"
+	"github.com/codeclysm/extract/v4"
 	"go.jetify.com/pkg/fileutil"
 )
 
