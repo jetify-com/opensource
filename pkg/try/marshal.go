@@ -12,7 +12,7 @@ type encodedTry[T any] struct {
 	Error string `json:"error,omitempty" yaml:"error,omitempty" toml:"error,omitempty"`
 }
 
-// toEncoding converts a Result to its encoding representation
+// toEncoding converts a Try to its encoding representation
 func (r Try[T]) toEncoding() encodedTry[T] {
 	if r.IsErr() {
 		return encodedTry[T]{
@@ -24,7 +24,7 @@ func (r Try[T]) toEncoding() encodedTry[T] {
 	}
 }
 
-// fromEncoding converts from an encoding representation to a Result
+// fromEncoding converts from an encoding representation to a Try
 func fromEncoding[T any](enc encodedTry[T]) Try[T] {
 	if enc.Error != "" {
 		return Err[T](errors.New(enc.Error))
@@ -35,13 +35,13 @@ func fromEncoding[T any](enc encodedTry[T]) Try[T] {
 // JSON Marshaling
 // --------------
 
-// MarshalJSON serializes the Result into JSON. For successful results,
+// MarshalJSON serializes the Try into JSON. For successful results,
 // it produces {"value": ...}; for errors, it produces {"error": "..."}.
 func (r Try[T]) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r.toEncoding())
 }
 
-// UnmarshalJSON deserializes from JSON into a Result. It expects either
+// UnmarshalJSON deserializes from JSON into a Try. It expects either
 // {"value": ...} or {"error": "..."}.
 func (r *Try[T]) UnmarshalJSON(data []byte) error {
 	var enc encodedTry[T]
@@ -55,12 +55,12 @@ func (r *Try[T]) UnmarshalJSON(data []byte) error {
 // YAML Marshaling
 // --------------
 
-// MarshalYAML serializes the Result into YAML.
+// MarshalYAML serializes the Try into YAML.
 func (r Try[T]) MarshalYAML() (any, error) {
 	return r.toEncoding(), nil
 }
 
-// UnmarshalYAML deserializes from YAML into a Result.
+// UnmarshalYAML deserializes from YAML into a Try.
 func (r *Try[T]) UnmarshalYAML(value *yaml.Node) error {
 	var enc encodedTry[T]
 	if err := value.Decode(&enc); err != nil {
