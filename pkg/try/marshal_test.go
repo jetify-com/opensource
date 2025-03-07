@@ -1,4 +1,4 @@
-package result
+package try
 
 import (
 	"encoding/json"
@@ -18,7 +18,7 @@ type encoder interface {
 func TestMarshaling(t *testing.T) {
 	tests := []struct {
 		name     string
-		input    Result[string]
+		input    Try[string]
 		expected map[string]string // expected output for each encoder
 	}{
 		{
@@ -53,7 +53,7 @@ func TestMarshaling(t *testing.T) {
 				assert.Equal(t, test.expected[encName], string(data))
 
 				// Test unmarshaling
-				var actual Result[string]
+				var actual Try[string]
 				err = enc.Unmarshal([]byte(test.expected[encName]), &actual)
 				assert.NoError(t, err)
 
@@ -76,7 +76,7 @@ func TestMarshaling(t *testing.T) {
 
 	for encName, enc := range encoders {
 		t.Run("invalid_"+encName, func(t *testing.T) {
-			var actual Result[string]
+			var actual Try[string]
 			err := enc.Unmarshal([]byte(invalidTests[encName]), &actual)
 			assert.Error(t, err)
 		})
@@ -114,7 +114,7 @@ func TestComplexTypeMarshaling(t *testing.T) {
 			data, err := enc.Marshal(input)
 			assert.NoError(t, err)
 
-			var actual Result[Complex]
+			var actual Try[Complex]
 			err = enc.Unmarshal(data, &actual)
 			assert.NoError(t, err)
 			assert.Equal(t, input.value, actual.value)
@@ -131,7 +131,7 @@ func TestStructRoundtrip(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		input Result[Person]
+		input Try[Person]
 	}{
 		{
 			name: "success case",
@@ -160,7 +160,7 @@ func TestStructRoundtrip(t *testing.T) {
 				require.NoError(t, err)
 
 				// Unmarshal back into a new value
-				var result Result[Person]
+				var result Try[Person]
 				err = enc.Unmarshal(data, &result)
 				require.NoError(t, err)
 
