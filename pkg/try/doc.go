@@ -49,4 +49,4 @@
 //	    return complexCalculation()
 //	})
 //	r := <-ch // receive Result when ready
-package result
+package try
