@@ -128,15 +128,15 @@ func TestServer_Request(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
 			mockTester := &mockT{}
-			testServer := NewServer(mockTester, []Exchange{tc.expect})
+			testServer := NewServer(mockTester, []Exchange{testCase.expect})
 			defer testServer.Close()
 
-			reqToSend := tc.expect.Request
-			if tc.send != nil {
-				reqToSend = *tc.send
+			reqToSend := testCase.expect.Request
+			if testCase.send != nil {
+				reqToSend = *testCase.send
 			}
 
 			req, err := buildRequest(testServer.BaseURL(), reqToSend)
@@ -146,12 +146,12 @@ func TestServer_Request(t *testing.T) {
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
-			if tc.wantFail {
+			if testCase.wantFail {
 				assert.True(t, mockTester.failed, "Expected test to fail")
 				assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 			} else {
 				assert.False(t, mockTester.failed, "Test unexpectedly failed")
-				assertResponseEq(t, tc.expect.Response, resp)
+				assertResponseEq(t, testCase.expect.Response, resp)
 			}
 		})
 	}
@@ -220,14 +220,14 @@ func TestServer_VerifyComplete(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
 			mockTester := &mockT{}
-			testServer := NewServer(mockTester, tc.expect)
+			testServer := NewServer(mockTester, testCase.expect)
 			defer testServer.Close()
 
 			// Send all requests in order
-			for _, req := range tc.send {
+			for _, req := range testCase.send {
 				r, err := buildRequest(testServer.BaseURL(), req)
 				require.NoError(t, err)
 				resp, err := http.DefaultClient.Do(r)
@@ -236,8 +236,8 @@ func TestServer_VerifyComplete(t *testing.T) {
 			}
 
 			err := testServer.VerifyComplete()
-			if tc.wantErr != "" {
-				assert.EqualError(t, err, tc.wantErr)
+			if testCase.wantErr != "" {
+				assert.EqualError(t, err, testCase.wantErr)
 			} else {
 				assert.NoError(t, err)
 			}
@@ -278,14 +278,14 @@ func TestServer_BodyComparison(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
 			mockTester := &mockT{}
 			mockTester.failed = false
 			mockTester.errors = nil
 
-			requireBodyEq(mockTester, tc.expected, []byte(tc.actual))
-			assert.Equal(t, tc.wantFail, mockTester.failed)
+			requireBodyEq(mockTester, testCase.expected, []byte(testCase.actual))
+			assert.Equal(t, testCase.wantFail, mockTester.failed)
 		})
 	}
 }
@@ -335,15 +335,15 @@ func TestServer_Path(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
 			// Create a server with a custom base URL for testing
 			s := &Server{server: httptest.NewServer(nil)}
-			s.server.URL = tc.baseURL // override the random port with our test URL
+			s.server.URL = testCase.baseURL // override the random port with our test URL
 			defer s.server.Close()
 
-			got := s.Path(tc.path)
-			assert.Equal(t, tc.expected, got)
+			got := s.Path(testCase.path)
+			assert.Equal(t, testCase.expected, got)
 		})
 	}
 }
@@ -506,27 +506,27 @@ func TestMergeRequests(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			result := MergeRequests(tc.requests...)
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			result := MergeRequests(testCase.requests...)
 
 			// For validate function test, we need special handling
-			if tc.validate {
+			if testCase.validate {
 				validationCalled := false
 				result.Validate = func(r *http.Request) error {
 					validationCalled = true
 					return nil
 				}
 
-				req, _ := http.NewRequest("GET", "/api", nil)
+				req, _ := http.NewRequest(http.MethodGet, "/api", nil)
 				err := result.Validate(req)
 				assert.NoError(t, err)
 				assert.True(t, validationCalled, "Validation function was not called")
 			} else {
 				// Clear the Validate function before comparison, as functions cannot be directly compared
 				result.Validate = nil
-				tc.expected.Validate = nil
-				assert.Equal(t, tc.expected, result)
+				testCase.expected.Validate = nil
+				assert.Equal(t, testCase.expected, result)
 			}
 		})
 	}
@@ -575,14 +575,14 @@ func TestServer_ResponseHeaders(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
 			testServer := NewServer(t, []Exchange{{
 				Request: Request{
 					Method: "GET",
 					Path:   "/test",
 				},
-				Response: tc.response,
+				Response: testCase.response,
 			}})
 			defer testServer.Close()
 
@@ -590,7 +590,7 @@ func TestServer_ResponseHeaders(t *testing.T) {
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
-			for k, want := range tc.wantHeaders {
+			for k, want := range testCase.wantHeaders {
 				assert.Equal(t, want, resp.Header.Get(k), "Expected header %s to be %s", k, want)
 			}
 		})
@@ -682,7 +682,7 @@ func TestServer_HandlerErrors(t *testing.T) {
 			t: mockTester,
 			expectations: []Exchange{{
 				Request: Request{
-					Method: "GET",
+					Method: http.MethodGet,
 					Path:   "/test",
 				},
 				Response: Response{
@@ -692,7 +692,7 @@ func TestServer_HandlerErrors(t *testing.T) {
 		}
 
 		// Setup request and mock response writer
-		req := httptest.NewRequest("GET", "/test", nil)
+		req := httptest.NewRequest(http.MethodGet, "/test", nil)
 		w := newMockResponseWriter()
 
 		// Call the handler
@@ -709,7 +709,7 @@ func TestServer_HandlerErrors(t *testing.T) {
 
 		// Create a request with a custom validation function that always fails
 		expectedReq := Request{
-			Method: "GET",
+			Method: http.MethodGet,
 			Path:   "/test",
 			Validate: func(r *http.Request) error {
 				return fmt.Errorf("intentional validation error")
@@ -717,7 +717,7 @@ func TestServer_HandlerErrors(t *testing.T) {
 		}
 
 		// Create an HTTP request that would match except for the validation
-		req, _ := http.NewRequest("GET", "/test", nil)
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 
 		// Call requireRequestEq directly
 		requireRequestEq(mockTester, expectedReq, req)
