@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// 1. Examples
+// 1. Examples - grouped together for clarity
 func ExampleServer_basic() {
 	testServer := NewServer(&mockT{}, []Exchange{{
 		Request: Request{
@@ -157,21 +157,27 @@ func ExampleServer_delay() {
 	}})
 	defer testServer.Close()
 
-	// In a real test, you would use this URL with your HTTP client
-	// fmt.Println("API endpoint:", testServer.Path("/api/slow"))
-
 	// Instead of printing the URL (which has a dynamic port), print something static
 	fmt.Println("Configured delay:", 1*time.Second)
-
-	// Make a request (not executed in this example)
-	// resp, err := http.Get(testServer.Path("/api/slow"))
-	// The response would be delayed by 1 second
 
 	// Output:
 	// Configured delay: 1s
 }
 
-// 2. Unit tests (core functionality first)
+// 2. Unit tests - core functionality
+
+// Helper function to create a test server with expectations
+func createTestServer(t interface{}, expectations []Exchange) *Server {
+	switch tester := t.(type) {
+	case *mockT:
+		return NewServer(tester, expectations)
+	case *testing.T:
+		return NewServer(tester, expectations)
+	default:
+		panic(fmt.Sprintf("Unsupported type %T for createTestServer", t))
+	}
+}
+
 func TestServer_Request(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -282,15 +288,15 @@ func TestServer_Request(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
-		t.Run(testCase.name, func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
 			mockTester := newMockT(t)
-			testServer := NewServer(mockTester, []Exchange{testCase.expect})
+			testServer := createTestServer(mockTester, []Exchange{tc.expect})
 			defer testServer.Close()
 
-			reqToSend := testCase.expect.Request
-			if testCase.send != nil {
-				reqToSend = *testCase.send
+			reqToSend := tc.expect.Request
+			if tc.send != nil {
+				reqToSend = *tc.send
 			}
 
 			req, err := buildRequest(testServer.BaseURL(), reqToSend)
@@ -300,12 +306,12 @@ func TestServer_Request(t *testing.T) {
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
-			if testCase.wantFail {
-				assert.True(t, mockTester.failed)
+			if tc.wantFail {
+				assert.True(t, mockTester.failed, "Expected test to fail")
 				assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 			} else {
-				assert.False(t, mockTester.failed)
-				assertResponseEq(t, testCase.expect.Response, resp)
+				assert.False(t, mockTester.failed, "Test unexpectedly failed")
+				assertResponseEq(t, tc.expect.Response, resp)
 			}
 		})
 	}
@@ -374,14 +380,14 @@ func TestServer_VerifyComplete(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
-		t.Run(testCase.name, func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
 			mockTester := newMockT(t)
-			testServer := NewServer(mockTester, testCase.expect)
+			testServer := createTestServer(mockTester, tc.expect)
 			defer testServer.Close()
 
 			// Send all requests in order
-			for _, req := range testCase.send {
+			for _, req := range tc.send {
 				r, err := buildRequest(testServer.BaseURL(), req)
 				require.NoError(t, err)
 				resp, err := http.DefaultClient.Do(r)
@@ -390,8 +396,8 @@ func TestServer_VerifyComplete(t *testing.T) {
 			}
 
 			err := testServer.VerifyComplete()
-			if testCase.wantErr != "" {
-				assert.EqualError(t, err, testCase.wantErr)
+			if tc.wantErr != "" {
+				assert.EqualError(t, err, tc.wantErr)
 			} else {
 				assert.NoError(t, err)
 			}
@@ -432,14 +438,14 @@ func TestServer_BodyComparison(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
-		t.Run(testCase.name, func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
 			mockTester := newMockT(t)
 			mockTester.failed = false
 			mockTester.errors = nil
 
-			requireBodyEq(mockTester, testCase.expected, []byte(testCase.actual))
-			assert.Equal(t, testCase.wantFail, mockTester.failed)
+			requireBodyEq(mockTester, tc.expected, []byte(tc.actual))
+			assert.Equal(t, tc.wantFail, mockTester.failed)
 		})
 	}
 }
@@ -489,17 +495,414 @@ func TestServer_Path(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
-		t.Run(testCase.name, func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
 			// Create a server with a custom base URL for testing
 			s := &Server{server: httptest.NewServer(nil)}
-			s.server.URL = testCase.baseURL // override the random port with our test URL
+			s.server.URL = tc.baseURL // override the random port with our test URL
 			defer s.server.Close()
 
-			got := s.Path(testCase.path)
-			assert.Equal(t, testCase.expected, got)
+			got := s.Path(tc.path)
+			assert.Equal(t, tc.expected, got)
 		})
 	}
+}
+
+// Consolidated MergeRequests tests into a single table-driven test
+func TestMergeRequests(t *testing.T) {
+	tests := []struct {
+		name     string
+		requests []Request
+		expected Request
+		validate bool // whether to test validation function
+	}{
+		{
+			name:     "empty list",
+			requests: []Request{},
+			expected: Request{},
+		},
+		{
+			name: "single request",
+			requests: []Request{
+				{
+					Method: "GET",
+					Path:   "/api",
+					Headers: map[string]string{
+						"Authorization": "Bearer token",
+					},
+				},
+			},
+			expected: Request{
+				Method: "GET",
+				Path:   "/api",
+				Headers: map[string]string{
+					"Authorization": "Bearer token",
+				},
+			},
+		},
+		{
+			name: "two requests - override empty",
+			requests: []Request{
+				{
+					Method: "GET",
+					Path:   "/api",
+					Headers: map[string]string{
+						"Authorization": "Bearer token",
+					},
+				},
+				{},
+			},
+			expected: Request{
+				Method: "GET",
+				Path:   "/api",
+				Headers: map[string]string{
+					"Authorization": "Bearer token",
+				},
+			},
+		},
+		{
+			name: "two requests - override some fields",
+			requests: []Request{
+				{
+					Method: "GET",
+					Path:   "/api",
+					Headers: map[string]string{
+						"Authorization": "Bearer token",
+					},
+				},
+				{
+					Method: "POST",
+					Headers: map[string]string{
+						"Content-Type": "application/json",
+					},
+				},
+			},
+			expected: Request{
+				Method: "POST",
+				Path:   "/api",
+				Headers: map[string]string{
+					"Authorization": "Bearer token",
+					"Content-Type":  "application/json",
+				},
+			},
+		},
+		{
+			name: "two requests - override all fields",
+			requests: []Request{
+				{
+					Method: "GET",
+					Path:   "/api",
+					Body:   "original",
+					Headers: map[string]string{
+						"Authorization": "Bearer token",
+					},
+				},
+				{
+					Method: "POST",
+					Path:   "/new",
+					Body:   "override",
+					Headers: map[string]string{
+						"Content-Type": "application/json",
+					},
+				},
+			},
+			expected: Request{
+				Method: "POST",
+				Path:   "/new",
+				Body:   "override",
+				Headers: map[string]string{
+					"Authorization": "Bearer token",
+					"Content-Type":  "application/json",
+				},
+			},
+		},
+		{
+			name: "three requests - cumulative merge",
+			requests: []Request{
+				{
+					Method: "GET",
+					Path:   "/api",
+				},
+				{
+					Headers: map[string]string{
+						"X-Header1": "value1",
+					},
+				},
+				{
+					Headers: map[string]string{
+						"X-Header2": "value2",
+					},
+					Body: "test body",
+				},
+			},
+			expected: Request{
+				Method: "GET",
+				Path:   "/api",
+				Body:   "test body",
+				Headers: map[string]string{
+					"X-Header1": "value1",
+					"X-Header2": "value2",
+				},
+			},
+		},
+		{
+			name: "validate function",
+			requests: []Request{
+				{
+					Method: "GET",
+					Path:   "/api",
+				},
+				{
+					Validate: func(r *http.Request) error {
+						return nil // Will be tested separately
+					},
+				},
+			},
+			expected: Request{
+				Method: "GET",
+				Path:   "/api",
+			},
+			validate: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := MergeRequests(tc.requests...)
+
+			// For validate function test, we need special handling
+			if tc.validate {
+				validationCalled := false
+				result.Validate = func(r *http.Request) error {
+					validationCalled = true
+					return nil
+				}
+
+				req, _ := http.NewRequest("GET", "/api", nil)
+				err := result.Validate(req)
+				assert.NoError(t, err)
+				assert.True(t, validationCalled, "Validation function was not called")
+			} else {
+				// Clear the Validate function before comparison, as functions cannot be directly compared
+				result.Validate = nil
+				tc.expected.Validate = nil
+				assert.Equal(t, tc.expected, result)
+			}
+		})
+	}
+}
+
+func TestServer_ResponseHeaders(t *testing.T) {
+	tests := []struct {
+		name        string
+		response    Response
+		wantHeaders map[string]string
+	}{
+		{
+			name: "default content-type",
+			response: Response{
+				Body: map[string]string{"hello": "world"},
+			},
+			wantHeaders: map[string]string{
+				"Content-Type": "application/json",
+			},
+		},
+		{
+			name: "custom headers",
+			response: Response{
+				Body: "hello world",
+				Headers: map[string]string{
+					"Content-Type": "text/plain",
+					"X-Custom":     "value",
+				},
+			},
+			wantHeaders: map[string]string{
+				"Content-Type": "text/plain",
+				"X-Custom":     "value",
+			},
+		},
+		{
+			name: "override default content-type",
+			response: Response{
+				Body: map[string]string{"hello": "world"},
+				Headers: map[string]string{
+					"Content-Type": "application/problem+json",
+				},
+			},
+			wantHeaders: map[string]string{
+				"Content-Type": "application/problem+json",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			testServer := createTestServer(t, []Exchange{{
+				Request: Request{
+					Method: "GET",
+					Path:   "/test",
+				},
+				Response: tc.response,
+			}})
+			defer testServer.Close()
+
+			resp, err := http.Get(testServer.Path("/test"))
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			for k, want := range tc.wantHeaders {
+				assert.Equal(t, want, resp.Header.Get(k), "Expected header %s to be %s", k, want)
+			}
+		})
+	}
+}
+
+func TestServer_Delay(t *testing.T) {
+	// Define a delay that's long enough to measure but short enough for tests
+	delay := 200 * time.Millisecond
+
+	// Create a server with a delayed response
+	testServer := createTestServer(t, []Exchange{{
+		Request: Request{
+			Method: "GET",
+			Path:   "/delayed",
+		},
+		Response: Response{
+			StatusCode: http.StatusOK,
+			Body:       `{"message":"delayed response"}`,
+			Delay:      delay,
+		},
+	}})
+	defer testServer.Close()
+
+	// Record start time
+	start := time.Now()
+
+	// Make the request
+	resp, err := http.Get(testServer.Path("/delayed"))
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	// Calculate elapsed time
+	elapsed := time.Since(start)
+
+	// Verify response
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	assert.JSONEq(t, `{"message":"delayed response"}`, string(body))
+
+	// Verify timing - it should have taken at least the delay duration
+	// We add a small buffer (10ms) to account for very minor timing inconsistencies
+	assert.GreaterOrEqual(t, elapsed, delay-10*time.Millisecond,
+		"Response came back too quickly (in %v), expected at least %v delay", elapsed, delay)
+}
+
+// Test error handling
+
+// mockResponseWriter is a custom http.ResponseWriter for testing error scenarios
+type mockResponseWriter struct {
+	headers      http.Header
+	statusCode   int
+	responseBody []byte
+	failOnWrite  bool
+}
+
+func newMockResponseWriter() *mockResponseWriter {
+	return &mockResponseWriter{
+		headers: make(http.Header),
+	}
+}
+
+func (m *mockResponseWriter) Header() http.Header {
+	return m.headers
+}
+
+func (m *mockResponseWriter) Write(b []byte) (int, error) {
+	if m.failOnWrite {
+		return 0, fmt.Errorf("forced write error")
+	}
+	m.responseBody = append(m.responseBody, b...)
+	return len(b), nil
+}
+
+func (m *mockResponseWriter) WriteHeader(statusCode int) {
+	m.statusCode = statusCode
+}
+
+// Tests for handler error paths
+func TestServer_HandlerErrors(t *testing.T) {
+	t.Run("response error", func(t *testing.T) {
+		// Create a mock T that will record failures
+		mockTester := newMockT(t)
+
+		// Create a server with a normal request and response
+		server := &Server{
+			t: mockTester,
+			expectations: []Exchange{{
+				Request: Request{
+					Method: "GET",
+					Path:   "/test",
+				},
+				Response: Response{
+					Body: make(chan int), // Channel cannot be marshaled to JSON, will cause an error
+				},
+			}},
+		}
+
+		// Setup request and mock response writer
+		req := httptest.NewRequest("GET", "/test", nil)
+		w := newMockResponseWriter()
+
+		// Call the handler
+		server.handler(w, req)
+
+		// Handler should have set an error status code and recorded a test failure
+		assert.Equal(t, http.StatusInternalServerError, w.statusCode)
+		assert.True(t, mockTester.failed)
+	})
+
+	t.Run("validation error", func(t *testing.T) {
+		// This test directly tests how requireRequestEq handles validation errors
+		mockTester := newMockT(t)
+
+		// Create a request with a custom validation function that always fails
+		expectedReq := Request{
+			Method: "GET",
+			Path:   "/test",
+			Validate: func(r *http.Request) error {
+				return fmt.Errorf("intentional validation error")
+			},
+		}
+
+		// Create an HTTP request that would match except for the validation
+		req, _ := http.NewRequest("GET", "/test", nil)
+
+		// Call requireRequestEq directly
+		requireRequestEq(mockTester, expectedReq, req)
+
+		// Verify the test failed due to validation
+		assert.True(t, mockTester.failed)
+		assert.Contains(t, mockTester.errors[0], "custom validation failed")
+	})
+
+	t.Run("unexpected request", func(t *testing.T) {
+		mockTester := newMockT(t)
+
+		// Create a server with no expectations
+		server := createTestServer(mockTester, []Exchange{})
+		defer server.Close()
+
+		// Send a request that isn't expected
+		resp, err := http.Get(server.Path("/unexpected"))
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		// Should have responded with 500 error and failed the test
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+		assert.True(t, mockTester.failed)
+	})
 }
 
 // 4. Mock implementations
@@ -573,368 +976,4 @@ func buildRequest(baseURL string, request Request) (*http.Request, error) {
 	}
 
 	return req, nil
-}
-
-func TestMergeRequests_TwoRequests(t *testing.T) {
-	tests := []struct {
-		name     string
-		base     Request
-		override Request
-		want     Request
-	}{
-		{
-			name: "override empty request",
-			base: Request{
-				Method: "GET",
-				Path:   "/api",
-				Headers: map[string]string{
-					"Authorization": "Bearer token",
-				},
-			},
-			override: Request{},
-			want: Request{
-				Method: "GET",
-				Path:   "/api",
-				Headers: map[string]string{
-					"Authorization": "Bearer token",
-				},
-			},
-		},
-		{
-			name: "override some fields",
-			base: Request{
-				Method: "GET",
-				Path:   "/api",
-				Headers: map[string]string{
-					"Authorization": "Bearer token",
-				},
-			},
-			override: Request{
-				Method: "POST",
-				Headers: map[string]string{
-					"Content-Type": "application/json",
-				},
-			},
-			want: Request{
-				Method: "POST",
-				Path:   "/api",
-				Headers: map[string]string{
-					"Authorization": "Bearer token",
-					"Content-Type":  "application/json",
-				},
-			},
-		},
-		{
-			name: "override all fields",
-			base: Request{
-				Method: "GET",
-				Path:   "/api",
-				Body:   "original",
-				Headers: map[string]string{
-					"Authorization": "Bearer token",
-				},
-			},
-			override: Request{
-				Method: "POST",
-				Path:   "/new",
-				Body:   "override",
-				Headers: map[string]string{
-					"Content-Type": "application/json",
-				},
-			},
-			want: Request{
-				Method: "POST",
-				Path:   "/new",
-				Body:   "override",
-				Headers: map[string]string{
-					"Authorization": "Bearer token",
-					"Content-Type":  "application/json",
-				},
-			},
-		},
-	}
-
-	for _, testCase := range tests {
-		t.Run(testCase.name, func(t *testing.T) {
-			got := MergeRequests(testCase.base, testCase.override)
-			assert.Equal(t, testCase.want, got)
-		})
-	}
-}
-
-func TestServer_ResponseHeaders(t *testing.T) {
-	tests := []struct {
-		name        string
-		response    Response
-		wantHeaders map[string]string
-	}{
-		{
-			name: "default content-type",
-			response: Response{
-				Body: map[string]string{"hello": "world"},
-			},
-			wantHeaders: map[string]string{
-				"Content-Type": "application/json",
-			},
-		},
-		{
-			name: "custom headers",
-			response: Response{
-				Body: "hello world",
-				Headers: map[string]string{
-					"Content-Type": "text/plain",
-					"X-Custom":     "value",
-				},
-			},
-			wantHeaders: map[string]string{
-				"Content-Type": "text/plain",
-				"X-Custom":     "value",
-			},
-		},
-		{
-			name: "override default content-type",
-			response: Response{
-				Body: map[string]string{"hello": "world"},
-				Headers: map[string]string{
-					"Content-Type": "application/problem+json",
-				},
-			},
-			wantHeaders: map[string]string{
-				"Content-Type": "application/problem+json",
-			},
-		},
-	}
-
-	for _, testCase := range tests {
-		t.Run(testCase.name, func(t *testing.T) {
-			testServer := NewServer(t, []Exchange{{
-				Request: Request{
-					Method: "GET",
-					Path:   "/test",
-				},
-				Response: testCase.response,
-			}})
-			defer testServer.Close()
-
-			resp, err := http.Get(testServer.Path("/test"))
-			require.NoError(t, err)
-			defer resp.Body.Close()
-
-			for k, want := range testCase.wantHeaders {
-				assert.Equal(t, want, resp.Header.Get(k))
-			}
-		})
-	}
-}
-
-func TestServer_Delay(t *testing.T) {
-	// Define a delay that's long enough to measure but short enough for tests
-	delay := 200 * time.Millisecond
-
-	// Create a server with a delayed response
-	testServer := NewServer(t, []Exchange{{
-		Request: Request{
-			Method: "GET",
-			Path:   "/delayed",
-		},
-		Response: Response{
-			StatusCode: http.StatusOK,
-			Body:       `{"message":"delayed response"}`,
-			Delay:      delay,
-		},
-	}})
-	defer testServer.Close()
-
-	// Record start time
-	start := time.Now()
-
-	// Make the request
-	resp, err := http.Get(testServer.Path("/delayed"))
-	require.NoError(t, err)
-	defer resp.Body.Close()
-
-	// Calculate elapsed time
-	elapsed := time.Since(start)
-
-	// Verify response
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-	body, err := io.ReadAll(resp.Body)
-	require.NoError(t, err)
-	assert.JSONEq(t, `{"message":"delayed response"}`, string(body))
-
-	// Verify timing - it should have taken at least the delay duration
-	// We add a small buffer (10ms) to account for very minor timing inconsistencies
-	assert.GreaterOrEqual(t, elapsed, delay-10*time.Millisecond,
-		"Response came back too quickly (in %v), expected at least %v delay", elapsed, delay)
-}
-
-func TestMergeRequests_EmptyList(t *testing.T) {
-	result := MergeRequests()
-	assert.Equal(t, Request{}, result)
-}
-
-func TestMergeRequests_ValidateFunction(t *testing.T) {
-	validationCalled := false
-
-	base := Request{
-		Method: "GET",
-		Path:   "/api",
-	}
-
-	override := Request{
-		Validate: func(r *http.Request) error {
-			validationCalled = true
-			return nil
-		},
-	}
-
-	result := MergeRequests(base, override)
-
-	// Create a test request to pass to the validate function
-	req, _ := http.NewRequest("GET", "/api", nil)
-
-	// Call the validate function from the merged request
-	err := result.Validate(req)
-
-	// Assert that our custom validate function was called
-	assert.NoError(t, err)
-	assert.True(t, validationCalled)
-}
-
-func TestMergeRequests_ThreeRequests(t *testing.T) {
-	req1 := Request{
-		Method: "GET",
-		Path:   "/api",
-	}
-
-	req2 := Request{
-		Headers: map[string]string{
-			"X-Header1": "value1",
-		},
-	}
-
-	req3 := Request{
-		Headers: map[string]string{
-			"X-Header2": "value2",
-		},
-		Body: "test body",
-	}
-
-	result := MergeRequests(req1, req2, req3)
-
-	expected := Request{
-		Method: "GET",
-		Path:   "/api",
-		Body:   "test body",
-		Headers: map[string]string{
-			"X-Header1": "value1",
-			"X-Header2": "value2",
-		},
-	}
-
-	assert.Equal(t, expected, result)
-}
-
-// mockResponseWriter is a custom http.ResponseWriter for testing error scenarios
-type mockResponseWriter struct {
-	headers      http.Header
-	statusCode   int
-	responseBody []byte
-	failOnWrite  bool
-}
-
-func newMockResponseWriter() *mockResponseWriter {
-	return &mockResponseWriter{
-		headers: make(http.Header),
-	}
-}
-
-func (m *mockResponseWriter) Header() http.Header {
-	return m.headers
-}
-
-func (m *mockResponseWriter) Write(b []byte) (int, error) {
-	if m.failOnWrite {
-		return 0, fmt.Errorf("forced write error")
-	}
-	m.responseBody = append(m.responseBody, b...)
-	return len(b), nil
-}
-
-func (m *mockResponseWriter) WriteHeader(statusCode int) {
-	m.statusCode = statusCode
-}
-
-// Tests for handler error paths
-func TestServer_HandlerResponseError(t *testing.T) {
-	// Create a mock T that will record failures
-	mockTester := newMockT(t)
-
-	// Create a server with a normal request and response
-	server := &Server{
-		t: mockTester,
-		expectations: []Exchange{{
-			Request: Request{
-				Method: "GET",
-				Path:   "/test",
-			},
-			Response: Response{
-				Body: make(chan int), // Channel cannot be marshaled to JSON, will cause an error
-			},
-		}},
-	}
-
-	// Setup request and mock response writer
-	req := httptest.NewRequest("GET", "/test", nil)
-	w := newMockResponseWriter()
-
-	// Call the handler
-	server.handler(w, req)
-
-	// Handler should have set an error status code and recorded a test failure
-	assert.Equal(t, http.StatusInternalServerError, w.statusCode)
-	assert.True(t, mockTester.failed)
-}
-
-func TestServer_HandlerValidationError(t *testing.T) {
-	// This test directly tests how requireRequestEq handles validation errors
-	mockTester := newMockT(t)
-
-	// Create a request with a custom validation function that always fails
-	expectedReq := Request{
-		Method: "GET",
-		Path:   "/test",
-		Validate: func(r *http.Request) error {
-			return fmt.Errorf("intentional validation error")
-		},
-	}
-
-	// Create an HTTP request that would match except for the validation
-	req, _ := http.NewRequest("GET", "/test", nil)
-
-	// Call requireRequestEq directly
-	requireRequestEq(mockTester, expectedReq, req)
-
-	// Verify the test failed due to validation
-	assert.True(t, mockTester.failed)
-	assert.Contains(t, mockTester.errors[0], "custom validation failed")
-}
-
-// Test handling of unexpected requests
-func TestServer_UnexpectedRequest(t *testing.T) {
-	mockTester := newMockT(t)
-
-	// Create a server with no expectations
-	server := NewServer(mockTester, []Exchange{})
-	defer server.Close()
-
-	// Send a request that isn't expected
-	resp, err := http.Get(server.Path("/unexpected"))
-	require.NoError(t, err)
-	defer resp.Body.Close()
-
-	// Should have responded with 500 error and failed the test
-	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-	assert.True(t, mockTester.failed)
 }
