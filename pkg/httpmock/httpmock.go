@@ -2,12 +2,13 @@ package httpmock
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"sync"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -27,6 +28,7 @@ type Response struct {
 	StatusCode int               // HTTP status code (defaults to 200 OK if not set)
 	Body       any               // can be a JSON-marshalable object or a string
 	Headers    map[string]string // optional: headers to include in response
+	Delay      time.Duration     // optional: delay before sending the response (for testing timeouts, etc.)
 }
 
 // Exchange represents a pair of expected HTTP request and corresponding response.
@@ -87,7 +89,9 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	if s.index >= len(s.expectations) {
 		// No more expectations; this is an unexpected request.
 		http.Error(w, "unexpected request", http.StatusInternalServerError)
-		require.Fail(s.t, "Unexpected request received", "Method: %s, Path: %s", r.Method, r.URL.Path)
+		require.Fail(s.t, "Unexpected request received",
+			"Didn't expect additional requests, received: %s %s",
+			r.Method, r.URL.Path)
 		return
 	}
 
@@ -96,7 +100,10 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	// Check if this is the expected path and method before doing detailed validation
 	if exp.Request.Path != r.URL.Path || exp.Request.Method != r.Method {
 		http.Error(w, "unexpected request", http.StatusInternalServerError)
-		require.Fail(s.t, "Unexpected request received", "Method: %s, Path: %s", r.Method, r.URL.Path)
+		require.Fail(s.t, "Unexpected request received",
+			"Expected: [%s %s], Actual: [%s %s]",
+			exp.Request.Method, exp.Request.Path,
+			r.Method, r.URL.Path)
 		return
 	}
 
@@ -120,7 +127,9 @@ func (s *Server) Close() {
 // VerifyComplete checks that all expected exchanges were completed.
 func (s *Server) VerifyComplete() error {
 	if s.index != len(s.expectations) {
-		return errors.New("not all expectations were met")
+		nextExpected := s.expectations[s.index]
+		return fmt.Errorf("expected %d requests, received %d. Next expected: [%s %s]",
+			len(s.expectations), s.index, nextExpected.Request.Method, nextExpected.Request.Path)
 	}
 	return nil
 }
@@ -153,6 +162,11 @@ func requireRequestEq(tester T, expected Request, actual *http.Request) {
 
 // writeResponse writes the expected response to the response writer.
 func writeResponse(w http.ResponseWriter, response Response) error {
+	// If Delay is set, pause before sending the response
+	if response.Delay > 0 {
+		time.Sleep(response.Delay)
+	}
+
 	// Set Content-Type default if not overridden
 	if _, hasContentType := response.Headers["Content-Type"]; !hasContentType {
 		w.Header().Set("Content-Type", "application/json")
@@ -206,7 +220,7 @@ func requireBodyEq(tester T, expected any, actualBytes []byte) {
 		require.Equal(tester, expected, string(actualBytes))
 	default:
 		expectedJSON, err := json.Marshal(expected)
-		require.NoError(tester, err)
+		require.NoError(tester, err, "Failed to marshal expected body to JSON")
 		require.JSONEq(tester, string(expectedJSON), string(actualBytes))
 	}
 }
