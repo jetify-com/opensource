@@ -41,6 +41,14 @@
 //		},
 //	}
 //
+// You can simulate network latency or test timeout handling by adding a delay to responses:
+//
+//	Response: httpmock.Response{
+//		StatusCode: http.StatusOK,
+//		Body:       `{"success": true}`,
+//		Delay:      2 * time.Second, // Response will be delayed by 2 seconds
+//	}
+//
 // After your test completes, calling Close will shut down the server and verify that
 // all expected requests were received:
 //

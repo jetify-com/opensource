@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -139,6 +140,35 @@ func ExampleServer_validation() {
 	body, _ := io.ReadAll(resp.Body)
 	fmt.Println(string(body))
 	// Output: uploaded
+}
+
+func ExampleServer_delay() {
+	// Create a server with a delayed response
+	testServer := NewServer(&mockT{}, []Exchange{{
+		Request: Request{
+			Method: "GET",
+			Path:   "/api/slow",
+		},
+		Response: Response{
+			StatusCode: http.StatusOK,
+			Body:       `{"status":"success", "data":"worth the wait"}`,
+			Delay:      1 * time.Second, // Response will be delayed by 1 second
+		},
+	}})
+	defer testServer.Close()
+
+	// In a real test, you would use this URL with your HTTP client
+	// fmt.Println("API endpoint:", testServer.Path("/api/slow"))
+
+	// Instead of printing the URL (which has a dynamic port), print something static
+	fmt.Println("Configured delay:", 1*time.Second)
+
+	// Make a request (not executed in this example)
+	// resp, err := http.Get(testServer.Path("/api/slow"))
+	// The response would be delayed by 1 second
+
+	// Output:
+	// Configured delay: 1s
 }
 
 // 2. Unit tests (core functionality first)
@@ -313,7 +343,7 @@ func TestServer_VerifyComplete(t *testing.T) {
 				},
 			}},
 			send:    []Request{}, // send nothing
-			wantErr: "not all expectations were met",
+			wantErr: "expected 1 requests, received 0. Next expected: [GET /test]",
 		},
 		{
 			name: "requests in correct order",
@@ -695,4 +725,46 @@ func TestServer_ResponseHeaders(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestServer_Delay(t *testing.T) {
+	// Define a delay that's long enough to measure but short enough for tests
+	delay := 200 * time.Millisecond
+
+	// Create a server with a delayed response
+	testServer := NewServer(t, []Exchange{{
+		Request: Request{
+			Method: "GET",
+			Path:   "/delayed",
+		},
+		Response: Response{
+			StatusCode: http.StatusOK,
+			Body:       `{"message":"delayed response"}`,
+			Delay:      delay,
+		},
+	}})
+	defer testServer.Close()
+
+	// Record start time
+	start := time.Now()
+
+	// Make the request
+	resp, err := http.Get(testServer.Path("/delayed"))
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	// Calculate elapsed time
+	elapsed := time.Since(start)
+
+	// Verify response
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	assert.JSONEq(t, `{"message":"delayed response"}`, string(body))
+
+	// Verify timing - it should have taken at least the delay duration
+	// We add a small buffer (10ms) to account for very minor timing inconsistencies
+	assert.GreaterOrEqual(t, elapsed, delay-10*time.Millisecond,
+		"Response came back too quickly (in %v), expected at least %v delay", elapsed, delay)
 }
