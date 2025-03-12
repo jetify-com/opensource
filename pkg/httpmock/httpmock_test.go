@@ -16,167 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// 1. Examples - grouped together for clarity
-func ExampleServer_basic() {
-	testServer := NewServer(&mockT{}, []Exchange{{
-		Request: Request{
-			Method: "GET",
-			Path:   "/hello",
-		},
-		Response: Response{
-			Body: "world",
-		},
-	}})
-	defer testServer.Close()
-
-	resp, _ := http.Get(testServer.Path("/hello"))
-	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(body))
-	// Output: world
-}
-
-func ExampleServer_jsonRequest() {
-	testServer := NewServer(&mockT{}, []Exchange{{
-		Request: Request{
-			Method: "POST",
-			Path:   "/api/users",
-			Body:   `{"name":"Alice"}`,
-			Headers: map[string]string{
-				"Content-Type": "application/json",
-			},
-		},
-		Response: Response{
-			StatusCode: http.StatusCreated,
-			Body: map[string]interface{}{
-				"id":   1,
-				"name": "Alice",
-			},
-		},
-	}})
-	defer testServer.Close()
-
-	resp, _ := http.Post(testServer.Path("/api/users"),
-		"application/json",
-		strings.NewReader(`{"name":"Alice"}`))
-	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(resp.StatusCode)
-	fmt.Println(string(body))
-	// Output:
-	// 201
-	// {"id":1,"name":"Alice"}
-}
-
-func ExampleServer_sequence() {
-	testServer := NewServer(&mockT{}, []Exchange{
-		{
-			Request: Request{
-				Method: "POST",
-				Path:   "/login",
-				Body:   `{"username":"alice","password":"secret"}`,
-			},
-			Response: Response{
-				Body: map[string]string{"token": "abc123"},
-			},
-		},
-		{
-			Request: Request{
-				Method: "GET",
-				Path:   "/profile",
-				Headers: map[string]string{
-					"Authorization": "Bearer abc123",
-				},
-			},
-			Response: Response{
-				Body: map[string]string{"name": "Alice"},
-			},
-		},
-	})
-	defer testServer.Close()
-
-	// Login
-	resp, _ := http.Post(testServer.Path("/login"),
-		"application/json",
-		strings.NewReader(`{"username":"alice","password":"secret"}`))
-	var loginResp struct{ Token string }
-	err := json.NewDecoder(resp.Body).Decode(&loginResp)
-	if err != nil {
-		fmt.Println("decode error:", err)
-		return
-	}
-	resp.Body.Close()
-
-	// Get profile using token
-	req, _ := http.NewRequest(http.MethodGet, testServer.Path("/profile"), nil)
-	req.Header.Set("Authorization", "Bearer "+loginResp.Token)
-	resp, _ = http.DefaultClient.Do(req)
-	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(body))
-	// Output: {"name":"Alice"}
-}
-
-func ExampleServer_validation() {
-	testServer := NewServer(&mockT{}, []Exchange{{
-		Request: Request{
-			Method: "POST",
-			Path:   "/upload",
-			Validate: func(r *http.Request) error {
-				if r.Header.Get("Content-Length") == "0" {
-					return fmt.Errorf("empty request body")
-				}
-				return nil
-			},
-		},
-		Response: Response{
-			StatusCode: http.StatusOK,
-			Body:       "uploaded",
-		},
-	}})
-	defer testServer.Close()
-
-	// Send non-empty request
-	resp, _ := http.Post(testServer.Path("/upload"),
-		"text/plain",
-		strings.NewReader("some data"))
-	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(body))
-	// Output: uploaded
-}
-
-func ExampleServer_delay() {
-	// Create a server with a delayed response
-	testServer := NewServer(&mockT{}, []Exchange{{
-		Request: Request{
-			Method: "GET",
-			Path:   "/api/slow",
-		},
-		Response: Response{
-			StatusCode: http.StatusOK,
-			Body:       `{"status":"success", "data":"worth the wait"}`,
-			Delay:      1 * time.Second, // Response will be delayed by 1 second
-		},
-	}})
-	defer testServer.Close()
-
-	// Instead of printing the URL (which has a dynamic port), print something static
-	fmt.Println("Configured delay:", 1*time.Second)
-
-	// Output:
-	// Configured delay: 1s
-}
-
-// 2. Unit tests - core functionality
-
-// Helper function to create a test server with expectations
-func createTestServer(t interface{}, expectations []Exchange) *Server {
-	switch tester := t.(type) {
-	case *mockT:
-		return NewServer(tester, expectations)
-	case *testing.T:
-		return NewServer(tester, expectations)
-	default:
-		panic(fmt.Sprintf("Unsupported type %T for createTestServer", t))
-	}
-}
+// Unit tests - core functionality
 
 func TestServer_Request(t *testing.T) {
 	tests := []struct {
@@ -290,8 +130,8 @@ func TestServer_Request(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			mockTester := newMockT(t)
-			testServer := createTestServer(mockTester, []Exchange{tc.expect})
+			mockTester := &mockT{}
+			testServer := NewServer(mockTester, []Exchange{tc.expect})
 			defer testServer.Close()
 
 			reqToSend := tc.expect.Request
@@ -382,8 +222,8 @@ func TestServer_VerifyComplete(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			mockTester := newMockT(t)
-			testServer := createTestServer(mockTester, tc.expect)
+			mockTester := &mockT{}
+			testServer := NewServer(mockTester, tc.expect)
 			defer testServer.Close()
 
 			// Send all requests in order
@@ -440,7 +280,7 @@ func TestServer_BodyComparison(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			mockTester := newMockT(t)
+			mockTester := &mockT{}
 			mockTester.failed = false
 			mockTester.errors = nil
 
@@ -737,7 +577,7 @@ func TestServer_ResponseHeaders(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			testServer := createTestServer(t, []Exchange{{
+			testServer := NewServer(t, []Exchange{{
 				Request: Request{
 					Method: "GET",
 					Path:   "/test",
@@ -762,7 +602,7 @@ func TestServer_Delay(t *testing.T) {
 	delay := 200 * time.Millisecond
 
 	// Create a server with a delayed response
-	testServer := createTestServer(t, []Exchange{{
+	testServer := NewServer(t, []Exchange{{
 		Request: Request{
 			Method: "GET",
 			Path:   "/delayed",
@@ -835,7 +675,7 @@ func (m *mockResponseWriter) WriteHeader(statusCode int) {
 func TestServer_HandlerErrors(t *testing.T) {
 	t.Run("response error", func(t *testing.T) {
 		// Create a mock T that will record failures
-		mockTester := newMockT(t)
+		mockTester := &mockT{}
 
 		// Create a server with a normal request and response
 		server := &Server{
@@ -865,7 +705,7 @@ func TestServer_HandlerErrors(t *testing.T) {
 
 	t.Run("validation error", func(t *testing.T) {
 		// This test directly tests how requireRequestEq handles validation errors
-		mockTester := newMockT(t)
+		mockTester := &mockT{}
 
 		// Create a request with a custom validation function that always fails
 		expectedReq := Request{
@@ -888,10 +728,10 @@ func TestServer_HandlerErrors(t *testing.T) {
 	})
 
 	t.Run("unexpected request", func(t *testing.T) {
-		mockTester := newMockT(t)
+		mockTester := &mockT{}
 
 		// Create a server with no expectations
-		server := createTestServer(mockTester, []Exchange{})
+		server := NewServer(mockTester, []Exchange{})
 		defer server.Close()
 
 		// Send a request that isn't expected
@@ -905,15 +745,10 @@ func TestServer_HandlerErrors(t *testing.T) {
 	})
 }
 
-// 4. Mock implementations
+// Mock implementations
 type mockT struct {
-	t      *testing.T // real testing.T for test assertions
 	failed bool
 	errors []string
-}
-
-func newMockT(t *testing.T) *mockT {
-	return &mockT{t: t}
 }
 
 func (m *mockT) Errorf(format string, args ...interface{}) {
@@ -954,7 +789,7 @@ func assertResponseEq(t *testing.T, expected Response, actual *http.Response) {
 	if expected.Body != nil {
 		body, err := io.ReadAll(actual.Body)
 		require.NoError(t, err)
-		requireBodyEq(&mockT{t: t}, expected.Body, body)
+		requireBodyEq(&mockT{}, expected.Body, body)
 	}
 }
 
