@@ -291,6 +291,7 @@ func TestReplayServerFailures(t *testing.T) {
 		request       Request
 		expectedError bool
 		errorContains string
+		cassette      string
 	}{
 		{
 			name: "mismatched_method",
@@ -303,6 +304,7 @@ func TestReplayServerFailures(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "method mismatch",
+			cassette:      "successful_get",
 		},
 		{
 			name: "mismatched_path",
@@ -315,6 +317,7 @@ func TestReplayServerFailures(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "URL mismatch",
+			cassette:      "successful_get",
 		},
 		{
 			name: "mismatched_body",
@@ -328,7 +331,8 @@ func TestReplayServerFailures(t *testing.T) {
 				Body: `{"unexpected": "data"}`, // Cassette has empty body, we'll send one
 			},
 			expectedError: true,
-			errorContains: "method mismatch",
+			errorContains: "body mismatch",
+			cassette:      "post_with_body",
 		},
 	}
 
@@ -337,10 +341,10 @@ func TestReplayServerFailures(t *testing.T) {
 			// Use a mockT to capture failures
 			mockTester := &mockT{}
 
-			// Use the successful_get cassette which has a GET /get request recorded
+			// Create a server with a normal request and response
 			replayServer, err := NewReplayServer(mockTester, ReplayConfig{
 				Host:     "https://httpbin.org",
-				Cassette: filepath.Join("testdata", "successful_get"),
+				Cassette: filepath.Join("testdata", test.cassette),
 			})
 			require.NoError(t, err)
 			defer replayServer.Close()

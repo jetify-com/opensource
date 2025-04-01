@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
@@ -105,8 +106,15 @@ func checkBody(tester T, expected string, actual *http.Request) bool {
 
 // isJSON checks if a string is valid JSON
 func isJSON(str string) bool {
+	if str == "" {
+		return false
+	}
+	str = strings.TrimSpace(str)
+	if str == "" || (str[0] != '{' && str[0] != '[') {
+		return false
+	}
 	var js interface{}
-	return str != "" && str[0] == '{' && json.Unmarshal([]byte(str), &js) == nil
+	return json.Unmarshal([]byte(str), &js) == nil
 }
 
 // checkFormData validates the form data matches the expected values
