@@ -1,0 +1,24 @@
+---
+interactions:
+  - request:
+      method: GET
+      url: https://httpbin.org/get
+      headers:
+        Host: [httpbin.org]
+      body: ""
+    response:
+      status: 200
+      headers:
+        Content-Type: [application/json]
+      body: '{"args":{},"headers":{"Accept-Encoding":"gzip","Host":"httpbin.org","User-Agent":"Go-http-client/1.1"},"url":"https://httpbin.org/get"}'
+  - request:
+      method: GET
+      url: https://httpbin.org/status/200
+      headers:
+        Host: [httpbin.org]
+      body: ""
+    response:
+      status: 200
+      headers:
+        Content-Type: [text/plain]
+      body: "OK"

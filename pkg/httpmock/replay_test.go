@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -349,21 +349,114 @@ func TestReplayServerFailures(t *testing.T) {
 			require.NoError(t, err)
 			defer replayServer.Close()
 
-			// Create a response recorder
-			w := httptest.NewRecorder()
-
 			// Build the request using the declarative Request struct
 			req, err := buildRequest(replayServer.URL(), test.request)
 			require.NoError(t, err)
 
-			// Call the handler with the mismatched request
-			replayServer.handler(w, req)
+			// Make the request - this should trigger the test failure via requireCassetteRequest
+			resp, err := http.DefaultClient.Do(req)
+			require.NoError(t, err)
+			defer resp.Body.Close()
+
+			// Check if the test failed as expected
+			if test.expectedError {
+				assert.True(t, mockTester.failed, "test should have failed")
+				if test.errorContains != "" {
+					assert.Contains(t, strings.Join(mockTester.errors, "\n"), test.errorContains, "expected error message not found")
+				}
+			} else {
+				assert.False(t, mockTester.failed, "test should not have failed")
+			}
+		})
+	}
+}
+
+func TestReplayServerInteractionCounts(t *testing.T) {
+	tests := []struct {
+		name          string
+		requests      []Request
+		expectedError bool
+		errorContains string
+		cassette      string
+		checkCloseErr bool // indicates whether to check error from Close() or mockT
+	}{
+		{
+			name: "too_few_requests",
+			requests: []Request{
+				{
+					Method: http.MethodGet,
+					Path:   "/get",
+					Headers: map[string]string{
+						"Host": "httpbin.org",
+					},
+				},
+			},
+			expectedError: true,
+			errorContains: "expected 2 requests, received 0. Next expected: [GET https://httpbin.org/get]",
+			cassette:      "multiple_interactions",
+			checkCloseErr: true,
+		},
+		{
+			name: "too_many_requests",
+			requests: []Request{
+				{
+					Method: http.MethodGet,
+					Path:   "/get",
+					Headers: map[string]string{
+						"Host": "httpbin.org",
+					},
+				},
+				{
+					Method: http.MethodGet,
+					Path:   "/get",
+					Headers: map[string]string{
+						"Host": "httpbin.org",
+					},
+				},
+			},
+			expectedError: true,
+			errorContains: "requested interaction not found",
+			cassette:      "successful_get",
+			checkCloseErr: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Use a mockT to capture failures
+			mockTester := &mockT{}
+
+			// Create a server with a normal request and response
+			replayServer, err := NewReplayServer(mockTester, ReplayConfig{
+				Host:     "https://httpbin.org",
+				Cassette: filepath.Join("testdata", test.cassette),
+			})
+			require.NoError(t, err)
+			defer replayServer.Close()
+
+			// Make all the requests
+			for _, request := range test.requests {
+				req, err := buildRequest(replayServer.URL(), request)
+				require.NoError(t, err)
+				resp, err := http.DefaultClient.Do(req)
+				require.NoError(t, err)
+				defer resp.Body.Close()
+			}
+
+			// Close the server and check for errors
+			err = replayServer.Close()
 
 			// Verify the test failed as expected
 			if test.expectedError {
-				assert.Contains(t, mockTester.errors[0], test.errorContains, "expected error message not found")
+				if test.checkCloseErr {
+					assert.Contains(t, err.Error(), test.errorContains, "expected error message not found")
+				} else {
+					assert.True(t, mockTester.failed, "test should have failed")
+					assert.Contains(t, strings.Join(mockTester.errors, "\n"), test.errorContains, "expected error message not found")
+				}
 			} else {
-				assert.Empty(t, mockTester.errors, "unexpected errors: %v", mockTester.errors)
+				assert.False(t, mockTester.failed, "test should not have failed")
+				assert.NoError(t, err)
 			}
 		})
 	}

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"sync/atomic"
 
 	"github.com/stretchr/testify/require"
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
@@ -14,10 +15,12 @@ import (
 )
 
 type ReplayServer struct {
-	server  *httptest.Server
-	rec     *recorder.Recorder
-	t       T
-	realURL *url.URL
+	server           *httptest.Server
+	rec              *recorder.Recorder
+	t                T
+	realURL          *url.URL
+	cassetteName     string
+	usedInteractions atomic.Int32
 }
 
 type ReplayConfig struct {
@@ -38,7 +41,11 @@ func NewReplayServer(tester T, config ReplayConfig) (*ReplayServer, error) {
 	}
 
 	// Create ReplayServer first
-	replayServer := &ReplayServer{realURL: realURL, t: tester}
+	replayServer := &ReplayServer{
+		realURL:      realURL,
+		t:            tester,
+		cassetteName: config.Cassette,
+	}
 
 	rec, err := recorder.New(
 		config.Cassette,
@@ -80,6 +87,9 @@ func (rs *ReplayServer) handler(w http.ResponseWriter, req *http.Request) {
 	}
 	defer resp.Body.Close()
 
+	// Increment the used interactions counter
+	rs.usedInteractions.Add(1)
+
 	// Copy response status, headers, body
 	for k, vals := range resp.Header {
 		for _, val := range vals {
@@ -114,8 +124,32 @@ func (rs *ReplayServer) Close() error {
 	// Stop the HTTP server first
 	rs.server.Close()
 
-	// Then stop the recorder to finalize writing (if in record mode)
-	return rs.rec.Stop()
+	// Verify that all recorded interactions were used
+	if err := rs.rec.Stop(); err != nil {
+		return err
+	}
+
+	// Get the cassette to check if all interactions were used
+	cassette, err := cassette.Load(rs.cassetteName)
+	if err != nil {
+		return fmt.Errorf("failed to load cassette for verification: %v", err)
+	}
+
+	// Check if any interactions were not used
+	usedCount := rs.usedInteractions.Load()
+	if usedCount < int32(len(cassette.Interactions)) {
+		nextUnused := cassette.Interactions[usedCount]
+		return fmt.Errorf("expected %d requests, received %d. Next expected: [%s %s]",
+			len(cassette.Interactions), usedCount, nextUnused.Request.Method, nextUnused.Request.URL)
+	}
+
+	// Check if we received more requests than expected
+	if usedCount > int32(len(cassette.Interactions)) {
+		return fmt.Errorf("expected %d requests, received %d: too many requests made",
+			len(cassette.Interactions), usedCount)
+	}
+
+	return nil
 }
 
 // URL returns the base URL of the replay server.
