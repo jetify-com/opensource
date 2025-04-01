@@ -14,6 +14,14 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
 
+// ReplayServer is a server that can be used to test HTTP interactions by
+// recording and replaying real HTTP requests.
+//
+// When a test is first run, the ReplayServer will record the interactions
+// and save them to a "cassette" file.
+//
+// On subsequent runs, the ReplayServer will replay the interactions from the
+// cassette file, allowing for consistent tests.
 type ReplayServer struct {
 	server           *httptest.Server
 	rec              *recorder.Recorder
@@ -23,11 +31,18 @@ type ReplayServer struct {
 	usedInteractions atomic.Int32
 }
 
+// ReplayConfig is the configuration for a ReplayServer.
 type ReplayConfig struct {
-	Host     string
+	// Host is the address of the real endpoints we're proxying requests to,
+	// e.g. "https://api.example.com".
+	Host string
+	// Cassette is the name of the cassette file to use for recording and replaying.
+	// If the cassette does not exist, it will be created.
+	// Do not include the ".yaml" extension, it will be added automatically.
 	Cassette string
 }
 
+// NewReplayServer creates a new ReplayServer.
 func NewReplayServer(tester T, config ReplayConfig) (*ReplayServer, error) {
 	tester.Helper()
 
@@ -120,6 +135,8 @@ func formatRequestBody(req *http.Request) string {
 	return string(bodyBytes)
 }
 
+// Close stops the ReplayServer and verifies that all recorded interactions
+// were used.
 func (rs *ReplayServer) Close() error {
 	// Stop the HTTP server first
 	rs.server.Close()
