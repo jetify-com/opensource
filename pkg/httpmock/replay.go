@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"strconv"
 	"sync/atomic"
 
 	"github.com/stretchr/testify/require"
@@ -40,7 +42,22 @@ type ReplayConfig struct {
 	// If the cassette does not exist, it will be created.
 	// Do not include the ".yaml" extension, it will be added automatically.
 	Cassette string
+	// Mode determines whether to use cassettes (unit testing) or always hit the real API (integration)
+	// If not specified, defaults to the value of INTEGRATION environment variable
+	//
+	// Possible values are "unit" and "integration".
+	Mode TestMode
 }
+
+// TestMode represents how the ReplayServer should handle HTTP interactions
+type TestMode string
+
+const (
+	// ModeUnitTest uses cassettes for replay (default behavior)
+	ModeUnitTest TestMode = "unit"
+	// ModeIntegrationTest always forwards requests to the real API
+	ModeIntegrationTest TestMode = "integration"
+)
 
 // NewReplayServer creates a new ReplayServer.
 func NewReplayServer(tester T, config ReplayConfig) (*ReplayServer, error) {
@@ -62,16 +79,10 @@ func NewReplayServer(tester T, config ReplayConfig) (*ReplayServer, error) {
 		cassetteName: config.Cassette,
 	}
 
-	rec, err := recorder.New(
-		config.Cassette,
-		recorder.WithMode(recorder.ModeRecordOnce),
-		recorder.WithHook(removeIgnored, recorder.AfterCaptureHook),
-		recorder.WithMatcher(func(request *http.Request, cassetteRequest cassette.Request) bool {
-			return requireCassetteRequest(tester, cassetteRequest, request)
-		}),
-	)
+	// Create the recorder
+	rec, err := createRecorder(tester, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create recorder: %v", err)
+		return nil, err
 	}
 
 	replayServer.rec = rec
@@ -117,22 +128,6 @@ func (rs *ReplayServer) handler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, fmt.Sprintf("error copying response: %v", copyErr), http.StatusInternalServerError)
 		require.NoError(rs.t, copyErr)
 	}
-}
-
-// formatRequestBody reads and returns the request body as a string, restoring it afterward
-func formatRequestBody(req *http.Request) string {
-	if req.Body == nil {
-		return ""
-	}
-
-	bodyBytes, err := io.ReadAll(req.Body)
-	if err != nil {
-		return fmt.Sprintf("error reading body: %v", err)
-	}
-	// Restore the body for later use
-	req.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-
-	return string(bodyBytes)
 }
 
 // Close stops the ReplayServer and verifies that all recorded interactions
@@ -197,6 +192,52 @@ var ignoredHeaders = []string{
 	"Accept-Language",
 	"Connection",
 	"Content-Length",
+}
+
+// createRecorder creates a new recorder with the given configuration
+func createRecorder(tester T, config ReplayConfig) (*recorder.Recorder, error) {
+	// Determine the recorder mode based on config and environment
+	recorderMode := recorder.ModeRecordOnce
+	if config.Mode == "" {
+		// If mode not specified, use environment variable setting
+		if val, err := strconv.ParseBool(os.Getenv("INTEGRATION")); err == nil && val {
+			config.Mode = ModeIntegrationTest
+		} else {
+			config.Mode = ModeUnitTest
+		}
+	}
+	if config.Mode == ModeIntegrationTest {
+		recorderMode = recorder.ModePassthrough
+	}
+
+	rec, err := recorder.New(
+		config.Cassette,
+		recorder.WithMode(recorderMode),
+		recorder.WithHook(removeIgnored, recorder.AfterCaptureHook),
+		recorder.WithMatcher(func(request *http.Request, cassetteRequest cassette.Request) bool {
+			return requireCassetteRequest(tester, cassetteRequest, request)
+		}),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create recorder: %v", err)
+	}
+	return rec, nil
+}
+
+// formatRequestBody reads and returns the request body as a string, restoring it afterward
+func formatRequestBody(req *http.Request) string {
+	if req.Body == nil {
+		return ""
+	}
+
+	bodyBytes, err := io.ReadAll(req.Body)
+	if err != nil {
+		return fmt.Sprintf("error reading body: %v", err)
+	}
+	// Restore the body for later use
+	req.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	return string(bodyBytes)
 }
 
 // removeIgnored is a recorder hook that removes ignored headers and request fields
