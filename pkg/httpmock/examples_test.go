@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stretchr/testify/require"
 	"go.jetify.com/pkg/httpmock"
 )
 
@@ -15,8 +16,11 @@ import (
 // requirements for the examples, but is separate from the mockT in the test file.
 type t struct{}
 
-func (*t) Errorf(format string, args ...interface{}) {}
-func (*t) FailNow()                                  {}
+func (*t) Errorf(format string, args ...interface{}) {
+	fmt.Printf("ERROR: "+format+"\n", args...)
+}
+func (*t) FailNow() {}
+func (*t) Helper()  {}
 
 // ExampleServer_basic demonstrates basic usage of the httpmock Server.
 func ExampleServer_basic() {
@@ -27,6 +31,9 @@ func ExampleServer_basic() {
 		},
 		Response: httpmock.Response{
 			Body: "world",
+			Headers: map[string]string{
+				"Content-Type": "text/plain",
+			},
 		},
 	}})
 	defer testServer.Close()
@@ -134,6 +141,9 @@ func ExampleServer_validation() {
 		Response: httpmock.Response{
 			StatusCode: http.StatusOK,
 			Body:       "uploaded",
+			Headers: map[string]string{
+				"Content-Type": "text/plain",
+			},
 		},
 	}})
 	defer testServer.Close()
@@ -163,9 +173,118 @@ func ExampleServer_delay() {
 	}})
 	defer testServer.Close()
 
-	// Instead of printing the URL (which has a dynamic port), print something static
+	// Print the configured delay
 	fmt.Println("Configured delay:", 1*time.Second)
+
+	// Make the request
+	resp, err := http.Get(testServer.Path("/api/slow"))
+	if err != nil {
+		fmt.Println("request error:", err)
+		return
+	}
+	defer resp.Body.Close()
 
 	// Output:
 	// Configured delay: 1s
+}
+
+// ExampleReplayServer_basic demonstrates basic usage of the ReplayServer for recording
+// and replaying HTTP interactions with httpbin.org.
+func ExampleReplayServer_basic() {
+	mockT := &t{} // In a real test, this would be the actual testing.T instance
+
+	// Create a new replay server that will record interactions with httpbin.org
+	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
+		Host:     "https://httpbin.org",
+		Cassette: "testdata/successful_get",
+	})
+	require.NoError(mockT, err)
+	defer replayServer.Close()
+
+	// Make a request that will be recorded or replayed
+	req, err := http.NewRequest(http.MethodGet, replayServer.URL()+"/get", nil)
+	require.NoError(mockT, err)
+	req.Host = "httpbin.org"
+	req.Header.Set("Accept-Encoding", "gzip")
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(mockT, err)
+	defer resp.Body.Close()
+
+	// Read and print the response status and body
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(mockT, err)
+
+	// Parse the JSON response
+	var result map[string]interface{}
+	err = json.Unmarshal(body, &result)
+	require.NoError(mockT, err)
+
+	// Print only the status code
+	fmt.Printf("Status: %d\n", resp.StatusCode)
+
+	// Output:
+	// Status: 200
+}
+
+// ExampleReplayServer_headers demonstrates how ReplayServer handles headers
+// while recording and replaying HTTP interactions.
+func ExampleReplayServer_headers() {
+	mockT := &t{} // In a real test, this would be the actual testing.T instance
+
+	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
+		Host:     "https://httpbin.org",
+		Cassette: "testdata/get_with_header",
+	})
+	require.NoError(mockT, err)
+	defer replayServer.Close()
+
+	// Create a request with custom headers
+	req, err := http.NewRequest(http.MethodGet, replayServer.URL()+"/headers", nil)
+	require.NoError(mockT, err)
+	req.Host = "httpbin.org"
+	req.Header.Set("X-Test-Header", "test-value")
+	req.Header.Set("Accept-Encoding", "gzip")
+
+	// Make the request
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(mockT, err)
+	defer resp.Body.Close()
+
+	// Print response status
+	fmt.Printf("Status: %d\n", resp.StatusCode)
+
+	// Output:
+	// Status: 200
+}
+
+// ExampleReplayServer_jsonRequest demonstrates handling JSON requests with ReplayServer.
+func ExampleReplayServer_jsonRequest() {
+	mockT := &t{} // In a real test, this would be the actual testing.T instance
+
+	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
+		Host:     "https://httpbin.org",
+		Cassette: "testdata/post_with_body",
+	})
+	require.NoError(mockT, err)
+	defer replayServer.Close()
+
+	// Create a JSON request
+	jsonData := `{"test": "data"}`
+	req, err := http.NewRequest(http.MethodPost, replayServer.URL()+"/post", strings.NewReader(jsonData))
+	require.NoError(mockT, err)
+	req.Host = "httpbin.org"
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept-Encoding", "gzip")
+	req.Header.Set("Content-Length", fmt.Sprintf("%d", len(jsonData)))
+
+	// Make the request
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(mockT, err)
+	defer resp.Body.Close()
+
+	// Print response status
+	fmt.Printf("Status: %d\n", resp.StatusCode)
+
+	// Output:
+	// Status: 200
 }

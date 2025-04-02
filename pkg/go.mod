@@ -27,6 +27,7 @@ require (
 	go.jetify.com/typeid v1.3.0
 	golang.org/x/oauth2 v0.28.0
 	google.golang.org/protobuf v1.36.5
+	gopkg.in/dnaeon/go-vcr.v4 v4.0.2
 	gopkg.in/yaml.v3 v3.0.1
 )
 

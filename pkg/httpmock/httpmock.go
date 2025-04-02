@@ -15,20 +15,24 @@ import (
 
 // Request specifies what an incoming HTTP request should look like.
 type Request struct {
-	Method  string
+	Body    any // optional: if non-empty, we check the body as JSON (or raw string)
+	Form    url.Values
+	Headers map[string]string
 	Path    string
-	Body    any               // optional: if non-empty, we check the body as JSON (or raw string)
-	Headers map[string]string // optional: headers that must be present
+	Method  string
+
 	// Validate is an optional callback for additional checks.
 	Validate func(r *http.Request) error
 }
 
 // Response specifies how to respond to a matched request.
 type Response struct {
-	StatusCode int               // HTTP status code (defaults to 200 OK if not set)
 	Body       any               // can be a JSON-marshalable object or a string
 	Headers    map[string]string // optional: headers to include in response
-	Delay      time.Duration     // optional: delay before sending the response (for testing timeouts, etc.)
+	Status     string
+	StatusCode int // HTTP status code (defaults to 200 OK if not set)
+
+	Delay time.Duration // optional: delay before sending the response (for testing timeouts, etc.)
 }
 
 // Exchange represents a pair of expected HTTP request and corresponding response.
@@ -41,6 +45,7 @@ type Exchange struct {
 type T interface {
 	Errorf(format string, args ...interface{})
 	FailNow()
+	Helper()
 }
 
 // Server provides a declarative API on top of httptest.Server for testing HTTP clients.
@@ -51,12 +56,13 @@ type Server struct {
 	expectations []Exchange
 	mu           sync.Mutex
 	index        int
-	server       *httptest.Server // make private
+	server       *httptest.Server
 }
 
 // NewServer creates and starts an httptest.Server that will match incoming requests
 // to the provided expectations in order.
 func NewServer(t T, expectations []Exchange) *Server {
+	t.Helper()
 	ds := &Server{
 		t:            t,
 		expectations: expectations,
@@ -109,7 +115,7 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 
 	s.index++ // move to next expectation for subsequent requests
 
-	requireRequestEq(s.t, exp.Request, r)
+	assertRequest(s.t, exp.Request, r)
 
 	if err := writeResponse(w, exp.Response); err != nil {
 		http.Error(w, "failed to write response", http.StatusInternalServerError)
@@ -134,8 +140,8 @@ func (s *Server) VerifyComplete() error {
 	return nil
 }
 
-// requireRequestEq verifies that the actual HTTP request matches the expected request.
-func requireRequestEq(tester T, expected Request, actual *http.Request) {
+// assertRequest verifies that the actual HTTP request matches the expected request.
+func assertRequest(tester T, expected Request, actual *http.Request) {
 	// Check HTTP method.
 	require.Equal(tester, expected.Method, actual.Method, "HTTP method mismatch")
 	// Check path.
@@ -144,6 +150,13 @@ func requireRequestEq(tester T, expected Request, actual *http.Request) {
 	// Check headers if provided.
 	for key, expectedValue := range expected.Headers {
 		require.Equal(tester, expectedValue, actual.Header.Get(key), "Header %s mismatch", key)
+	}
+
+	// Check form values if provided.
+	if expected.Form != nil {
+		err := actual.ParseForm()
+		require.NoError(tester, err, "error parsing form")
+		require.Equal(tester, expected.Form, actual.Form, "Form values mismatch")
 	}
 
 	// Check body if provided.
@@ -177,6 +190,11 @@ func writeResponse(w http.ResponseWriter, response Response) error {
 		w.Header().Set(k, v)
 	}
 
+	// Set status text if provided
+	if response.Status != "" {
+		w.Header().Set("X-Status-Text", response.Status)
+	}
+
 	code := response.StatusCode
 	if code == 0 {
 		code = http.StatusOK
@@ -187,19 +205,29 @@ func writeResponse(w http.ResponseWriter, response Response) error {
 		return nil
 	}
 
-	// If Body is a string, write it directly. Otherwise, assume it's JSON-marshalable.
-	switch rb := response.Body.(type) {
-	case string:
-		_, err := w.Write([]byte(rb))
-		if err != nil {
+	// Handle string bodies
+	if str, ok := response.Body.(string); ok {
+		// If it's valid JSON and content type is JSON, write as is
+		if json.Valid([]byte(str)) && w.Header().Get("Content-Type") == "application/json" {
+			_, err := w.Write([]byte(str))
 			return err
 		}
-	default:
-		if err := json.NewEncoder(w).Encode(rb); err != nil {
+		// If content type is JSON but string is not JSON, encode as JSON string
+		if w.Header().Get("Content-Type") == "application/json" {
+			jsonBytes, err := json.Marshal(str)
+			if err != nil {
+				return err
+			}
+			_, err = w.Write(jsonBytes)
 			return err
 		}
+		// Otherwise write string directly
+		_, err := w.Write([]byte(str))
+		return err
 	}
-	return nil
+
+	// For non-string bodies, encode as JSON
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 // requireBodyEq verifies that the actual body matches the expected body.

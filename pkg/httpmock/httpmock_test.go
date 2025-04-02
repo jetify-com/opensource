@@ -537,6 +537,8 @@ func TestServer_ResponseHeaders(t *testing.T) {
 		name        string
 		response    Response
 		wantHeaders map[string]string
+		wantCode    int
+		wantBody    string
 	}{
 		{
 			name: "default content-type",
@@ -546,6 +548,8 @@ func TestServer_ResponseHeaders(t *testing.T) {
 			wantHeaders: map[string]string{
 				"Content-Type": "application/json",
 			},
+			wantCode: http.StatusOK,
+			wantBody: `{"hello":"world"}`,
 		},
 		{
 			name: "custom headers",
@@ -560,6 +564,8 @@ func TestServer_ResponseHeaders(t *testing.T) {
 				"Content-Type": "text/plain",
 				"X-Custom":     "value",
 			},
+			wantCode: http.StatusOK,
+			wantBody: "hello world",
 		},
 		{
 			name: "override default content-type",
@@ -572,6 +578,31 @@ func TestServer_ResponseHeaders(t *testing.T) {
 			wantHeaders: map[string]string{
 				"Content-Type": "application/problem+json",
 			},
+			wantCode: http.StatusOK,
+			wantBody: `{"hello":"world"}`,
+		},
+		{
+			name: "custom status code and text",
+			response: Response{
+				StatusCode: http.StatusNotFound,
+				Status:     "Not Found",
+				Body:       "Resource not found",
+			},
+			wantHeaders: map[string]string{
+				"Content-Type":  "application/json",
+				"X-Status-Text": "Not Found",
+			},
+			wantCode: http.StatusNotFound,
+			wantBody: `"Resource not found"`,
+		},
+		{
+			name: "empty body",
+			response: Response{
+				StatusCode: http.StatusNoContent,
+			},
+			wantHeaders: map[string]string{},
+			wantCode:    http.StatusNoContent,
+			wantBody:    "",
 		},
 	}
 
@@ -590,8 +621,23 @@ func TestServer_ResponseHeaders(t *testing.T) {
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
+			// Check status code
+			assert.Equal(t, testCase.wantCode, resp.StatusCode)
+
+			// Check headers
 			for k, want := range testCase.wantHeaders {
 				assert.Equal(t, want, resp.Header.Get(k), "Expected header %s to be %s", k, want)
+			}
+
+			// Check body
+			if testCase.wantBody != "" {
+				body, err := io.ReadAll(resp.Body)
+				require.NoError(t, err)
+				if strings.HasPrefix(testCase.wantBody, "{") || strings.HasPrefix(testCase.wantBody, "[") {
+					assert.JSONEq(t, testCase.wantBody, string(body))
+				} else {
+					assert.Equal(t, testCase.wantBody, string(body))
+				}
 			}
 		})
 	}
@@ -719,8 +765,8 @@ func TestServer_HandlerErrors(t *testing.T) {
 		// Create an HTTP request that would match except for the validation
 		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 
-		// Call requireRequestEq directly
-		requireRequestEq(mockTester, expectedReq, req)
+		// Call assertRequest directly
+		assertRequest(mockTester, expectedReq, req)
 
 		// Verify the test failed due to validation
 		assert.True(t, mockTester.failed)
@@ -758,6 +804,10 @@ func (m *mockT) Errorf(format string, args ...interface{}) {
 
 func (m *mockT) FailNow() {
 	m.failed = true
+}
+
+func (m *mockT) Helper() {
+	// No-op
 }
 
 func buildBody(body any) io.Reader {
@@ -811,4 +861,114 @@ func buildRequest(baseURL string, request Request) (*http.Request, error) {
 	}
 
 	return req, nil
+}
+
+func TestRequireRequestEq(t *testing.T) {
+	tests := []struct {
+		name     string
+		expected Request
+		actual   *http.Request
+		wantFail bool
+	}{
+		{
+			name: "matching request",
+			expected: Request{
+				Method: http.MethodPost,
+				Path:   "/test",
+				Headers: map[string]string{
+					"Content-Type": "application/json",
+				},
+				Body: `{"hello":"world"}`,
+			},
+			actual: func() *http.Request {
+				req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"hello":"world"}`))
+				req.Header.Set("Content-Type", "application/json")
+				return req
+			}(),
+			wantFail: false,
+		},
+		{
+			name: "mismatched method",
+			expected: Request{
+				Method: http.MethodPost,
+				Path:   "/test",
+			},
+			actual:   httptest.NewRequest(http.MethodGet, "/test", nil),
+			wantFail: true,
+		},
+		{
+			name: "mismatched path",
+			expected: Request{
+				Method: http.MethodPost,
+				Path:   "/test",
+			},
+			actual:   httptest.NewRequest(http.MethodPost, "/wrong", nil),
+			wantFail: true,
+		},
+		{
+			name: "mismatched headers",
+			expected: Request{
+				Method: http.MethodPost,
+				Path:   "/test",
+				Headers: map[string]string{
+					"Content-Type": "application/json",
+				},
+			},
+			actual: func() *http.Request {
+				req := httptest.NewRequest(http.MethodPost, "/test", nil)
+				req.Header.Set("Content-Type", "text/plain")
+				return req
+			}(),
+			wantFail: true,
+		},
+		{
+			name: "mismatched body",
+			expected: Request{
+				Method: http.MethodPost,
+				Path:   "/test",
+				Body:   `{"hello":"world"}`,
+			},
+			actual:   httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(`{"hello":"different"}`)),
+			wantFail: true,
+		},
+		{
+			name: "custom validation passes",
+			expected: Request{
+				Method: http.MethodPost,
+				Path:   "/test",
+				Validate: func(r *http.Request) error {
+					if r.Header.Get("X-Custom") != "value" {
+						return fmt.Errorf("missing X-Custom header")
+					}
+					return nil
+				},
+			},
+			actual: func() *http.Request {
+				req := httptest.NewRequest(http.MethodPost, "/test", nil)
+				req.Header.Set("X-Custom", "value")
+				return req
+			}(),
+			wantFail: false,
+		},
+		{
+			name: "custom validation fails",
+			expected: Request{
+				Method: http.MethodPost,
+				Path:   "/test",
+				Validate: func(r *http.Request) error {
+					return fmt.Errorf("validation failed")
+				},
+			},
+			actual:   httptest.NewRequest(http.MethodPost, "/test", nil),
+			wantFail: true,
+		},
+	}
+
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockTester := &mockT{}
+			assertRequest(mockTester, testCase.expected, testCase.actual)
+			assert.Equal(t, testCase.wantFail, mockTester.failed)
+		})
+	}
 }
