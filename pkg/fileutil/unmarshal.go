@@ -27,7 +27,7 @@ func UnmarshalFile(path string, v any) error {
 	}
 	defer f.Close()
 
-	return unmarshalReader(f, v, filepath.Ext(path))
+	return UnmarshalReader(f, v, filepath.Ext(path))
 }
 
 // UnmarshalPaths reads and parses files from the given paths in the filesystem
@@ -35,7 +35,7 @@ func UnmarshalFile(path string, v any) error {
 func UnmarshalPaths[T any](fsys fs.FS, paths []string) ([]T, error) {
 	results := []T{}
 
-	filePaths, err := findFiles(fsys, paths, supportedExtensions)
+	filePaths, err := FindFiles(fsys, paths, supportedExtensions)
 	if err != nil {
 		return nil, err
 	}
@@ -62,17 +62,17 @@ func unmarshalPath[T any](fsys fs.FS, path string) (T, error) {
 	}
 	defer f.Close()
 
-	if err := unmarshalReader(f, &result, filepath.Ext(path)); err != nil {
+	if err := UnmarshalReader(f, &result, filepath.Ext(path)); err != nil {
 		return result, err
 	}
 
 	return result, nil
 }
 
-// unmarshalReader reads and parses data from an io.Reader into v based on the format specified.
+// UnmarshalReader reads and parses data from an io.Reader into v based on the format specified.
 // Supported formats: json, jsonc, yml, yaml, and toml.
 // The format string can be a file extension (e.g. ".json") or a format name (e.g. "json").
-func unmarshalReader(r io.Reader, v any, format string) error {
+func UnmarshalReader(r io.Reader, v any, format string) error {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
@@ -107,8 +107,8 @@ func hujsonUnmarshal(data []byte, v any) error {
 	return json.Unmarshal(ast.Pack(), v)
 }
 
-// findFiles returns a list of files with the given extensions from the paths in the filesystem.
-func findFiles(fsys fs.FS, paths []string, exts []string) ([]string, error) {
+// FindFiles returns a list of files with the given extensions from the paths in the filesystem.
+func FindFiles(fsys fs.FS, paths []string, exts []string) ([]string, error) {
 	filePaths := []string{}
 
 	for _, path := range paths {

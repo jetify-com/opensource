@@ -93,7 +93,7 @@ tags:
 		t.Run(test.name, func(t *testing.T) {
 			r := strings.NewReader(test.input)
 			var got testRecord
-			err := unmarshalReader(r, &got, test.format)
+			err := UnmarshalReader(r, &got, test.format)
 
 			if test.wantErr {
 				assert.Error(t, err)
@@ -179,7 +179,7 @@ func TestFindFiles(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got, err := findFiles(fsys, test.paths, test.exts)
+			got, err := FindFiles(fsys, test.paths, test.exts)
 
 			if test.wantErr {
 				assert.Error(t, err)
