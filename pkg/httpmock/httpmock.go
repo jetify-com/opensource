@@ -205,29 +205,22 @@ func writeResponse(w http.ResponseWriter, response Response) error {
 		return nil
 	}
 
-	// Handle string bodies
-	if str, ok := response.Body.(string); ok {
-		// If it's valid JSON and content type is JSON, write as is
-		if json.Valid([]byte(str)) && w.Header().Get("Content-Type") == "application/json" {
-			_, err := w.Write([]byte(str))
+	// If Body is a string, write it directly. Otherwise, assume it's JSON-marshalable.
+	switch rb := response.Body.(type) {
+	case string:
+		_, err := w.Write([]byte(rb))
+		if err != nil {
 			return err
 		}
-		// If content type is JSON but string is not JSON, encode as JSON string
-		if w.Header().Get("Content-Type") == "application/json" {
-			jsonBytes, err := json.Marshal(str)
-			if err != nil {
-				return err
-			}
-			_, err = w.Write(jsonBytes)
+	default:
+		if err := json.NewEncoder(w).Encode(rb); err != nil {
 			return err
 		}
-		// Otherwise write string directly
-		_, err := w.Write([]byte(str))
-		return err
 	}
+	return nil
 
-	// For non-string bodies, encode as JSON
-	return json.NewEncoder(w).Encode(response.Body)
+	// // For non-string bodies, encode as JSON
+	// return json.NewEncoder(w).Encode(response.Body)
 }
 
 // requireBodyEq verifies that the actual body matches the expected body.

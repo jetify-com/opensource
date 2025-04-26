@@ -586,7 +586,7 @@ func TestServer_ResponseHeaders(t *testing.T) {
 			response: Response{
 				StatusCode: http.StatusNotFound,
 				Status:     "Not Found",
-				Body:       "Resource not found",
+				Body:       `"Resource not found"`,
 			},
 			wantHeaders: map[string]string{
 				"Content-Type":  "application/json",
@@ -603,6 +603,18 @@ func TestServer_ResponseHeaders(t *testing.T) {
 			wantHeaders: map[string]string{},
 			wantCode:    http.StatusNoContent,
 			wantBody:    "",
+		},
+		{
+			name: "invalid json body in response",
+			response: Response{
+				StatusCode: http.StatusBadRequest,
+				Body:       `"invalid":json}`,
+			},
+			wantHeaders: map[string]string{
+				"Content-Type": "application/json",
+			},
+			wantCode: http.StatusBadRequest,
+			wantBody: `"invalid":json}`,
 		},
 	}
 
