@@ -218,9 +218,6 @@ func writeResponse(w http.ResponseWriter, response Response) error {
 		}
 	}
 	return nil
-
-	// // For non-string bodies, encode as JSON
-	// return json.NewEncoder(w).Encode(response.Body)
 }
 
 // requireBodyEq verifies that the actual body matches the expected body.
