@@ -1,4 +1,3 @@
-// Package optional provides an Option type for representing values that may or may not be present.
 package optional
 
 import (

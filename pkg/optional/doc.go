@@ -53,11 +53,4 @@
 //
 // The zero value of Option[T] is considered "not set" (None).  As a result an
 // Option field in a struct that is left uninitialized will behave as None().
-//
-// # Concurrency
-//
-// Option is a value type. Copies are immutable and safe for concurrent reads.
-// The only mutator is (*Option).UnmarshalJSON; if you share the same Option
-// *pointer* between goroutines, guard that pointer with a mutex while
-// unmarshalling.
 package optional
