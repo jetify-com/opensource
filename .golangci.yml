@@ -1,13 +1,11 @@
-# TODO(Landau): Turn on all linters
-# TODO(Landau): move this to top level of opensource?
 run:
   go: "1.23"
 linters:
   disable-all: true
   enable:
     - dupl
-    - errorlint
     - errcheck
+    - errorlint
     - gofmt
     - goimports
     - gosimple
@@ -27,14 +25,34 @@ linters:
     - usestdlibvars
     - usetesting
     - varnamelen
-    # If we're going to use github.com/pkg/errors we should probably turn this on?
-    # Let's adopt new stackerr lib and we can turn this on.
     # - wrapcheck
-    - unused
+issues:
+  exclude-files:
+    - ".*\\.connect\\.go$"
+    - ".*\\.pb\\.go$"
+  exclude:
+    # It's usually better to start off _not_ wrapping an error unless it
+    # should be part of your API. Errors should be wrapped only when it's
+    # useful.
+    #
+    # See https://go.dev/blog/go1.13-errors
+    - "non-wrapping format verb for fmt.Errorf"
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - dupl
 
+    # TODO(gcurtis): temporary until this file is used.
+    - path: terminal.*\.go
+      linters:
+        - unused
 linters-settings:
-  errorlint:
-    errorf: false
+  errcheck:
+    exclude-functions:
+      # Dropped/canceled/timed out connections or bad clients make checking this
+      # error pointless 99% of the time.
+      - (net/http.ResponseWriter).Write
+      - (flag/*FlagSet).Parse
   revive:
     rules: # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md
       - name: atomic
@@ -56,15 +74,38 @@ linters-settings:
       - name: var-naming
       - name: unreachable-code
   varnamelen:
-    max-distance: 10
+    max-distance: 40
     ignore-decls:
-      - id []byte
+      - c echo.Context
+      - const C
+      - db database.Db
+      - db db
+      - e error
+      - e watch.Event
+      - f *foo.Bar
+      - i int
+      - id string
+      - id any
+      - m map[string]any
+      - m map[string]int
+      - mc api.CliServiceClient
+      - ns *komponents.Namespace
+      - ns komponents.Namespace
+      - ns string
       - r *http.Request
-      - r io.Reader
+      - T any
       - t testing.T
-      - v any
+      - vc *viewer.MockViewer
+      - vc Context
+      - vc viewer
+      - vc viewer.CommonContext
+      - vc viewer.Context
       - w http.ResponseWriter
       - w io.Writer
-  # TODO: enable this
-  # unparam:
-  #   check-exported: true
+  unconvert:
+    fast-math: true
+  wrapcheck:
+    ignoreSigRegexps:
+      - ".*confkit.*Validate.*"
+    ignorePackageGlobs:
+      - "go.jetify.com/axiom/api/*"
