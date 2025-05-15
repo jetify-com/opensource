@@ -12,7 +12,7 @@ type Option[T any] struct {
 	set   bool
 }
 
-// Some creates an value that is set
+// Some creates a value that is set
 func Some[T any](value T) Option[T] {
 	return Option[T]{
 		value: value,
