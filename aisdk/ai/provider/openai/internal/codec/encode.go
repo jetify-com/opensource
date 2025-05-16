@@ -199,8 +199,8 @@ func applyProviderMetadata(params *responses.ResponseNewParams, opts api.CallOpt
 // applyReasoningSettings applies settings specific to reasoning models
 // and handles unsupported options
 func applyReasoningSettings(params *responses.ResponseNewParams, opts api.CallOptions,
-	modelConfig modelConfig, reasoningEffort string) []api.CallWarning {
-
+	modelConfig modelConfig, reasoningEffort string,
+) []api.CallWarning {
 	var warnings []api.CallWarning
 
 	// Apply reasoning settings for reasoning models
