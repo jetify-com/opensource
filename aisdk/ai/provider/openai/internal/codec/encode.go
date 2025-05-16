@@ -109,39 +109,67 @@ func applyCallOptions(params *responses.ResponseNewParams, opts api.CallOptions,
 
 	// Handle JSON response format if specified
 	if opts.ResponseFormat != nil && opts.ResponseFormat.Type == "json" {
-		isStrict := getIsStrict(opts)
-
-		if opts.ResponseFormat.Schema != nil {
-			schemaMap, err := jsonSchemaAsMap(opts.ResponseFormat.Schema)
-			if err != nil {
-				return warnings, fmt.Errorf("failed to convert JSON schema: %w", err)
-			}
-			params.Text = responses.ResponseTextConfigParam{
-				Format: responses.ResponseFormatTextConfigUnionParam{
-					OfJSONSchema: &responses.ResponseFormatTextJSONSchemaConfigParam{
-						Type:   "json_schema",
-						Name:   opts.ResponseFormat.Name,
-						Schema: schemaMap,
-						Strict: openai.Bool(isStrict),
-					},
-				},
-			}
-			if opts.ResponseFormat.Description != "" {
-				params.Text.Format.OfJSONSchema.Description = openai.String(opts.ResponseFormat.Description)
-			}
-		} else {
-			params.Text = responses.ResponseTextConfigParam{
-				Format: responses.ResponseFormatTextConfigUnionParam{
-					OfJSONObject: &shared.ResponseFormatJSONObjectParam{
-						Type: "json_object",
-					},
-				},
-			}
+		err := applyJSONResponseFormat(params, opts)
+		if err != nil {
+			return warnings, err
 		}
 	}
 
 	// Apply provider options from metadata
+	reasoningEffort := applyProviderMetadata(params, opts)
+
+	// Apply model-specific settings
+	if modelConfig.RequiredAutoTruncation {
+		params.Truncation = "auto"
+	}
+
+	// Apply reasoning settings and handle unsupported options for reasoning models
+	reasoningWarnings := applyReasoningSettings(params, opts, modelConfig, reasoningEffort)
+	warnings = append(warnings, reasoningWarnings...)
+
+	return warnings, nil
+}
+
+// applyJSONResponseFormat handles setting up JSON response format options
+func applyJSONResponseFormat(params *responses.ResponseNewParams, opts api.CallOptions) error {
+	isStrict := getIsStrict(opts)
+
+	if opts.ResponseFormat.Schema != nil {
+		schemaMap, err := jsonSchemaAsMap(opts.ResponseFormat.Schema)
+		if err != nil {
+			return fmt.Errorf("failed to convert JSON schema: %w", err)
+		}
+		params.Text = responses.ResponseTextConfigParam{
+			Format: responses.ResponseFormatTextConfigUnionParam{
+				OfJSONSchema: &responses.ResponseFormatTextJSONSchemaConfigParam{
+					Type:   "json_schema",
+					Name:   opts.ResponseFormat.Name,
+					Schema: schemaMap,
+					Strict: openai.Bool(isStrict),
+				},
+			},
+		}
+		if opts.ResponseFormat.Description != "" {
+			params.Text.Format.OfJSONSchema.Description = openai.String(opts.ResponseFormat.Description)
+		}
+	} else {
+		params.Text = responses.ResponseTextConfigParam{
+			Format: responses.ResponseFormatTextConfigUnionParam{
+				OfJSONObject: &shared.ResponseFormatJSONObjectParam{
+					Type: "json_object",
+				},
+			},
+		}
+	}
+
+	return nil
+}
+
+// applyProviderMetadata applies metadata-specific options to the parameters
+// and returns the reasoning effort if specified
+func applyProviderMetadata(params *responses.ResponseNewParams, opts api.CallOptions) string {
 	var reasoningEffort string
+
 	if opts.ProviderMetadata != nil {
 		metadata := GetMetadata(opts)
 		if metadata != nil {
@@ -165,10 +193,15 @@ func applyCallOptions(params *responses.ResponseNewParams, opts api.CallOptions,
 		}
 	}
 
-	// Apply model-specific settings
-	if modelConfig.RequiredAutoTruncation {
-		params.Truncation = "auto"
-	}
+	return reasoningEffort
+}
+
+// applyReasoningSettings applies settings specific to reasoning models
+// and handles unsupported options
+func applyReasoningSettings(params *responses.ResponseNewParams, opts api.CallOptions,
+	modelConfig modelConfig, reasoningEffort string) []api.CallWarning {
+
+	var warnings []api.CallWarning
 
 	// Apply reasoning settings for reasoning models
 	if modelConfig.IsReasoningModel && reasoningEffort != "" {
@@ -201,7 +234,7 @@ func applyCallOptions(params *responses.ResponseNewParams, opts api.CallOptions,
 		}
 	}
 
-	return warnings, nil
+	return warnings
 }
 
 func unsupportedWarnings(opts api.CallOptions) []api.CallWarning {

@@ -108,6 +108,8 @@ type toolCallDelta struct {
 }
 
 // buildRequestBody builds the request body for the OpenRouter API.
+//
+//nolint:revive // TODO: Refactor to reduce cognitive complexity (currently 41 > max 30)
 func (m *OpenRouterChatLanguageModel) buildRequestBody(
 	prompt []api.Message,
 	options api.CallOptions,
@@ -314,6 +316,8 @@ func (m *OpenRouterChatLanguageModel) DoGenerate(
 }
 
 // DoStream implements the streaming generation method.
+//
+//nolint:revive // TODO: Refactor to reduce cognitive complexity (currently 66 > max 30)
 func (m *OpenRouterChatLanguageModel) DoStream(
 	ctx context.Context,
 	prompt []api.Message,

@@ -1,7 +1,6 @@
 package anthropic
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -116,7 +115,7 @@ func TestGenerate(t *testing.T) {
 			model := NewLanguageModel("claude-3", WithClient(client))
 
 			// Call Generate with empty CallOptions
-			resp, err := model.Generate(context.Background(), tt.prompt, api.CallOptions{})
+			resp, err := model.Generate(t.Context(), tt.prompt, api.CallOptions{})
 
 			if tt.expectError {
 				require.Error(t, err)

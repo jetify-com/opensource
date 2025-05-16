@@ -33,9 +33,9 @@ const (
 	// Deprecated: Will reach end-of-life on July 21st, 2025. Please migrate to a newer
 	// model. Visit https://docs.anthropic.com/en/docs/resources/model-deprecations for
 	// more information.
-	ModelClaude_2_1 = "claude-2.1"
+	ModelClaude21 = "claude-2.1"
 	// Deprecated: Will reach end-of-life on July 21st, 2025. Please migrate to a newer
 	// model. Visit https://docs.anthropic.com/en/docs/resources/model-deprecations for
 	// more information.
-	ModelClaude_2_0 = "claude-2.0"
+	ModelClaude20 = "claude-2.0"
 )

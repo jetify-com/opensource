@@ -1,7 +1,6 @@
 package openai
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -1658,7 +1657,7 @@ func runGenerateTests(t *testing.T, tests []struct {
 			model := NewLanguageModel(modelID, WithClient(client))
 
 			// Call Generate with the test's options (or empty if not specified)
-			resp, err := model.Generate(context.Background(), tt.prompt, tt.options)
+			resp, err := model.Generate(t.Context(), tt.prompt, tt.options)
 
 			if tt.wantErr {
 				require.Error(t, err)

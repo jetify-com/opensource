@@ -1,7 +1,6 @@
 package openrouter
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -13,13 +12,13 @@ import (
 	"go.jetify.com/pkg/httpmock"
 )
 
-var TEST_PROMPT = []api.Message{
+var testPrompt = []api.Message{
 	&api.UserMessage{
 		Content: api.ContentFromText("Hello"),
 	},
 }
 
-var TEST_LOGPROBS = &client.LogProbs{
+var testLogprobs = &client.LogProbs{
 	Content: []client.LogProb{
 		{
 			Token:   "Hello",
@@ -129,10 +128,10 @@ func TestDoGenerate(t *testing.T) {
 		{
 			name: "should extract logprobs",
 			mockResp: responseValues{
-				LogProbs: TEST_LOGPROBS,
+				LogProbs: testLogprobs,
 			},
 			expectedResp: api.Response{
-				LogProbs: codec.DecodeLogProbs(TEST_LOGPROBS),
+				LogProbs: codec.DecodeLogProbs(testLogprobs),
 			},
 		},
 		{
@@ -280,7 +279,7 @@ func TestDoGenerate(t *testing.T) {
 
 			model := NewOpenRouterChatLanguageModel(provider, modelID, tt.settings)
 
-			got, err := model.DoGenerate(context.Background(), TEST_PROMPT,
+			got, err := model.DoGenerate(t.Context(), testPrompt,
 				api.CallOptions{
 					InputFormat: api.InputFormatPrompt,
 				},

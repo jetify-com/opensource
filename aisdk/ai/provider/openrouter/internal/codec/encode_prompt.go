@@ -30,10 +30,7 @@ func EncodePrompt(prompt []api.Message) (client.Prompt, error) {
 func encodeMessage(msg api.Message) ([]client.Message, error) {
 	switch msg := msg.(type) {
 	case *api.SystemMessage:
-		encoded, err := encodeSystemMessage(msg)
-		if err != nil {
-			return nil, err
-		}
+		encoded := encodeSystemMessage(msg)
 		return []client.Message{encoded}, nil
 	case *api.UserMessage:
 		encoded, err := encodeUserMessage(msg)
@@ -55,10 +52,10 @@ func encodeMessage(msg api.Message) ([]client.Message, error) {
 	}
 }
 
-func encodeSystemMessage(msg *api.SystemMessage) (*client.SystemMessage, error) {
+func encodeSystemMessage(msg *api.SystemMessage) *client.SystemMessage {
 	return &client.SystemMessage{
 		Content: msg.Content,
-	}, nil
+	}
 }
 
 func encodeUserMessage(msg *api.UserMessage) (*client.UserMessage, error) {
@@ -102,23 +99,23 @@ func encodeUserContent(content []api.ContentBlock) ([]client.ContentPart, error)
 func encodeUserContentBlock(block api.ContentBlock) (client.ContentPart, error) {
 	switch block := block.(type) {
 	case *api.TextBlock:
-		return encodeTextBlock(block)
+		return encodeTextBlock(block), nil
 	case *api.ImageBlock:
-		return encodeImageBlock(block)
+		return encodeImageBlock(block), nil
 	case *api.FileBlock:
-		return encodeFileBlock(block)
+		return encodeFileBlock(block), nil
 	default:
 		return nil, fmt.Errorf("unsupported content block type: %T", block)
 	}
 }
 
-func encodeTextBlock(block *api.TextBlock) (*client.TextPart, error) {
+func encodeTextBlock(block *api.TextBlock) *client.TextPart {
 	return &client.TextPart{
 		Text: block.Text,
-	}, nil
+	}
 }
 
-func encodeImageBlock(block *api.ImageBlock) (*client.ImagePart, error) {
+func encodeImageBlock(block *api.ImageBlock) *client.ImagePart {
 	url := block.URL
 	// If no URL is provided but we have raw image data,
 	// convert it to a data URL (e.g., "data:image/jpeg;base64,/9j/4AAQ...")
@@ -135,10 +132,10 @@ func encodeImageBlock(block *api.ImageBlock) (*client.ImagePart, error) {
 
 	imagePart := &client.ImagePart{}
 	imagePart.ImageURL.URL = url
-	return imagePart, nil
+	return imagePart
 }
 
-func encodeFileBlock(block *api.FileBlock) (*client.TextPart, error) {
+func encodeFileBlock(block *api.FileBlock) *client.TextPart {
 	text := block.URL
 	if text == "" && block.Data != nil {
 		if block.MimeType == "" {
@@ -156,7 +153,7 @@ func encodeFileBlock(block *api.FileBlock) (*client.TextPart, error) {
 	}
 	return &client.TextPart{
 		Text: text,
-	}, nil
+	}
 }
 
 func encodeAssistantMessage(msg *api.AssistantMessage) (*client.AssistantMessage, error) {
@@ -167,10 +164,7 @@ func encodeAssistantMessage(msg *api.AssistantMessage) (*client.AssistantMessage
 	for _, part := range msg.Content {
 		switch block := part.(type) {
 		case *api.TextBlock:
-			encoded, err := encodeTextBlock(block)
-			if err != nil {
-				return nil, err
-			}
+			encoded := encodeTextBlock(block)
 			text += encoded.Text // Concatenate all text parts
 		case *api.ToolCallBlock:
 			toolCall, err := encodeToolCallBlock(block)

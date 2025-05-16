@@ -28,7 +28,7 @@ type APICallError struct {
 // IsRetryable indicates whether the request can be retried
 // Returns true for status codes: 408 (timeout), 409 (conflict), 429 (too many requests), or 5xx (server errors)
 func (e *APICallError) IsRetryable() bool {
-	return e.StatusCode == 408 || e.StatusCode == 409 || e.StatusCode == 429 || e.StatusCode >= 500
+	return e.StatusCode == http.StatusRequestTimeout || e.StatusCode == http.StatusConflict || e.StatusCode == http.StatusTooManyRequests || e.StatusCode >= 500
 }
 
 // TODO:

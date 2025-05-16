@@ -162,40 +162,54 @@ func mergeAssistantMessages(messages []api.Message) (api.Message, error) {
 		}
 		isLastMessage := i == len(messages)-1
 
-		// For all blocks except the last one in the last message,
-		// just append with their own metadata
 		if !isLastMessage {
+			// For all blocks except the last message, just append with their own metadata
 			combinedContent = append(combinedContent, assistant.Content...)
 			continue
 		}
 
-		// For the last message, handle the last block specially
-		for j, block := range assistant.Content {
-			if j == len(assistant.Content)-1 {
-				// For the last block of the last message, preserve message metadata if block has none
-				switch b := block.(type) {
-				case *api.TextBlock:
-					if b.ProviderMetadata.IsZero() {
-						b.ProviderMetadata = assistant.ProviderMetadata
-					}
-				case *api.ToolCallBlock:
-					if b.ProviderMetadata.IsZero() {
-						b.ProviderMetadata = assistant.ProviderMetadata
-					}
-				case *api.ReasoningBlock:
-					if b.ProviderMetadata.IsZero() {
-						b.ProviderMetadata = assistant.ProviderMetadata
-					}
-				case *api.RedactedReasoningBlock:
-					if b.ProviderMetadata.IsZero() {
-						b.ProviderMetadata = assistant.ProviderMetadata
-					}
-				}
-			}
-			combinedContent = append(combinedContent, block)
-		}
+		// Process the last message specially
+		processLastAssistantMessage(&combinedContent, assistant)
 	}
 	return &api.AssistantMessage{Content: combinedContent}, nil
+}
+
+// processLastAssistantMessage handles the special case of the last message in a sequence
+// where metadata needs to be preserved for the last block if it has none
+func processLastAssistantMessage(combinedContent *[]api.ContentBlock, assistant *api.AssistantMessage) {
+	for j, block := range assistant.Content {
+		isLastBlock := j == len(assistant.Content)-1
+
+		if isLastBlock {
+			// For the last block of the last message, preserve message metadata if block has none
+			preserveMetadataForLastBlock(block, assistant.ProviderMetadata)
+		}
+
+		*combinedContent = append(*combinedContent, block)
+	}
+}
+
+// preserveMetadataForLastBlock applies message-level metadata to the last content block
+// if the block doesn't already have metadata
+func preserveMetadataForLastBlock(block api.ContentBlock, metadata *api.ProviderMetadata) {
+	switch b := block.(type) {
+	case *api.TextBlock:
+		if b.ProviderMetadata.IsZero() {
+			b.ProviderMetadata = metadata
+		}
+	case *api.ToolCallBlock:
+		if b.ProviderMetadata.IsZero() {
+			b.ProviderMetadata = metadata
+		}
+	case *api.ReasoningBlock:
+		if b.ProviderMetadata.IsZero() {
+			b.ProviderMetadata = metadata
+		}
+	case *api.RedactedReasoningBlock:
+		if b.ProviderMetadata.IsZero() {
+			b.ProviderMetadata = metadata
+		}
+	}
 }
 
 // mergeToolMessages combines multiple tool messages into a single message.

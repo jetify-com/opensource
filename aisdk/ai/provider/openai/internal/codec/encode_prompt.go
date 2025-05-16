@@ -179,31 +179,33 @@ func EncodeFileBlock(block *api.FileBlock) (*responses.ResponseInputContentUnion
 		// pre-processing before we call the provider if we've made it here with a
 		// URL it's an error
 		return nil, fmt.Errorf("file URLs in user messages are not supported")
-	} else if block.Data != nil {
-		// For file data, check the mime type
-		if block.MimeType != "application/pdf" {
-			return nil, fmt.Errorf("only PDF files are supported in user messages")
-		}
+	}
 
-		// Encode the PDF data as base64
-		base64Data := base64.StdEncoding.EncodeToString(block.Data)
-
-		// Generate filename - use metadata if available, otherwise default
-		// TODO: If we could set the file name based on the index of the block that would help debug
-		// Or maybe we should make sure every block always has an ID.
-		filename := "file.pdf"
-		metadata := GetMetadata(block)
-		if metadata != nil && metadata.Filename != "" {
-			filename = metadata.Filename
-		}
-
-		// Set the file data with data URL format
-		fileParam.Filename = openai.String(filename)
-		dataUrl := fmt.Sprintf("data:%s;base64,%s", block.MimeType, base64Data)
-		fileParam.FileData = openai.String(dataUrl)
-	} else {
+	if block.Data == nil {
 		return nil, fmt.Errorf("file block must have either URL or Data")
 	}
+
+	// For file data, check the mime type
+	if block.MimeType != "application/pdf" {
+		return nil, fmt.Errorf("only PDF files are supported in user messages")
+	}
+
+	// Encode the PDF data as base64
+	base64Data := base64.StdEncoding.EncodeToString(block.Data)
+
+	// Generate filename - use metadata if available, otherwise default
+	// TODO: If we could set the file name based on the index of the block that would help debug
+	// Or maybe we should make sure every block always has an ID.
+	filename := "file.pdf"
+	metadata := GetMetadata(block)
+	if metadata != nil && metadata.Filename != "" {
+		filename = metadata.Filename
+	}
+
+	// Set the file data with data URL format
+	fileParam.Filename = openai.String(filename)
+	dataURL := fmt.Sprintf("data:%s;base64,%s", block.MimeType, base64Data)
+	fileParam.FileData = openai.String(dataURL)
 
 	// Create content union param with the file
 	contentParam := responses.ResponseInputContentUnionParam{
@@ -255,8 +257,8 @@ func EncodeImageBlock(block *api.ImageBlock) (*responses.ResponseInputContentUni
 		base64Data := base64.StdEncoding.EncodeToString(block.Data)
 
 		// Create the data URL with the encoded data
-		dataUrl := fmt.Sprintf("data:%s;base64,%s", mimeType, base64Data)
-		imageParam.ImageURL = openai.String(dataUrl)
+		dataURL := fmt.Sprintf("data:%s;base64,%s", mimeType, base64Data)
+		imageParam.ImageURL = openai.String(dataURL)
 	} else {
 		return nil, fmt.Errorf("image block must have either URL or Data")
 	}
