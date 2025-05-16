@@ -73,6 +73,7 @@ jobs:
           # if you relocate a subdirectory within the monorepo, you need to update this
           # yaml for things to continue to work.
           targets: >
+            aisdk/ai
             envsec
             nixtest
             pkg
