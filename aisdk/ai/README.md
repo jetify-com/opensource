@@ -110,40 +110,6 @@ func main() {
 
 For detailed examples, see our [examples directory](examples/).
 
-### Environment Variables
-
-```bash
-export OPENAI_API_KEY="your-openai-key"
-export ANTHROPIC_API_KEY="your-anthropic-key"
-```
-
-### Global Defaults
-
-```go
-// Set default model for all operations
-ai.SetDefaultLanguageModel(openai.NewLanguageModel("gpt-4o"))
-
-// Now you can omit WithModel() in calls
-response, err := ai.GenerateText(ctx, "Hello world")
-```
-
-### Provider-Specific Options
-
-```go
-// OpenAI-specific configuration
-metadata := &openai.Metadata{
-    User: "user-123",
-    Store: true,
-    ParallelToolCalls: false,
-}
-
-response, err := ai.GenerateText(
-    ctx,
-    prompt,
-    ai.WithProviderMetadata("openai", metadata),
-)
-```
-
 ## Documentation
 
 Comprehensive documentation is available:
