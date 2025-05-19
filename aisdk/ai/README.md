@@ -61,13 +61,12 @@ The AI SDK provides a **unified interface** across multiple AI providers, with k
 * [x] Multi-modal conversations (text + images + files)
 * [x] System messages and conversation history
 * [x] Tool/function calling with structured schemas
-* [x] JSON output with schema validation
+* [ ] JSON output with schema validation
 
 ### Provider-Specific Features
 
 * [x] **OpenAI** - Web search, computer use, file search tools
 * [x] **Anthropic** - Claude's advanced reasoning and tool use
-* [x] **Configurable defaults** - Set your preferred model globally
 
 ## Status
 
@@ -77,33 +76,6 @@ The AI SDK provides a **unified interface** across multiple AI providers, with k
 - [ ] v1 Release: Ready for production use at scale with guranteed API stability.
 
 We are currently in **Public Alpha**. The SDK functionality is stable but it's API may have breaking changes. While in alpha, minor version bumps indicate breaking changes (`0.1.0` -> `0.2.0` would indicate a breaking change). Watch "releases" of this repo to get notified of major updates.
-
-<kbd><img src="https://docs.github.com/assets/cb-25207/images/help/repository/watch-star-fork-shield.png" alt="Watch this repo" width="300"/></kbd>
-
-## Provider Support
-
-| Provider | Status | Language Models | Embeddings | Image Generation | Tools/Functions |
-|----------|--------|----------------|------------|------------------|----------------|
-| **OpenAI** | ✅ Stable | ✅ GPT-4o, GPT-3.5 | ✅ text-embedding-* | ✅ DALL-E 3 | ✅ + Web Search, Computer Use |
-| **Anthropic** | ✅ Stable | ✅ Claude 3.7 Sonnet (default) | ❌ | ❌ | ✅ Function calling |
-| **Azure OpenAI** | 🚧 Planned | 🚧 Coming Soon | 🚧 Coming Soon | 🚧 Coming Soon | 🚧 Coming Soon |
-| **Google AI** | 🚧 Planned | 🚧 Gemini models | 🚧 Coming Soon | 🚧 Imagen | 🚧 Coming Soon |
-
-Legend: ✅ Available • 🚧 Planned • ❌ Not supported by provider
-
-## Architecture
-
-<p align="center">
-  <img src="https://via.placeholder.com/800x380/2C3E50/FFFFFF?text=AI+SDK+Architecture" width="700" alt="AI SDK Architecture" />
-</p>
-
-The AI SDK acts as a **unified abstraction layer** over multiple AI providers. Your application interacts with standardized interfaces (`LanguageModel`, `EmbeddingModel`, `ImageModel`) while the SDK handles provider-specific implementations, authentication, and request/response formatting.
-
-**Core components:**
-- **Provider Interface** - Standardized contracts for all AI operations
-- **Provider Implementations** - Provider-specific adapters (OpenAI, Anthropic, etc.)
-- **Unified API** - Single entry point with consistent error handling
-- **Configuration Layer** - Environment-based provider switching and settings
 
 ## Installation
 
