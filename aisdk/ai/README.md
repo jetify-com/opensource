@@ -3,7 +3,6 @@
 ### Build powerful AI applications and agents using a unified API.
 
 [![Version](https://img.shields.io/github/v/release/jetify-com/ai?color=green&label=version&sort=semver)](https://github.com/jetify-com/ai/releases)
-[![Coverage](https://img.shields.io/badge/coverage-90%25-success)]()
 [![Go Reference](https://pkg.go.dev/badge/go.jetify.com/ai)](https://pkg.go.dev/go.jetify.com/ai)
 [![License](https://img.shields.io/github/license/jetify-com/ai)]()
 [![Join Discord](https://img.shields.io/discord/903306922852245526?color=7389D8&label=discord&logo=discord&logoColor=ffffff&cacheSeconds=1800)](https://discord.gg/jetify)
