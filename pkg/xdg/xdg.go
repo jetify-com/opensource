@@ -38,7 +38,7 @@ func resolveDir(envvar, defaultPath string) string {
 
 	home, err := os.UserHomeDir()
 	if err != nil {
-		home = "~"
+		home = "/tmp"
 	}
 
 	return filepath.Join(home, defaultPath)
