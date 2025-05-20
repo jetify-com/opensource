@@ -148,7 +148,7 @@ func TestResolveDirWithNoHomeDir(t *testing.T) {
 
 	// Test that we get the expected fallback path
 	got := dataDir()
-	want := filepath.Join("~", ".local/share")
+	want := filepath.Join("/tmp", ".local/share")
 	if got != want {
 		t.Errorf("dataDir() with no HOME = %v, want %v", got, want)
 	}
