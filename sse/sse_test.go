@@ -34,7 +34,7 @@ func TestGetDeadline(t *testing.T) {
 		{
 			name: "context with deadline",
 			ctx: func() context.Context {
-				ctx, cancel := context.WithDeadline(context.Background(), time.Date(2024, 1, 1, 0, 0, 1, 0, time.UTC))
+				ctx, cancel := context.WithDeadline(t.Context(), time.Date(2024, 1, 1, 0, 0, 1, 0, time.UTC))
 				defer cancel()
 				return ctx
 			}(),
@@ -43,7 +43,7 @@ func TestGetDeadline(t *testing.T) {
 		},
 		{
 			name:           "context without deadline",
-			ctx:            context.Background(),
+			ctx:            t.Context(),
 			defaultTimeout: time.Second,
 			want:           time.Date(2024, 1, 1, 0, 0, 1, 0, time.UTC), // mockNow + 1 second
 		},
@@ -138,7 +138,7 @@ func TestSendHeartbeat(t *testing.T) {
 		hbComment: "heartbeat",
 	}
 
-	err := conn.sendHeartbeat(context.Background())
+	err := conn.sendHeartbeat(t.Context())
 	assert.NoError(t, err)
 
 	output := w.Body.String()
@@ -338,11 +338,11 @@ func TestConn_SendData(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			conn, err := Upgrade(context.Background(), w, WithRetryDelay(0))
+			conn, err := Upgrade(t.Context(), w, WithRetryDelay(0))
 			require.NoError(t, err)
 			defer conn.Close()
 
-			err = conn.SendData(context.Background(), tt.data)
+			err = conn.SendData(t.Context(), tt.data)
 
 			if tt.isValidationErr {
 				assert.Error(t, err)
@@ -387,11 +387,11 @@ func TestConn_SendComment(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			conn, err := Upgrade(context.Background(), w, WithRetryDelay(0))
+			conn, err := Upgrade(t.Context(), w, WithRetryDelay(0))
 			require.NoError(t, err)
 			defer conn.Close()
 
-			err = conn.SendComment(context.Background(), tt.comment)
+			err = conn.SendComment(t.Context(), tt.comment)
 			require.NoError(t, err)
 
 			// Verify the exact output format
@@ -402,12 +402,12 @@ func TestConn_SendComment(t *testing.T) {
 
 func TestConn_SendComment_ContextCanceled(t *testing.T) {
 	w := httptest.NewRecorder()
-	conn, err := Upgrade(context.Background(), w, WithRetryDelay(0))
+	conn, err := Upgrade(t.Context(), w, WithRetryDelay(0))
 	require.NoError(t, err)
 	defer conn.Close()
 
 	// Create a canceled context
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 
 	// Try to send with canceled context
@@ -421,7 +421,7 @@ func TestConn_Heartbeat(t *testing.T) {
 	comment := "heartbeat-test"
 	interval := 50 * time.Millisecond
 
-	conn, err := Upgrade(context.Background(), w,
+	conn, err := Upgrade(t.Context(), w,
 		WithHeartbeatInterval(interval),
 		WithHeartbeatComment(comment),
 		WithRetryDelay(0))
@@ -442,7 +442,6 @@ func TestConn_Heartbeat(t *testing.T) {
 // but allows us to control the behavior for testing error paths
 type mockFlushWriter struct {
 	writeErr  error
-	flushErr  bool
 	writeBuf  bytes.Buffer
 	flushCall int
 }
@@ -472,7 +471,7 @@ func TestConn_SendComment_EncoderError(t *testing.T) {
 	}
 
 	// Try to send a comment
-	err := conn.SendComment(context.Background(), "test")
+	err := conn.SendComment(t.Context(), "test")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "simulated write failure")
 }
@@ -488,7 +487,7 @@ func TestConn_RunHeartbeat_Error(t *testing.T) {
 		enc:       NewEncoder(failWriter),
 		flush:     failWriter,
 		hbComment: "heartbeat",
-		ctx:       context.Background(),
+		ctx:       t.Context(),
 		closed:    make(chan struct{}),
 	}
 
@@ -496,7 +495,7 @@ func TestConn_RunHeartbeat_Error(t *testing.T) {
 	tickChan := make(chan time.Time)
 
 	// Run heartbeat in a goroutine
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	go func() {

@@ -94,17 +94,11 @@ func (d *Decoder) Decode(event *Event) error {
 	for {
 		line, err := d.readLine()
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				if dataBuf == "" {
-					return io.EOF // graceful end of stream
-				}
-				return io.ErrUnexpectedEOF // stream ended mid-event
-			}
-			return err
+			return d.handleReadError(err, dataBuf)
 		}
 
-		switch {
-		case line == "": // ─── Blank line ⇒ dispatch ────────────────────────
+		// Handle blank line (dispatch event)
+		if line == "" {
 			if dataBuf == "" {
 				// Nothing to fire; spec still demands buffers reset.
 				dataBuf, eventType = "", ""
@@ -112,67 +106,97 @@ func (d *Decoder) Decode(event *Event) error {
 				continue
 			}
 
-			// Trim exactly one trailing \n (added after every data line).
-			if dataBuf[len(dataBuf)-1] == '\n' {
-				dataBuf = dataBuf[:len(dataBuf)-1]
-			}
+			return d.dispatchEvent(event, dataBuf, eventType, dataLines)
+		}
 
-			// Populate Event.
-			event.ID = d.lastEventID // no numeric conversion; keep exact string
-			event.Event = eventType
-			if d.retryDelay > 0 {
-				event.Retry = d.retryDelay
-			}
-			event.Split = dataLines > 1
-
-			// Decide Data vs Comment and JSON decode if possible.
-			if !strings.HasPrefix(dataBuf, ":") {
-				trimmed := strings.TrimSpace(dataBuf)
-				if len(trimmed) > 0 && (trimmed[0] == '{' || trimmed[0] == '[' || trimmed[0] == '"') {
-					var v any
-					if err := json.Unmarshal([]byte(trimmed), &v); err == nil {
-						event.Data = v
-					} else {
-						event.Data = Raw(dataBuf) // leave as-is if invalid JSON
-					}
-				} else {
-					event.Data = Raw(dataBuf)
-				}
-			}
-			// else {
-			// 	// If we evern want to return comments, we can do it here.
-			// }
-
-			return nil
-
-		case strings.HasPrefix(line, ":"):
-			// Comment – spec says ignore for dispatch
+		// Handle comment line
+		if strings.HasPrefix(line, ":") {
 			continue
+		}
 
-		default: // ─── Field line ───────────────────────────────────────────
-			field, val, _ := strings.Cut(line, ":")
-			if len(val) > 0 && val[0] == ' ' {
-				val = val[1:]
-			}
+		// Process field line
+		field, val, _ := strings.Cut(line, ":")
+		if len(val) > 0 && val[0] == ' ' {
+			val = val[1:]
+		}
 
-			switch field {
-			case "event":
-				eventType = val
-			case "data":
-				dataBuf += val + "\n" // always append "\n" (spec 9.2.6)
-				dataLines++
-			case "id":
-				if !strings.ContainsRune(val, '\x00') {
-					d.lastEventID = val // empty string allowed (resets header)
-				}
-			case "retry":
-				if asciiDigits(val) {
-					if ms, _ := strconv.Atoi(val); ms >= 0 {
-						d.retryDelay = time.Duration(ms) * time.Millisecond
-						event.Retry = d.retryDelay
-					}
-				}
-			}
+		switch field {
+		case "event":
+			eventType = val
+		case "data":
+			dataBuf += val + "\n" // always append "\n" (spec 9.2.6)
+			dataLines++
+		case "id":
+			d.processIDField(val)
+		case "retry":
+			d.processRetryField(val, event)
+		}
+	}
+}
+
+// handleReadError processes errors that occur during line reading
+func (d *Decoder) handleReadError(err error, dataBuf string) error {
+	if errors.Is(err, io.EOF) {
+		if dataBuf == "" {
+			return io.EOF // graceful end of stream
+		}
+		return io.ErrUnexpectedEOF // stream ended mid-event
+	}
+	return err
+}
+
+// dispatchEvent finalizes and populates the event before returning it
+func (d *Decoder) dispatchEvent(event *Event, dataBuf, eventType string, dataLines int) error {
+	// Trim exactly one trailing \n (added after every data line).
+	if dataBuf[len(dataBuf)-1] == '\n' {
+		dataBuf = dataBuf[:len(dataBuf)-1]
+	}
+
+	// Populate Event.
+	event.ID = d.lastEventID // no numeric conversion; keep exact string
+	event.Event = eventType
+	if d.retryDelay > 0 {
+		event.Retry = d.retryDelay
+	}
+	event.Split = dataLines > 1
+
+	// Decide Data vs Comment and JSON decode if possible.
+	if !strings.HasPrefix(dataBuf, ":") {
+		d.parseEventData(event, dataBuf)
+	}
+	// else {
+	// 	// If we ever want to return comments as events, we can do it here.
+	// }
+
+	return nil
+}
+
+// parseEventData parses the event data, handling JSON if applicable
+func (d *Decoder) parseEventData(event *Event, dataBuf string) {
+	trimmed := strings.TrimSpace(dataBuf)
+	if len(trimmed) > 0 && (trimmed[0] == '{' || trimmed[0] == '[' || trimmed[0] == '"') {
+		var v any
+		if err := json.Unmarshal([]byte(trimmed), &v); err == nil {
+			event.Data = v
+			return
+		}
+	}
+	event.Data = Raw(dataBuf) // leave as-is if invalid JSON
+}
+
+// processIDField handles the "id:" field
+func (d *Decoder) processIDField(val string) {
+	if !strings.ContainsRune(val, '\x00') {
+		d.lastEventID = val // empty string allowed (resets header)
+	}
+}
+
+// processRetryField handles the "retry:" field
+func (d *Decoder) processRetryField(val string, event *Event) {
+	if asciiDigits(val) {
+		if ms, _ := strconv.Atoi(val); ms >= 0 {
+			d.retryDelay = time.Duration(ms) * time.Millisecond
+			event.Retry = d.retryDelay
 		}
 	}
 }
@@ -183,12 +207,10 @@ func (d *Decoder) readLine() (string, error) {
 	// Handle UTF-8 BOM once.
 	if !d.bomSkipped {
 		d.bomSkipped = true
-		if r, _, err := d.reader.ReadRune(); err == nil {
-			if r != '\uFEFF' {
-				_ = d.reader.UnreadRune()
-			}
-		} else {
+		if r, _, err := d.reader.ReadRune(); err != nil {
 			return "", err
+		} else if r != '\uFEFF' {
+			_ = d.reader.UnreadRune()
 		}
 	}
 

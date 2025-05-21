@@ -89,7 +89,7 @@ import (
     "net/http"
     "time"
     
-    "go.jetify.com/axiom/pkg/aiserve/sse"
+    "go.jetify.com/sse"
 )
 
 func main() {

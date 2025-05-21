@@ -30,7 +30,7 @@ func WithHeaders(h http.Header) Option { return func(c *config) { c.headers = h 
 
 // WithHeartbeatComment sets the content of heartbeat comments.
 // These comments are sent at the interval specified by WithHeartbeatInterval.
-// Empty comments (":") are used if this is not specified.
+// The default value is "keep-alive" if this is not specified.
 func WithHeartbeatComment(s string) Option { return func(c *config) { c.heartbeatComment = s } }
 
 // WithStatus sets the HTTP status code for the SSE response.

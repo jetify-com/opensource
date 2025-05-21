@@ -104,23 +104,59 @@ func writeRaw(w io.Writer, v Raw, split bool) {
 	}
 
 	if split {
-		for len(v) > 0 {
-			i := bytes.IndexByte(v, '\n')
-			if i < 0 {
-				writeData(w, v)
-				break
-			}
-			writeData(w, v[:i])
-			v = v[i+1:]
-			// Note: if the last character was a newline, this will result in v becoming
-			// an empty slice, causing the loop to exit without writing anything more.
-			// This correctly handles trailing newlines per the SSE spec.
-		}
+		splitAndWriteLines(w, v)
 		return
 	}
 
 	// split==false: we've already validated there are no newlines
 	writeData(w, v)
+}
+
+// splitAndWriteLines processes raw data and splits it at line boundaries,
+// handling CR, LF, and CRLF line endings according to the SSE spec.
+// Each line is written as a separate "data:" field.
+//
+// This implementation mirrors the line ending handling in the decoder's readLine method,
+// ensuring consistent behavior with how the decoder processes incoming events.
+// All three line endings specified in the SSE spec (section 9.2.5) are properly handled:
+// - CR (\r)
+// - LF (\n)
+// - CRLF (\r\n)
+//
+// All line endings are normalized to LF in the output as per the SSE spec.
+func splitAndWriteLines(w io.Writer, v Raw) {
+	start := 0
+	for i := 0; i < len(v); i++ {
+		// Handle CR, LF, or CRLF as line endings
+		if v[i] == '\n' {
+			// Handle LF and CRLF (trim any preceding CR)
+			end := i
+			if end > start && v[end-1] == '\r' {
+				end-- // Don't include the CR in output
+			}
+			writeData(w, v[start:end])
+			start = i + 1
+			// Note: if the last character was a newline, after this loop completes,
+			// 'start' will equal len(v), causing the final check to be skipped.
+			// This correctly handles trailing newlines per the SSE spec.
+		} else if v[i] == '\r' {
+			// Check if this CR is part of CRLF
+			if i+1 < len(v) && v[i+1] == '\n' {
+				// This is part of CRLF, will be handled in the next iteration
+				continue
+			}
+			// Standalone CR
+			writeData(w, v[start:i])
+			start = i + 1
+			// Same note applies for trailing CR: it will result in 'start' being
+			// set to len(v), causing no additional content to be written.
+		}
+	}
+
+	// Write any remaining data after the last newline
+	if start < len(v) {
+		writeData(w, v[start:])
+	}
 }
 
 // writeData writes a single SSE data line to the provided io.Writer.

@@ -93,26 +93,41 @@ func Upgrade(ctx context.Context, w http.ResponseWriter, opts ...Option) (*Conn,
 	return c, nil
 }
 
-// unwrapResponseWriter extracts the HTTP interfaces we need from a ResponseWriter
-func unwrapResponseWriter(w http.ResponseWriter) (http.Flusher, writeDeadliner) {
-	var (
-		flush http.Flusher
-		dl    writeDeadliner
-		rw    http.ResponseWriter = w
-	)
-	for {
-		if f, ok := rw.(http.Flusher); ok {
-			flush = f
+// unwrapResponseWriter extracts the HTTP interfaces we need from a ResponseWriter.
+// It iteratively unwraps the ResponseWriter to find the innermost implementations
+// of http.Flusher and writeDeadliner.
+func unwrapResponseWriter(w http.ResponseWriter) (flush http.Flusher, dl writeDeadliner) {
+	currentWriter := w
+
+	for currentWriter != nil {
+		// Check for http.Flusher
+		if f, ok := currentWriter.(http.Flusher); ok {
+			flush = f // Found a Flusher, might be overwritten by a deeper one
 		}
-		if d, ok := rw.(writeDeadliner); ok {
-			dl = d
+
+		// Check for writeDeadliner
+		if d, ok := currentWriter.(writeDeadliner); ok {
+			dl = d // Found a Deadliner, might be overwritten by a deeper one
 		}
-		if u, ok := rw.(responseWriterUnwrapper); ok {
-			rw = u.Unwrap()
-			continue
+
+		// Attempt to unwrap further
+		unwrapper, ok := currentWriter.(responseWriterUnwrapper)
+		if !ok {
+			// Not an unwrapper, so this is as deep as we can go
+			break
 		}
-		break
+
+		nextWriter := unwrapper.Unwrap()
+
+		// If Unwrap() returns the same writer, break to prevent an infinite loop.
+		// If nextWriter is nil, the loop condition (currentWriter != nil)
+		// will handle termination when currentWriter is updated.
+		if nextWriter == currentWriter {
+			break
+		}
+		currentWriter = nextWriter
 	}
+
 	return flush, dl
 }
 

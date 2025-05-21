@@ -53,6 +53,30 @@ func TestEncoder_EncodeEvent(t *testing.T) {
 			expected: "data: line1\ndata: line2\ndata: line3\n\n",
 		},
 		{
+			name: "raw data with CRLF line endings and split=true",
+			event: &Event{
+				Data:  Raw("line1\r\nline2\r\nline3"),
+				Split: true,
+			},
+			expected: "data: line1\ndata: line2\ndata: line3\n\n",
+		},
+		{
+			name: "raw data with standalone CR line endings and split=true",
+			event: &Event{
+				Data:  Raw("line1\rline2\rline3"),
+				Split: true,
+			},
+			expected: "data: line1\ndata: line2\ndata: line3\n\n",
+		},
+		{
+			name: "raw data with mixed line endings and split=true",
+			event: &Event{
+				Data:  Raw("line1\nline2\rline3\r\nline4"),
+				Split: true,
+			},
+			expected: "data: line1\ndata: line2\ndata: line3\ndata: line4\n\n",
+		},
+		{
 			name: "raw data with trailing newline when split=true",
 			event: &Event{
 				Data:  Raw("line1\nline2\n"),
