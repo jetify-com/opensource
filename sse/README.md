@@ -1,6 +1,13 @@
 # sse – Server‑Sent Events for Go
 
-> A tiny, dependency‑free package that makes it easy to use SSE streaming with any HTTP framework.
+### A tiny, dependency‑free package that makes it easy to use SSE streaming with any HTTP framework.
+
+[![Version](https://img.shields.io/github/v/release/jetify-com/sse?color=green&label=version&sort=semver)](https://github.com/jetify-com/sse/releases)
+[![Go Reference](https://pkg.go.dev/badge/go.jetify.com/sse)](https://pkg.go.dev/go.jetify.com/sse)
+[![License](https://img.shields.io/github/license/jetify-com/sse)]()
+[![Join Discord](https://img.shields.io/discord/903306922852245526?color=7389D8&label=discord&logo=discord&logoColor=ffffff&cacheSeconds=1800)](https://discord.gg/jetify)
+
+*Primary Author(s)*: [Daniel Loreto](https://github.com/loreto)
 
 ---
 
@@ -109,10 +116,25 @@ func main() {
 }
 ```
 
-## Examples
+## Documentation
 
-See the [examples](examples/) directory for more patterns:
-- [Basic Server](examples/1_basic_server/main.go)
-- [Custom Events](examples/2_custom_events/main.go)
-- [Reconnection Client](examples/3_reconnection_client/main.go)
-- [Middleware Integration](examples/4_middleware_integration/main.go)
+The following dcumentation is available:
+
+* **[API Reference](https://pkg.go.dev/go.jetify.com/sse)** - Complete Go package documentation
+* **[Examples](examples/)** - Real-world usage patterns
+
+## Community & Support
+
+Join our community and get help:
+
+* **Discord** – [https://discord.gg/jetify](https://discord.gg/jetify) (best for quick questions & showcase)
+* **GitHub Discussions** – [Discussions](https://github.com/jetify-com/sse/discussions) (best for ideas & design questions)
+* **Issues** – [Bug reports & feature requests](https://github.com/jetify-com/sse/issues)
+
+## Contributing
+
+We 💖 contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+Licensed under the **Apache 2.0 License** – see [LICENSE](LICENSE) for details.
