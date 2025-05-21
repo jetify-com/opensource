@@ -20,7 +20,7 @@
 package main
 
 import (
-    "context"
+    "fmt"
     "log"
     "net/http"
     "time"
@@ -29,48 +29,43 @@ import (
 )
 
 func eventsHandler(w http.ResponseWriter, r *http.Request) {
-    // Upgrade the HTTP connection to SSE
-    conn, err := sse.Upgrade(r.Context(), w,
-        sse.WithHeartbeatInterval(15*time.Second),
-        sse.WithRetryDelay(3*time.Second),
-    )
+    // Upgrade HTTP connection to SSE
+    conn, err := sse.Upgrade(r.Context(), w)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
     defer conn.Close()
     
-    // Send events in a loop
-    ticker := time.NewTicker(1 * time.Second)
+    // Send events until client disconnects
+    count := 0
+    ticker := time.NewTicker(time.Second)
     defer ticker.Stop()
     
-    for i := 0; ; i++ {
+    for {
         select {
         case <-ticker.C:
+            // Send a simple event with JSON data
             event := &sse.Event{
-                ID:    fmt.Sprintf("event-%d", i),
-                Event: "message",
-                Data:  map[string]any{
-                    "count": i,
-                    "time":  time.Now().Format(time.RFC3339),
-                },
+                ID:    fmt.Sprintf("%d", count),
+                Data:  map[string]any{"count": count, "time": time.Now().Format(time.RFC3339)},
             }
             
             if err := conn.SendEvent(r.Context(), event); err != nil {
-                log.Printf("Error sending event: %v", err)
+                log.Printf("Error: %v", err)
                 return
             }
+            count++
             
         case <-r.Context().Done():
-            log.Println("Client disconnected")
-            return
+            return // Client disconnected
         }
     }
 }
 
 func main() {
     http.HandleFunc("/events", eventsHandler)
-    log.Println("Server starting on :8080")
+    log.Println("SSE server starting on :8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
 ```
@@ -82,64 +77,33 @@ package main
 
 import (
     "context"
-    "errors"
     "fmt"
-    "io"
     "log"
     "net/http"
-    "time"
     
     "go.jetify.com/sse"
 )
 
 func main() {
-    ctx := context.Background()
-    
-    // Client with reconnection handling
-    for {
-        if err := connectAndProcess(ctx); err != nil {
-            if !errors.Is(err, io.EOF) {
-                log.Printf("Connection error: %v, reconnecting...", err)
-                time.Sleep(3 * time.Second) // Default reconnection delay
-                continue
-            }
-            log.Println("Stream ended normally")
-            break
-        }
-    }
-}
-
-func connectAndProcess(ctx context.Context) error {
+    // Make request to SSE endpoint
     resp, err := http.Get("http://localhost:8080/events")
     if err != nil {
-        return err
+        log.Fatalf("Failed to connect: %v", err)
     }
     defer resp.Body.Close()
     
+    // Create decoder for the SSE stream
     decoder := sse.NewDecoder(resp.Body)
-    var lastEventID string
-    var retryDelay time.Duration = 3 * time.Second // Default retry delay
     
+    // Process events as they arrive
     for {
         var event sse.Event
         err := decoder.Decode(&event)
         if err != nil {
-            // On reconnect, we'll use the last event ID and retry delay we received
-            return err
+            log.Printf("Stream ended: %v", err)
+            break
         }
         
-        // Update our reconnection state
-        if event.ID != "" {
-            lastEventID = event.ID
-        }
-        
-        // Use server-suggested retry delay if provided
-        if serverDelay := decoder.RetryDelay(); serverDelay > 0 {
-            retryDelay = serverDelay
-            log.Printf("Server requested retry delay: %v", retryDelay)
-        }
-        
-        fmt.Printf("Received event (ID: %s, Type: %s): %v\n", 
-            event.ID, event.Event, event.Data)
+        fmt.Printf("Event ID: %s, Data: %v\n", event.ID, event.Data)
     }
 }
