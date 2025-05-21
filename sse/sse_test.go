@@ -1,6 +1,7 @@
 package sse
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -308,4 +309,207 @@ func TestSSEContextCancellation(t *testing.T) {
 	var extraEvent Event
 	err = dec.Decode(&extraEvent)
 	assert.True(t, errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF))
+}
+
+func TestConn_SendData(t *testing.T) {
+	tests := []struct {
+		name            string
+		data            interface{}
+		expected        string
+		isValidationErr bool
+	}{
+		{
+			name:     "simple string data",
+			data:     "hello world",
+			expected: "data: \"hello world\"\n\n",
+		},
+		{
+			name:     "complex data type",
+			data:     map[string]interface{}{"key": "value"},
+			expected: "data: {\"key\":\"value\"}\n\n",
+		},
+		{
+			name:            "raw data with newlines",
+			data:            Raw("line1\nline2"),
+			isValidationErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			conn, err := Upgrade(context.Background(), w, WithRetryDelay(0))
+			require.NoError(t, err)
+			defer conn.Close()
+
+			err = conn.SendData(context.Background(), tt.data)
+
+			if tt.isValidationErr {
+				assert.Error(t, err)
+				assert.True(t, errors.Is(err, ErrValidation), "Expected a ValidationError but got: %v", err)
+			} else {
+				require.NoError(t, err)
+				// Verify the exact output format
+				assert.Equal(t, tt.expected, w.Body.String())
+			}
+		})
+	}
+}
+
+func TestConn_SendComment(t *testing.T) {
+	tests := []struct {
+		name     string
+		comment  string
+		expected string
+	}{
+		{
+			name:     "simple comment",
+			comment:  "test comment",
+			expected: ": test comment\n",
+		},
+		{
+			name:     "empty comment",
+			comment:  "",
+			expected: ": \n",
+		},
+		{
+			name:     "comment with special chars",
+			comment:  "keep-alive: 15s",
+			expected: ": keep-alive: 15s\n",
+		},
+		{
+			name:     "comment with newlines",
+			comment:  "line1\nline2",
+			expected: ": line1\nline2\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			conn, err := Upgrade(context.Background(), w, WithRetryDelay(0))
+			require.NoError(t, err)
+			defer conn.Close()
+
+			err = conn.SendComment(context.Background(), tt.comment)
+			require.NoError(t, err)
+
+			// Verify the exact output format
+			assert.Equal(t, tt.expected, w.Body.String())
+		})
+	}
+}
+
+func TestConn_SendComment_ContextCanceled(t *testing.T) {
+	w := httptest.NewRecorder()
+	conn, err := Upgrade(context.Background(), w, WithRetryDelay(0))
+	require.NoError(t, err)
+	defer conn.Close()
+
+	// Create a canceled context
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	// Try to send with canceled context
+	err = conn.SendComment(ctx, "test")
+	assert.Error(t, err)
+	assert.True(t, errors.Is(err, context.Canceled))
+}
+
+func TestConn_Heartbeat(t *testing.T) {
+	w := httptest.NewRecorder()
+	comment := "heartbeat-test"
+	interval := 50 * time.Millisecond
+
+	conn, err := Upgrade(context.Background(), w,
+		WithHeartbeatInterval(interval),
+		WithHeartbeatComment(comment),
+		WithRetryDelay(0))
+	require.NoError(t, err)
+
+	// Let it run for just enough time to send at least one heartbeat
+	time.Sleep(interval + 20*time.Millisecond)
+
+	// Close the connection to stop heartbeats
+	conn.Close()
+
+	// Verify output contains the heartbeat comment
+	output := w.Body.String()
+	assert.Equal(t, ": "+comment+"\n", output)
+}
+
+// mockFlushWriter implements both io.Writer and http.Flusher interfaces
+// but allows us to control the behavior for testing error paths
+type mockFlushWriter struct {
+	writeErr  error
+	flushErr  bool
+	writeBuf  bytes.Buffer
+	flushCall int
+}
+
+func (m *mockFlushWriter) Write(p []byte) (int, error) {
+	if m.writeErr != nil {
+		return 0, m.writeErr
+	}
+	return m.writeBuf.Write(p)
+}
+
+func (m *mockFlushWriter) Flush() {
+	m.flushCall++
+	// We can't return an error from Flush as the interface doesn't support it
+}
+
+func TestConn_SendComment_EncoderError(t *testing.T) {
+	// Create a writer that will fail on write
+	failWriter := &mockFlushWriter{
+		writeErr: errors.New("simulated write failure"),
+	}
+
+	// Create a connection with the failing writer
+	conn := &Conn{
+		enc:   NewEncoder(failWriter),
+		flush: failWriter,
+	}
+
+	// Try to send a comment
+	err := conn.SendComment(context.Background(), "test")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "simulated write failure")
+}
+
+func TestConn_RunHeartbeat_Error(t *testing.T) {
+	// Create a writer that will fail on write
+	failWriter := &mockFlushWriter{
+		writeErr: errors.New("simulated write failure"),
+	}
+
+	// Create a connection with the failing writer
+	conn := &Conn{
+		enc:       NewEncoder(failWriter),
+		flush:     failWriter,
+		hbComment: "heartbeat",
+		ctx:       context.Background(),
+		closed:    make(chan struct{}),
+	}
+
+	// Instead of using a real ticker, use a channel we control
+	tickChan := make(chan time.Time)
+
+	// Run heartbeat in a goroutine
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func() {
+		conn.runHeartbeat(ctx, tickChan)
+		// This goroutine should exit when the heartbeat fails
+	}()
+
+	// Manually simulate a tick
+	tickChan <- time.Now()
+
+	// Give a little time for the error to process
+	time.Sleep(10 * time.Millisecond)
+
+	// Cancel the context to make sure the test completes
+	cancel()
 }
