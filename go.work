@@ -1,9 +1,10 @@
-go 1.24.0
+go 1.24.2
 
 use (
 	./aisdk/ai
 	./envsec
 	./pkg
+	./sse
 	./typeid/typeid
 	./typeid/typeid-go
 	./tyson

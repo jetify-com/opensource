@@ -167,7 +167,7 @@ func TestEncoder_WriteErrors(t *testing.T) {
 
 		require.Error(t, err)
 		assert.False(t, errors.Is(err, ErrValidation), "expected non-validation error")
-		assert.Equal(t, "write error", err.Error())
+		assert.Equal(t, "failed to write", err.Error())
 	})
 }
 
