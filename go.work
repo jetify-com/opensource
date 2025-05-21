@@ -4,6 +4,7 @@ use (
 	./aisdk/ai
 	./envsec
 	./pkg
+	./sse
 	./typeid/typeid
 	./typeid/typeid-go
 	./tyson
