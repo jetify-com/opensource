@@ -77,6 +77,7 @@ jobs:
             envsec
             nixtest
             pkg
+            sse
             typeid/typeid
             typeid/typeid-go
             typeid/typeid-sql
