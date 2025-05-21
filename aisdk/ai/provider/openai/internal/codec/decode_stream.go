@@ -2,12 +2,11 @@ package codec
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"iter"
 	"time"
-
-	"errors"
 
 	"github.com/openai/openai-go/packages/param"
 	"github.com/openai/openai-go/responses"

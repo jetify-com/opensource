@@ -2927,13 +2927,13 @@ func runGenerateTests(t *testing.T, tests []struct {
 	skip         bool
 },
 ) {
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.skip {
-				t.Skipf("Skipping test: %s", tt.name)
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			if testCase.skip {
+				t.Skipf("Skipping test: %s", testCase.name)
 			}
 
-			server := httpmock.NewServer(t, tt.exchanges)
+			server := httpmock.NewServer(t, testCase.exchanges)
 			defer server.Close()
 
 			// Set up client options for the OpenAI client
@@ -2947,15 +2947,15 @@ func runGenerateTests(t *testing.T, tests []struct {
 			client := openai.NewClient(clientOptions...)
 
 			// Use custom model ID
-			modelID := tt.modelID
+			modelID := testCase.modelID
 
 			// Create model with mocked client
 			model := NewLanguageModel(modelID, WithClient(client))
 
 			// Call Generate with the test's options (or empty if not specified)
-			resp, err := model.Generate(t.Context(), tt.prompt, tt.options)
+			resp, err := model.Generate(t.Context(), testCase.prompt, testCase.options)
 
-			if tt.wantErr {
+			if testCase.wantErr {
 				require.Error(t, err)
 				return
 			}
@@ -2964,7 +2964,7 @@ func runGenerateTests(t *testing.T, tests []struct {
 			require.NotNil(t, resp)
 
 			// Use aitesting.ResponseContains to verify expected response fields
-			aitesting.ResponseContains(t, tt.expectedResp, resp)
+			aitesting.ResponseContains(t, testCase.expectedResp, resp)
 		})
 	}
 }
@@ -2978,14 +2978,15 @@ func runStreamTests(t *testing.T, tests []struct {
 	wantErr        bool
 	expectedEvents []api.StreamEvent
 	skip           bool
-}) {
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.skip {
-				t.Skipf("Skipping test: %s", tt.name)
+},
+) {
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			if testCase.skip {
+				t.Skipf("Skipping test: %s", testCase.name)
 			}
 
-			server := httpmock.NewServer(t, tt.exchanges)
+			server := httpmock.NewServer(t, testCase.exchanges)
 			defer server.Close()
 
 			// Set up client options for the OpenAI client
@@ -2999,15 +3000,15 @@ func runStreamTests(t *testing.T, tests []struct {
 			client := openai.NewClient(clientOptions...)
 
 			// Use custom model ID
-			modelID := tt.modelID
+			modelID := testCase.modelID
 
 			// Create model with mocked client
 			model := NewLanguageModel(modelID, WithClient(client))
 
 			// Call Stream with the test's options (or empty if not specified)
-			resp, err := model.Stream(t.Context(), tt.prompt, tt.options)
+			resp, err := model.Stream(t.Context(), testCase.prompt, testCase.options)
 
-			if tt.wantErr {
+			if testCase.wantErr {
 				require.Error(t, err)
 				return
 			}
@@ -3022,7 +3023,7 @@ func runStreamTests(t *testing.T, tests []struct {
 			}
 
 			// Compare events using deep equality
-			require.Equal(t, tt.expectedEvents, gotEvents)
+			require.Equal(t, testCase.expectedEvents, gotEvents)
 		})
 	}
 }
