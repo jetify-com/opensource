@@ -107,3 +107,12 @@ func main() {
         fmt.Printf("Event ID: %s, Data: %v\n", event.ID, event.Data)
     }
 }
+```
+
+## Examples
+
+See the [examples](examples/) directory for more patterns:
+- [Basic Server](examples/1_basic_server/main.go)
+- [Custom Events](examples/2_custom_events/main.go)
+- [Reconnection Client](examples/3_reconnection_client/main.go)
+- [Middleware Integration](examples/4_middleware_integration/main.go)
