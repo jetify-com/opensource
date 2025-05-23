@@ -335,6 +335,17 @@ func TestResponseBuilder(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "reasoning value type",
+			events: []api.StreamEvent{
+				api.ReasoningEvent{TextDelta: "Thinking..."}, // Value type
+			},
+			expected: api.Response{
+				Content: []api.ContentBlock{
+					&api.ReasoningBlock{Text: "Thinking..."},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -353,6 +364,114 @@ func TestResponseBuilder(t *testing.T) {
 
 			resp, err := builder.Build()
 			if tt.name == "error event" {
+				assert.Error(t, err)
+				assert.Equal(t, "test error", err.Error())
+				return
+			}
+			assert.NoError(t, err)
+			aitesting.ResponseContains(t, tt.expected, resp)
+		})
+	}
+}
+
+// TestResponseBuilder_ValueTypes tests that value types (not pointers) are handled correctly
+func TestResponseBuilder_ValueTypes(t *testing.T) {
+	tests := []struct {
+		name     string
+		events   []api.StreamEvent
+		expected api.Response
+		wantErr  bool
+	}{
+		{
+			name: "text delta value type",
+			events: []api.StreamEvent{
+				api.TextDeltaEvent{TextDelta: "Hello"}, // Value type, not pointer
+			},
+			expected: api.Response{
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "Hello"},
+				},
+			},
+		},
+		{
+			name: "multiple event value types",
+			events: []api.StreamEvent{
+				api.TextDeltaEvent{TextDelta: "Hello "}, // Value type
+				api.TextDeltaEvent{TextDelta: "World"},  // Value type
+				api.SourceEvent{Source: api.Source{ // Value type - sources can be mixed with text
+					SourceType: "url",
+					ID:         "test_source",
+					URL:        "example.com",
+				}},
+			},
+			expected: api.Response{
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "Hello World"},
+					&api.SourceBlock{
+						ID:    "test_source",
+						URL:   "example.com",
+						Title: "",
+					},
+				},
+			},
+		},
+		{
+			name: "tool call value type",
+			events: []api.StreamEvent{
+				api.ToolCallEvent{ // Value type
+					ToolCallID: "call_1",
+					ToolName:   "test_tool",
+					Args:       json.RawMessage(`["arg1", "arg2"]`),
+				},
+			},
+			expected: api.Response{
+				Content: []api.ContentBlock{
+					&api.ToolCallBlock{
+						ToolCallID: "call_1",
+						ToolName:   "test_tool",
+						Args:       json.RawMessage(`["arg1", "arg2"]`),
+					},
+				},
+			},
+		},
+		{
+			name: "mixed value and pointer types",
+			events: []api.StreamEvent{
+				api.TextDeltaEvent{TextDelta: "Hello "},                 // Value type
+				&api.TextDeltaEvent{TextDelta: "from pointer"},          // Pointer type
+				api.FinishEvent{FinishReason: api.FinishReason("stop")}, // Value type
+			},
+			expected: api.Response{
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "Hello from pointer"},
+				},
+				FinishReason: api.FinishReason("stop"),
+			},
+		},
+		{
+			name: "error event value type",
+			events: []api.StreamEvent{
+				api.ErrorEvent{Err: "test error"}, // Value type
+			},
+			expected: api.Response{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := NewResponseBuilder()
+
+			for _, event := range tt.events {
+				err := builder.AddEvent(event)
+				if tt.wantErr {
+					assert.Error(t, err)
+					return
+				}
+				assert.NoError(t, err)
+			}
+
+			resp, err := builder.Build()
+			if tt.name == "error event value type" {
 				assert.Error(t, err)
 				assert.Equal(t, "test error", err.Error())
 				return

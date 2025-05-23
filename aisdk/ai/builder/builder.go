@@ -68,29 +68,54 @@ func (b *ResponseBuilder) AddEvent(event api.StreamEvent) error {
 	// - Validate that we have a model ID if this isn't the first event
 	// The reason we haven't implemented these yet is because I'm not sure if all providers have those guarantees.
 
-	switch e := event.(type) {
+	switch evt := event.(type) {
+	// Handle pointer types
 	case *api.TextDeltaEvent:
-		return b.addTextDelta(e)
+		return b.addTextDelta(evt)
 	case *api.ReasoningEvent:
-		return b.addReasoning(e)
+		return b.addReasoning(evt)
 	case *api.ReasoningSignatureEvent:
-		return b.addReasoningSignature(e)
+		return b.addReasoningSignature(evt)
 	case *api.RedactedReasoningEvent:
-		return b.addRedactedReasoning(e)
+		return b.addRedactedReasoning(evt)
 	case *api.ToolCallEvent:
-		return b.addToolCall(e)
+		return b.addToolCall(evt)
 	case *api.ToolCallDeltaEvent:
-		return b.addToolCallDelta(e)
+		return b.addToolCallDelta(evt)
 	case *api.SourceEvent:
-		return b.addSource(e)
+		return b.addSource(evt)
 	case *api.FileEvent:
-		return b.addFile(e)
+		return b.addFile(evt)
 	case *api.ResponseMetadataEvent:
-		return b.addResponseMetadata(e)
+		return b.addResponseMetadata(evt)
 	case *api.FinishEvent:
-		return b.addFinish(e)
+		return b.addFinish(evt)
 	case *api.ErrorEvent:
-		return b.addError(e)
+		return b.addError(evt)
+
+	// Handle value types
+	case api.TextDeltaEvent:
+		return b.addTextDelta(&evt)
+	case api.ReasoningEvent:
+		return b.addReasoning(&evt)
+	case api.ReasoningSignatureEvent:
+		return b.addReasoningSignature(&evt)
+	case api.RedactedReasoningEvent:
+		return b.addRedactedReasoning(&evt)
+	case api.ToolCallEvent:
+		return b.addToolCall(&evt)
+	case api.ToolCallDeltaEvent:
+		return b.addToolCallDelta(&evt)
+	case api.SourceEvent:
+		return b.addSource(&evt)
+	case api.FileEvent:
+		return b.addFile(&evt)
+	case api.ResponseMetadataEvent:
+		return b.addResponseMetadata(&evt)
+	case api.FinishEvent:
+		return b.addFinish(&evt)
+	case api.ErrorEvent:
+		return b.addError(&evt)
 	default:
 		return fmt.Errorf("unknown event type: %T", event)
 	}
