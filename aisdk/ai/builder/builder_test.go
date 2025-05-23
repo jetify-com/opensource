@@ -23,7 +23,9 @@ func TestResponseBuilder(t *testing.T) {
 				&api.TextDeltaEvent{TextDelta: "Hello"},
 			},
 			expected: api.Response{
-				Text: "Hello",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "Hello"},
+				},
 			},
 		},
 		{
@@ -33,7 +35,9 @@ func TestResponseBuilder(t *testing.T) {
 				&api.TextDeltaEvent{TextDelta: "World"},
 			},
 			expected: api.Response{
-				Text: "Hello World",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "Hello World"},
+				},
 			},
 		},
 		{
@@ -46,8 +50,8 @@ func TestResponseBuilder(t *testing.T) {
 				},
 			},
 			expected: api.Response{
-				ToolCalls: []api.ToolCallBlock{
-					{
+				Content: []api.ContentBlock{
+					&api.ToolCallBlock{
 						ToolCallID: "call_1",
 						ToolName:   "test_tool",
 						Args:       json.RawMessage(`["arg1", "arg2"]`),
@@ -67,13 +71,14 @@ func TestResponseBuilder(t *testing.T) {
 				&api.TextDeltaEvent{TextDelta: "World"},
 			},
 			expected: api.Response{
-				Text: "Hello World",
-				ToolCalls: []api.ToolCallBlock{
-					{
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "Hello "},
+					&api.ToolCallBlock{
 						ToolCallID: "call_1",
 						ToolName:   "test_tool",
 						Args:       json.RawMessage(`["arg1", "arg2"]`),
 					},
+					&api.TextBlock{Text: "World"},
 				},
 			},
 		},
@@ -85,7 +90,7 @@ func TestResponseBuilder(t *testing.T) {
 				&api.RedactedReasoningEvent{Data: "redacted_data"},
 			},
 			expected: api.Response{
-				Reasoning: []api.Reasoning{
+				Content: []api.ContentBlock{
 					&api.ReasoningBlock{
 						Text:      "Let's think about this",
 						Signature: "sig123",
@@ -115,8 +120,8 @@ func TestResponseBuilder(t *testing.T) {
 				},
 			},
 			expected: api.Response{
-				ToolCalls: []api.ToolCallBlock{
-					{
+				Content: []api.ContentBlock{
+					&api.ToolCallBlock{
 						ToolCallID: "call_1",
 						ToolName:   "test_tool",
 						Args:       json.RawMessage(`["arg1","arg2"]`),
@@ -140,15 +145,13 @@ func TestResponseBuilder(t *testing.T) {
 				},
 			},
 			expected: api.Response{
-				Sources: []api.Source{
-					{
-						SourceType: "url",
-						ID:         "test_source",
-						URL:        "test.txt",
+				Content: []api.ContentBlock{
+					&api.SourceBlock{
+						ID:    "test_source",
+						URL:   "test.txt",
+						Title: "",
 					},
-				},
-				Files: []api.FileBlock{
-					{
+					&api.FileBlock{
 						MediaType: "text/plain",
 						Data:      []byte("test data"),
 					},
@@ -210,8 +213,8 @@ func TestResponseBuilder(t *testing.T) {
 				},
 			},
 			expected: api.Response{
-				ToolCalls: []api.ToolCallBlock{
-					{
+				Content: []api.ContentBlock{
+					&api.ToolCallBlock{
 						ToolCallID: "call_1",
 						ToolName:   "test_tool",
 						Args:       json.RawMessage(`{"arg1":"value1"}`),
@@ -244,16 +247,61 @@ func TestResponseBuilder(t *testing.T) {
 				},
 			},
 			expected: api.Response{
-				ToolCalls: []api.ToolCallBlock{
-					{
+				Content: []api.ContentBlock{
+					&api.ToolCallBlock{
 						ToolCallID: "call_1",
 						ToolName:   "tool_1",
 						Args:       json.RawMessage(`{"arg1":"value1"}`),
 					},
-					{
+					&api.ToolCallBlock{
 						ToolCallID: "call_2",
 						ToolName:   "tool_2",
 						Args:       json.RawMessage(`{"arg2":"value2"}`),
+					},
+				},
+			},
+		},
+		{
+			name: "multiple function calls",
+			events: []api.StreamEvent{
+				&api.ToolCallEvent{
+					ToolCallID: "call1",
+					ToolName:   "get_weather",
+					Args:       json.RawMessage(`{"location":"New York"}`),
+				},
+				&api.ToolCallEvent{
+					ToolCallID: "call2",
+					ToolName:   "get_time",
+					Args:       json.RawMessage(`{"timezone":"EST"}`),
+				},
+			},
+			expected: api.Response{
+				Content: []api.ContentBlock{
+					&api.ToolCallBlock{
+						ToolCallID: "call1",
+						ToolName:   "get_weather",
+						Args:       json.RawMessage(`{"location":"New York"}`),
+					},
+					&api.ToolCallBlock{
+						ToolCallID: "call2",
+						ToolName:   "get_time",
+						Args:       json.RawMessage(`{"timezone":"EST"}`),
+					},
+				},
+			},
+		},
+		{
+			name: "reasoning with multiple summaries",
+			events: []api.StreamEvent{
+				&api.ReasoningEvent{TextDelta: "First point"},
+				&api.ReasoningEvent{TextDelta: "\nSecond point"},
+				&api.ReasoningSignatureEvent{Signature: "sig123"},
+			},
+			expected: api.Response{
+				Content: []api.ContentBlock{
+					&api.ReasoningBlock{
+						Text:      "First point\nSecond point",
+						Signature: "sig123",
 					},
 				},
 			},
@@ -276,13 +324,14 @@ func TestResponseBuilder(t *testing.T) {
 				&api.TextDeltaEvent{TextDelta: "end"},
 			},
 			expected: api.Response{
-				Text: "Starting middle end",
-				ToolCalls: []api.ToolCallBlock{
-					{
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "Starting "},
+					&api.ToolCallBlock{
 						ToolCallID: "call_1",
 						ToolName:   "tool_1",
 						Args:       json.RawMessage(`{"arg1":"value1"}`),
 					},
+					&api.TextBlock{Text: "middle end"},
 				},
 			},
 		},
