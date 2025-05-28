@@ -145,7 +145,7 @@ func fromUUID[T Subtype, PT SubtypePtr[T]](prefix, uidStr string) (T, error) {
 	if err != nil {
 		return nilID, err
 	}
-	suffix := base32.Encode(uid)
+	suffix := base32.EncodeToString([16]byte(uid))
 	return parse[T, PT](prefix, suffix)
 }
 
@@ -168,7 +168,7 @@ func from[T Subtype, PT SubtypePtr[T]](prefix string, suffix string) (T, error) 
 		if err != nil {
 			return tid, err
 		}
-		suffix = base32.Encode(uid)
+		suffix = base32.EncodeToString([16]byte(uid))
 	}
 
 	if err := validateSuffix(suffix); err != nil {
