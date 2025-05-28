@@ -45,7 +45,7 @@ func validateSuffix(suffix string) error {
 		return fmt.Errorf("invalid suffix: '%s'. Suffix must start with a 0-7 digit to avoid overflows", suffix)
 	}
 	// Validate the suffix by decoding it, it must be a valid base32 string
-	if _, err := base32.Decode(suffix); err != nil {
+	if _, err := base32.DecodeString(suffix); err != nil {
 		return fmt.Errorf("invalid suffix: %w", err)
 	}
 	return nil

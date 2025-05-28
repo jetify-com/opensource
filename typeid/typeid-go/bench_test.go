@@ -9,7 +9,6 @@ import (
 
 	"github.com/gofrs/uuid/v5"
 	"go.jetify.com/typeid"
-	"go.jetify.com/typeid/base32"
 )
 
 func BenchmarkNew(b *testing.B) {
@@ -369,31 +368,6 @@ func BenchmarkEncodeDecode(b *testing.B) {
 		tid := typeid.Must(typeid.WithPrefix("prefix"))
 		_ = typeid.Must(typeid.FromString(tid.String()))
 	}
-}
-
-// Benchmark Base32 operations directly
-func BenchmarkBase32(b *testing.B) {
-	b.Run("encode", func(b *testing.B) {
-		uid := uuid.Must(uuid.NewV7())
-		var bytes [16]byte
-		copy(bytes[:], uid.Bytes())
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_ = base32.Encode(bytes)
-		}
-	})
-	b.Run("decode", func(b *testing.B) {
-		uid := uuid.Must(uuid.NewV7())
-		var bytes [16]byte
-		copy(bytes[:], uid.Bytes())
-		encoded := base32.Encode(bytes)
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			_, _ = base32.Decode(encoded)
-		}
-	})
 }
 
 // Benchmark memory usage with different batch sizes
