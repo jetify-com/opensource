@@ -22,12 +22,7 @@ func (tid TypeID) Prefix() string {
 const ZeroSuffix = "00000000000000000000000000"
 
 // zeroID is a zero-value TypeID with empty prefix and zero UUID.
-// This matches the zero-value of an uninitialized TypeID struct,
-// ensuring that var x TypeID == zeroID is true.
-var zeroID = TypeID{
-	value:     "", // Empty string - matches zero-value struct
-	prefixLen: 0,
-}
+var zeroID = TypeID{}
 
 // Suffix returns the suffix of the TypeID in it's canonical base32 representation.
 func (tid TypeID) Suffix() string {
