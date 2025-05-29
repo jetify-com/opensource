@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+// TODO: decide if we want nullable (or just use pointers)
+
 // Scan implements the sql.Scanner interface so the TypeIDs can be read from
 // databases transparently. Currently database types that map to string are
 // supported.
