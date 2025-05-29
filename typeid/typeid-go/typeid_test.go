@@ -1,4 +1,4 @@
-package typeid
+package typeid_test
 
 import (
 	_ "embed"
@@ -297,12 +297,6 @@ func TestZero(t *testing.T) {
 	assert.Equal(t, tidParsed, tidFromUUID, "Parse and FromUUID should return identical zero TypeIDs")
 	assert.Equal(t, tidParsed, tidFromBytes, "Parse and FromBytes should return identical zero TypeIDs")
 	assert.Equal(t, tidFromUUID, tidFromBytes, "FromUUID and FromBytes should return identical zero TypeIDs")
-
-	// All should equal the canonical ZeroID
-	assert.Equal(t, typeid.zeroID, zeroValue, "Zero-value struct should equal ZeroID")
-	assert.Equal(t, typeid.zeroID, tidParsed, "Parsed zero should equal ZeroID")
-	assert.Equal(t, typeid.zeroID, tidFromUUID, "FromUUID zero should equal ZeroID")
-	assert.Equal(t, typeid.zeroID, tidFromBytes, "FromBytes zero should equal ZeroID")
 
 	// All should have identical functional behavior
 	assert.Equal(t, nilTypeID, zeroValue.String())
