@@ -123,3 +123,28 @@ func ExampleTypeID_Scan() {
 	// Output:
 	// Retrieved user user_00041061050r3gg28a1c60t3gf from database
 }
+
+// ExampleNullableID demonstrates using NullableID for nullable database columns
+func ExampleNullableID() {
+	var managerID typeid.NullableID
+	
+	// Scan NULL value from database
+	err := managerID.Scan(nil)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Is valid: %v\n", managerID.Valid)
+	
+	// Scan actual TypeID value
+	err = managerID.Scan("user_00041061050r3gg28a1c60t3gf")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Is valid: %v\n", managerID.Valid)
+	fmt.Printf("Manager: %s\n", managerID.TypeID.String())
+	
+	// Output:
+	// Is valid: false
+	// Is valid: true
+	// Manager: user_00041061050r3gg28a1c60t3gf
+}
