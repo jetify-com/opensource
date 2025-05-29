@@ -74,17 +74,30 @@ func (tid TypeID) UUID() string {
 	return uuid.FromBytesOrNil(tid.Bytes()).String()
 }
 
-// IsEmpty returns true if the suffix of the TypeID is the zero suffix:
+// HasSuffix returns true if the TypeID has a non-zero suffix.
+//
+// This method returns false only when the suffix is the zero suffix:
 // "00000000000000000000000000"
 //
-// Note that IsEmpty() returns true regardless of the prefix value. All
-// of these ids would return `IsEmpty == true`:
+// Note that HasSuffix() checks only the suffix value, regardless of the prefix.
+// All of these examples would return `HasSuffix() == false`:
 // + "prefix_00000000000000000000000000"
 // + "test_00000000000000000000000000"
 // + "00000000000000000000000000"
-func (tid TypeID) IsEmpty() bool {
-	suffix := tid.Suffix()
-	return suffix == ZeroSuffix
+func (tid TypeID) HasSuffix() bool {
+	return tid.Suffix() != ZeroSuffix
+}
+
+// IsZero returns true if the TypeID is the zero value (empty prefix and zero suffix).
+//
+// Unlike HasSuffix(), IsZero() returns true only when both:
+// + The prefix is empty (no type specified)
+// + The suffix is the zero suffix "00000000000000000000000000"
+//
+// Only this TypeID would return `IsZero() == true`:
+// + "00000000000000000000000000"
+func (tid TypeID) IsZero() bool {
+	return tid.Prefix() == "" && !tid.HasSuffix()
 }
 
 // Must returns a TypeID if the error is nil, otherwise panics.
