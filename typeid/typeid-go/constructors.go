@@ -14,13 +14,13 @@ import (
 func Generate(prefix string) (TypeID, error) {
 	// Validate prefix early
 	if err := validatePrefix(prefix); err != nil {
-		return ZeroID, err
+		return zeroID, err
 	}
 
 	// Generate new UUID v7
 	uid, err := uuid.NewV7()
 	if err != nil {
-		return ZeroID, err
+		return zeroID, err
 	}
 
 	// Use stack buffer for base32 encoding to avoid allocation
@@ -45,30 +45,30 @@ func MustGenerate(prefix string) TypeID {
 func Parse(s string) (TypeID, error) {
 	prefix, suffix, err := split(s)
 	if err != nil {
-		return ZeroID, err
+		return zeroID, err
 	}
 
 	// Validate prefix
 	if err := validatePrefix(prefix); err != nil {
-		return ZeroID, err
+		return zeroID, err
 	}
 
 	// Build TypeID from string parts
 	if suffix == "" {
-		return ZeroID, &validationError{
+		return zeroID, &validationError{
 			Message: "suffix cannot be empty",
 		}
 	}
 
 	// Validate suffix
 	if err := validateSuffix(suffix); err != nil {
-		return ZeroID, err
+		return zeroID, err
 	}
 
 	// Handle zero suffix case - empty TypeID should be functionally equivalent
 	if prefix == "" && suffix == ZeroSuffix {
 		// Return zero TypeID for compatibility with tests
-		return ZeroID, nil
+		return zeroID, nil
 	}
 
 	// Build TypeID efficiently
@@ -124,20 +124,20 @@ func newTypeID(prefix string, suffixBuf [26]byte) TypeID {
 func FromUUID(uidStr string, prefix string) (TypeID, error) {
 	// Validate prefix early
 	if err := validatePrefix(prefix); err != nil {
-		return ZeroID, err
+		return zeroID, err
 	}
 
 	uid, err := uuid.FromString(uidStr)
 	if err != nil {
-		return ZeroID, &validationError{
+		return zeroID, &validationError{
 			Message: fmt.Sprintf("invalid UUID format %q", uidStr),
 			Cause:   err,
 		}
 	}
 
-	// Handle zero UUID case - return canonical ZeroID for consistency
+	// Handle zero UUID case - return canonical zeroID for consistency
 	if uid == (uuid.UUID{}) && prefix == "" {
-		return ZeroID, nil
+		return zeroID, nil
 	}
 
 	// Use stack buffer for base32 encoding to avoid allocation
@@ -156,18 +156,18 @@ func FromUUID(uidStr string, prefix string) (TypeID, error) {
 func FromBytes(uidBytes []byte, prefix string) (TypeID, error) {
 	// Validate inputs early
 	if len(uidBytes) != 16 {
-		return ZeroID, &validationError{
+		return zeroID, &validationError{
 			Message: fmt.Sprintf("UUID bytes must be exactly 16 bytes, got %d", len(uidBytes)),
 		}
 	}
 
 	if err := validatePrefix(prefix); err != nil {
-		return ZeroID, err
+		return zeroID, err
 	}
 
-	// Handle zero UUID case - return canonical ZeroID for consistency
+	// Handle zero UUID case - return canonical zeroID for consistency
 	if isZeroBytes(uidBytes) && prefix == "" {
-		return ZeroID, nil
+		return zeroID, nil
 	}
 
 	// Convert to array for base32 encoding (zero allocation conversion)
