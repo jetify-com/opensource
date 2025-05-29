@@ -11,27 +11,27 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// TestIsEmpty tests the IsEmpty method for various TypeID values
-func TestIsEmpty(t *testing.T) {
+// TestHasSuffix tests the HasSuffix method for various TypeID values
+func TestHasSuffix(t *testing.T) {
 	testdata := []struct {
 		input  string
 		output bool
 	}{
-		// IsZero == true values
-		{"00000000000000000000000000", true},
-		{"prefix_00000000000000000000000000", true},
-		{"other_00000000000000000000000000", true},
-		// IsZero == false values
-		{"00000000000000000000000001", false},
-		{"prefix_00000000000000000000000001", false},
-		{"other_00000000000000000000000001", false},
+		// HasSuffix == false values (zero suffix)
+		{"00000000000000000000000000", false},
+		{"prefix_00000000000000000000000000", false},
+		{"other_00000000000000000000000000", false},
+		// HasSuffix == true values (non-zero suffix)
+		{"00000000000000000000000001", true},
+		{"prefix_00000000000000000000000001", true},
+		{"other_00000000000000000000000001", true},
 	}
 
 	for _, td := range testdata {
 		t.Run(td.input, func(t *testing.T) {
 			tid, err := typeid.Parse(td.input)
 			assert.NoError(t, err)
-			assert.Equal(t, td.output, tid.IsEmpty(), "TypeId.IsEmpty should be %v for id %s", td.output, td.input)
+			assert.Equal(t, td.output, tid.HasSuffix(), "TypeId.HasSuffix should be %v for id %s", td.output, td.input)
 		})
 	}
 }
@@ -125,10 +125,10 @@ func testValidExample(t *testing.T, example ValidExample) {
 	assert.Equal(t, tidParsed.Bytes(), tidFromBytes.Bytes())
 	assert.Equal(t, tidFromUUID.Bytes(), tidFromBytes.Bytes())
 
-	// All constructors should have consistent IsEmpty() behavior
-	assert.Equal(t, tidParsed.IsEmpty(), tidFromUUID.IsEmpty())
-	assert.Equal(t, tidParsed.IsEmpty(), tidFromBytes.IsEmpty())
-	assert.Equal(t, tidFromUUID.IsEmpty(), tidFromBytes.IsEmpty())
+	// All constructors should have consistent HasSuffix() behavior
+	assert.Equal(t, tidParsed.HasSuffix(), tidFromUUID.HasSuffix())
+	assert.Equal(t, tidParsed.HasSuffix(), tidFromBytes.HasSuffix())
+	assert.Equal(t, tidFromUUID.HasSuffix(), tidFromBytes.HasSuffix())
 }
 
 // invalidPrefixTestCases contains all invalid prefix cases that should be rejected
@@ -304,10 +304,16 @@ func TestZero(t *testing.T) {
 	assert.Equal(t, nilTypeID, tidFromUUID.String())
 	assert.Equal(t, nilTypeID, tidFromBytes.String())
 
-	assert.True(t, zeroValue.IsEmpty())
-	assert.True(t, tidParsed.IsEmpty())
-	assert.True(t, tidFromUUID.IsEmpty())
-	assert.True(t, tidFromBytes.IsEmpty())
+	assert.False(t, zeroValue.HasSuffix())
+	assert.False(t, tidParsed.HasSuffix())
+	assert.False(t, tidFromUUID.HasSuffix())
+	assert.False(t, tidFromBytes.HasSuffix())
+
+	// All should return true for IsZero() since they have empty prefix and zero suffix
+	assert.True(t, zeroValue.IsZero())
+	assert.True(t, tidParsed.IsZero())
+	assert.True(t, tidFromUUID.IsZero())
+	assert.True(t, tidFromBytes.IsZero())
 
 	assert.Equal(t, nilUUID, zeroValue.UUID())
 	assert.Equal(t, nilUUID, tidParsed.UUID())
@@ -318,4 +324,29 @@ func TestZero(t *testing.T) {
 	assert.Equal(t, zeroValue.Bytes(), tidParsed.Bytes())
 	assert.Equal(t, zeroValue.Bytes(), tidFromUUID.Bytes())
 	assert.Equal(t, zeroValue.Bytes(), tidFromBytes.Bytes())
+}
+
+// TestIsZero tests the IsZero method for various TypeID values
+func TestIsZero(t *testing.T) {
+	testdata := []struct {
+		input  string
+		output bool
+	}{
+		// IsZero == true values (empty prefix AND zero suffix)
+		{"00000000000000000000000000", true},
+		// IsZero == false values (has prefix OR non-zero suffix)
+		{"prefix_00000000000000000000000000", false}, // has prefix
+		{"other_00000000000000000000000000", false},  // has prefix
+		{"00000000000000000000000001", false},        // no prefix but non-zero suffix
+		{"prefix_00000000000000000000000001", false}, // has prefix and non-zero suffix
+		{"other_00000000000000000000000001", false},  // has prefix and non-zero suffix
+	}
+
+	for _, td := range testdata {
+		t.Run(td.input, func(t *testing.T) {
+			tid, err := typeid.Parse(td.input)
+			assert.NoError(t, err)
+			assert.Equal(t, td.output, tid.IsZero(), "TypeId.IsZero should be %v for id %s", td.output, td.input)
+		})
+	}
 }
