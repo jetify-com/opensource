@@ -6,42 +6,63 @@ import (
 )
 
 // TypeID is a unique identifier with a given type as defined by the TypeID spec
-type TypeID[P PrefixType] struct {
-	prefix string
-	suffix string
+type TypeID struct {
+	value     string // The complete "prefix_suffix" string
+	prefixLen uint8  // Length of prefix for extracting parts
 }
 
 // Prefix returns the type prefix of the TypeID
-func (tid TypeID[P]) Prefix() string {
-	if isAnyPrefix[P]() {
-		return tid.prefix
+func (tid TypeID) Prefix() string {
+	if tid.prefixLen == 0 {
+		return ""
 	}
-	return defaultPrefix[P]()
+	return tid.value[:tid.prefixLen]
 }
 
-const zeroSuffix = "00000000000000000000000000"
+const ZeroSuffix = "00000000000000000000000000"
+
+// ZeroID is a zero-value TypeID with empty prefix and zero UUID.
+// This matches the zero-value of an uninitialized TypeID struct,
+// ensuring that var x TypeID == ZeroID is true.
+var ZeroID = TypeID{
+	value:     "", // Empty string - matches zero-value struct
+	prefixLen: 0,
+}
 
 // Suffix returns the suffix of the TypeID in it's canonical base32 representation.
-func (tid TypeID[P]) Suffix() string {
-	// We want to treat the "empty" TypeID as equivalent to the 'zero' typeid
-	if tid.suffix == "" {
-		return zeroSuffix
+func (tid TypeID) Suffix() string {
+	if tid.prefixLen == 0 {
+		// No prefix, entire value is the suffix
+		if tid.value == "" {
+			return ZeroSuffix
+		}
+		return tid.value
 	}
-	return tid.suffix
+	// Has prefix, suffix starts after prefix + underscore
+	if len(tid.value) <= int(tid.prefixLen)+1 {
+		return ZeroSuffix
+	}
+	suffix := tid.value[tid.prefixLen+1:]
+	if suffix == "" {
+		return ZeroSuffix
+	}
+	return suffix
 }
 
 // String returns the TypeID in it's canonical string representation of the form:
 // <prefix>_<suffix> where <suffix> is the canonical base32 representation of the UUID
-func (tid TypeID[P]) String() string {
-	if tid.Prefix() == "" {
-		return tid.Suffix()
+func (tid TypeID) String() string {
+	if tid.value == "" {
+		return ZeroSuffix
 	}
-	return tid.Prefix() + "_" + tid.Suffix()
+	return tid.value
 }
 
-// UUIDBytes decodes the TypeID's suffix as a UUID and returns it's bytes
-func (tid TypeID[P]) UUIDBytes() []byte {
-	b, err := base32.DecodeString(tid.Suffix())
+// Bytes decodes the TypeID's suffix as a UUID and returns it's bytes
+func (tid TypeID) Bytes() []byte {
+	suffix := tid.Suffix()
+	var dst [16]byte
+	_, err := base32.Decode(dst[:], []byte(suffix))
 	// Decode only fails if the suffix cannot be decoded for one of two reasons:
 	// 1. The suffix is not 26 characters long
 	// 2. The suffix contains characters that are not in the base32 alphabet
@@ -50,29 +71,30 @@ func (tid TypeID[P]) UUIDBytes() []byte {
 	if err != nil {
 		panic(err)
 	}
-	return b
+	return dst[:]
 }
 
 // UUID decodes the TypeID's suffix as a UUID and returns it as a hex string
-func (tid TypeID[P]) UUID() string {
-	return uuid.FromBytesOrNil(tid.UUIDBytes()).String()
+func (tid TypeID) UUID() string {
+	return uuid.FromBytesOrNil(tid.Bytes()).String()
 }
 
-// IsZero returns true if the suffix of the TypeID is the zero suffix:
+// IsEmpty returns true if the suffix of the TypeID is the zero suffix:
 // "00000000000000000000000000"
 //
-// Note that IsZero() returns true regardless of the prefix value. All
-// of these ids would return `IsZero == true`:
+// Note that IsEmpty() returns true regardless of the prefix value. All
+// of these ids would return `IsEmpty == true`:
 // + "prefix_00000000000000000000000000"
 // + "test_00000000000000000000000000"
 // + "00000000000000000000000000"
-func (tid TypeID[P]) IsZero() bool {
-	return tid.suffix == "" || tid.suffix == zeroSuffix
+func (tid TypeID) IsEmpty() bool {
+	suffix := tid.Suffix()
+	return suffix == ZeroSuffix
 }
 
 // Must returns a TypeID if the error is nil, otherwise panics.
-// Often used with New() to create a TypeID in a single line as follows:
-// tid := Must(New("prefix"))
+// Often used with Parse() to create a TypeID in a single line as follows:
+// tid := Must(Parse("prefix_abc123"))
 func Must[T any](tid T, err error) T {
 	if err != nil {
 		panic(err)
