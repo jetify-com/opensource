@@ -333,7 +333,6 @@ func TestInvalidCharacterAtEachPosition(t *testing.T) {
 	}
 }
 
-
 // TestAppendDecodeErrorHandling tests error handling in AppendDecode
 func TestAppendDecodeErrorHandling(t *testing.T) {
 	// Test with invalid input that will cause decode to fail
