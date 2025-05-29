@@ -49,7 +49,7 @@ func (n NullableID) Value() (driver.Value, error) {
 
 func (n *NullableID) Scan(src any) error {
 	if src == nil {
-		n.TypeID, n.Valid = ZeroID, false
+		n.TypeID, n.Valid = zeroID, false
 		return nil
 	}
 
