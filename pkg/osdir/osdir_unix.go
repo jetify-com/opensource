@@ -7,5 +7,5 @@ import "os"
 var forceSystemUser = false
 
 func isSystemUser() bool {
-	return forceSystemUser || os.Getegid() == 0
+	return forceSystemUser || os.Geteuid() == 0
 }
