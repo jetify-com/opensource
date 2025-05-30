@@ -32,8 +32,10 @@ var testPatterns = []struct {
 }
 
 // Pre-encoded data for decode benchmarks - encodings of all test patterns
-var benchmarkEncodedStrings = make([]string, len(testPatterns))
-var benchmarkEncodedBytes = make([][]byte, len(testPatterns))
+var (
+	benchmarkEncodedStrings = make([]string, len(testPatterns))
+	benchmarkEncodedBytes   = make([][]byte, len(testPatterns))
+)
 
 func init() {
 	for i, pattern := range testPatterns {

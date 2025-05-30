@@ -48,7 +48,7 @@ func example() {
   fmt.Println(tid)
   
   // Convert from UUID
-  tid, _ = typeid.FromUUID("018e5f71-6f04-7c5c-8123-456789abcdef", "user")
+  tid, _ = typeid.FromUUID("user", "018e5f71-6f04-7c5c-8123-456789abcdef")
   fmt.Println(tid)
 }
 ```

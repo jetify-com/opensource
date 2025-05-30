@@ -120,8 +120,8 @@ func newTypeID(prefix string, suffixBuf [26]byte) TypeID {
 }
 
 // FromUUID encodes the given UUID (in hex string form) as a TypeID with the given prefix.
-// If you want to create an id without a prefix, pass an empty string.
-func FromUUID(uidStr string, prefix string) (TypeID, error) {
+// If you want to create an id without a prefix, pass an empty string for the prefix.
+func FromUUID(prefix string, uidStr string) (TypeID, error) {
 	// Validate prefix early
 	if err := validatePrefix(prefix); err != nil {
 		return zeroID, err
@@ -150,10 +150,10 @@ func FromUUID(uidStr string, prefix string) (TypeID, error) {
 	return newTypeID(prefix, suffixBuf), nil
 }
 
-// FromBytes creates a TypeID from a 16-byte UUID and a prefix with zero allocations.
+// FromBytes creates a TypeID from a prefix and 16-byte UUID with zero allocations.
 // The bytes must be exactly 16 bytes long (standard UUID byte length).
-// If you want to create an id without a prefix, pass an empty string.
-func FromBytes(uidBytes []byte, prefix string) (TypeID, error) {
+// If you want to create an id without a prefix, pass an empty string for the prefix.
+func FromBytes(prefix string, uidBytes []byte) (TypeID, error) {
 	// Validate inputs early
 	if len(uidBytes) != 16 {
 		return zeroID, &validationError{

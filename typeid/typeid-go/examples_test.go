@@ -97,7 +97,7 @@ func ExampleFromUUID() {
 	existingUUID := "550e8400-e29b-41d4-a716-446655440000"
 
 	// Convert to TypeID with appropriate prefix
-	customerID, err := typeid.FromUUID(existingUUID, "customer")
+	customerID, err := typeid.FromUUID("customer", existingUUID)
 	if err != nil {
 		panic(err)
 	}
@@ -127,14 +127,14 @@ func ExampleTypeID_Scan() {
 // ExampleNullableID demonstrates using NullableID for nullable database columns
 func ExampleNullableID() {
 	var managerID typeid.NullableID
-	
+
 	// Scan NULL value from database
 	err := managerID.Scan(nil)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("Is valid: %v\n", managerID.Valid)
-	
+
 	// Scan actual TypeID value
 	err = managerID.Scan("user_00041061050r3gg28a1c60t3gf")
 	if err != nil {
@@ -142,7 +142,7 @@ func ExampleNullableID() {
 	}
 	fmt.Printf("Is valid: %v\n", managerID.Valid)
 	fmt.Printf("Manager: %s\n", managerID.TypeID.String())
-	
+
 	// Output:
 	// Is valid: false
 	// Is valid: true

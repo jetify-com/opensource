@@ -88,13 +88,13 @@ func testValidExample(t *testing.T, example ValidExample) {
 	require.NoError(t, err, "Parse should succeed for valid typeid: %s", example.Tid)
 
 	// Test FromUUID constructor
-	tidFromUUID, err := typeid.FromUUID(example.UUID, example.Prefix)
+	tidFromUUID, err := typeid.FromUUID(example.Prefix, example.UUID)
 	require.NoError(t, err, "FromUUID should succeed")
 
 	// Test FromBytes constructor
 	uuidParsed, err := uuid.FromString(example.UUID)
 	require.NoError(t, err, "UUID parsing should succeed")
-	tidFromBytes, err := typeid.FromBytes(uuidParsed.Bytes(), example.Prefix)
+	tidFromBytes, err := typeid.FromBytes(example.Prefix, uuidParsed.Bytes())
 	require.NoError(t, err, "FromBytes should succeed")
 
 	// All constructors should produce structurally identical TypeID objects
@@ -250,12 +250,12 @@ func testInvalidPrefix(t *testing.T, prefix string, desc string) {
 	// Test FromUUID constructor with invalid prefix
 	// Use a valid UUID to isolate prefix validation
 	validUUID := "00000000-0000-0000-0000-000000000000"
-	_, err = typeid.FromUUID(validUUID, prefix)
+	_, err = typeid.FromUUID(prefix, validUUID)
 	assert.Error(t, err, "FromUUID should fail with %s", desc)
 
 	// Test FromBytes constructor with invalid prefix
 	zeroBytes := make([]byte, 16)
-	_, err = typeid.FromBytes(zeroBytes, prefix)
+	_, err = typeid.FromBytes(prefix, zeroBytes)
 	assert.Error(t, err, "FromBytes should fail with %s", desc)
 
 	// Test Parse with a complete TypeID string containing the invalid prefix
@@ -282,12 +282,12 @@ func TestZero(t *testing.T) {
 	require.NoError(t, err)
 
 	// FromUUID with zero UUID
-	tidFromUUID, err := typeid.FromUUID(nilUUID, "")
+	tidFromUUID, err := typeid.FromUUID("", nilUUID)
 	require.NoError(t, err)
 
 	// FromBytes with zero bytes
 	zeroBytes := make([]byte, 16)
-	tidFromBytes, err := typeid.FromBytes(zeroBytes, "")
+	tidFromBytes, err := typeid.FromBytes("", zeroBytes)
 	require.NoError(t, err)
 
 	// All should be structurally identical

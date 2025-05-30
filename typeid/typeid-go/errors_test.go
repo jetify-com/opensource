@@ -181,7 +181,7 @@ func TestFromUUIDValidationErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := FromUUID(tt.uuid, tt.prefix)
+			_, err := FromUUID(tt.prefix, tt.uuid)
 
 			if err != nil {
 				isValidation := errors.Is(err, ErrValidation)
@@ -457,7 +457,7 @@ func TestFromUUIDErrorMessages(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := FromUUID(tt.uuid, tt.prefix)
+			_, err := FromUUID(tt.prefix, tt.uuid)
 			require.Error(t, err)
 			assert.Contains(t, err.Error(), tt.expectedPattern,
 				"error message should contain expected pattern")

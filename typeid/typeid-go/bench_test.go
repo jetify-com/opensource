@@ -298,7 +298,7 @@ func BenchmarkFromUUID(b *testing.B) {
 		prefix := prefixPatterns[b.N%len(prefixPatterns)]
 		uuidStr := uuidStrings[b.N%len(uuidStrings)]
 
-		tid, err = typeid.FromUUID(uuidStr, prefix)
+		tid, err = typeid.FromUUID(prefix, uuidStr)
 	}
 
 	sinkTypeID = tid
@@ -320,7 +320,7 @@ func BenchmarkFromBytes(b *testing.B) {
 		prefix := prefixPatterns[b.N%len(prefixPatterns)]
 		bytes := uuidBytes[b.N%len(uuidBytes)]
 
-		tid, err = typeid.FromBytes(bytes, prefix)
+		tid, err = typeid.FromBytes(prefix, bytes)
 	}
 
 	sinkTypeID = tid
