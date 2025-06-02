@@ -1,80 +1,161 @@
 package ids
 
-// We have a similar package in our opensource repo, ensure the prefix
-// strings match (or figure out how to share a single package across bith
+// We have a similar package in our axiom repo, ensure the prefix
+// strings match (or figure out how to share a single package across both
 // repos)
 
 import (
+	"fmt"
+
 	"go.jetify.com/typeid"
 )
 
-type userPrefix struct{}
-
-func (userPrefix) Prefix() string { return "user" }
+const UserPrefix = "user"
 
 type UserID struct {
-	typeid.TypeID[userPrefix]
+	typeid.TypeID
 }
 
-type projectPrefix struct{}
+func NewUserID() (UserID, error) {
+	return new[UserID](UserPrefix)
+}
 
-func (projectPrefix) Prefix() string { return "proj" }
+func ParseUserID(s string) (UserID, error) {
+	return parse[UserID](s, UserPrefix)
+}
+
+const ProjectPrefix = "proj"
 
 type ProjectID struct {
-	typeid.TypeID[projectPrefix]
+	typeid.TypeID
 }
 
-type repoPrefix struct{}
+func NewProjectID() (ProjectID, error) {
+	return new[ProjectID](ProjectPrefix)
+}
 
-func (repoPrefix) Prefix() string { return "repo" }
+func ParseProjectID(s string) (ProjectID, error) {
+	return parse[ProjectID](s, ProjectPrefix)
+}
+
+const RepoPrefix = "repo"
 
 type RepoID struct {
-	typeid.TypeID[repoPrefix]
+	typeid.TypeID
 }
 
-type orgPrefix struct{}
+func NewRepoID() (RepoID, error) {
+	return new[RepoID](RepoPrefix)
+}
 
-func (orgPrefix) Prefix() string { return "org" }
+func ParseRepoID(s string) (RepoID, error) {
+	return parse[RepoID](s, RepoPrefix)
+}
+
+const OrgPrefix = "org"
 
 type OrgID struct {
-	typeid.TypeID[orgPrefix]
+	typeid.TypeID
 }
 
-type memberPrefix struct{}
+func NewOrgID() (OrgID, error) {
+	return new[OrgID](OrgPrefix)
+}
 
-func (memberPrefix) Prefix() string { return "member" }
+func ParseOrgID(s string) (OrgID, error) {
+	return parse[OrgID](s, OrgPrefix)
+}
+
+const MemberPrefix = "member"
 
 type MemberID struct {
-	typeid.TypeID[memberPrefix]
+	typeid.TypeID
 }
 
-type secretPrefix struct{}
+func NewMemberID() (MemberID, error) {
+	return new[MemberID](MemberPrefix)
+}
 
-func (secretPrefix) Prefix() string { return "secret" }
+func ParseMemberID(s string) (MemberID, error) {
+	return parse[MemberID](s, MemberPrefix)
+}
 
-type SecretID struct{ typeid.TypeID[secretPrefix] }
+const SecretPrefix = "secret"
 
-type deploymentPrefix struct{}
+type SecretID struct {
+	typeid.TypeID
+}
 
-func (deploymentPrefix) Prefix() string { return "deploy" }
+func NewSecretID() (SecretID, error) {
+	return new[SecretID](SecretPrefix)
+}
+
+func ParseSecretID(s string) (SecretID, error) {
+	return parse[SecretID](s, SecretPrefix)
+}
+
+const DeploymentPrefix = "deploy"
 
 type DeploymentID struct {
-	typeid.TypeID[deploymentPrefix]
+	typeid.TypeID
 }
 
-type customDomainPrefix struct{}
+func NewDeploymentID() (DeploymentID, error) {
+	return new[DeploymentID](DeploymentPrefix)
+}
 
-func (customDomainPrefix) Prefix() string { return "customdomain" }
+func ParseDeploymentID(s string) (DeploymentID, error) {
+	return parse[DeploymentID](s, DeploymentPrefix)
+}
+
+const CustomDomainPrefix = "customdomain"
 
 type CustomDomainID struct {
-	typeid.TypeID[customDomainPrefix]
+	typeid.TypeID
 }
 
-func Short[P typeid.PrefixType](tid typeid.TypeID[P]) string {
-	return ShortStr(tid.String()) // NOTE: len(id.String) >= 26 always
+func NewCustomDomainID() (CustomDomainID, error) {
+	return new[CustomDomainID](CustomDomainPrefix)
 }
 
-// ShortStr returns the last 6 characters of a TypeID's string representation.
-func ShortStr(tid string) string {
-	return tid[max(0, len(tid)-6):]
+func ParseCustomDomainID(s string) (CustomDomainID, error) {
+	return parse[CustomDomainID](s, CustomDomainPrefix)
+}
+
+// ShortSuffix returns the last 6 characters of a TypeID's string representation.
+func ShortSuffix(tid typeid.TypeID) string {
+	return tid.String()[max(0, len(tid.String())-6):]
+}
+
+// IDType is a constraint for ID types that wrap typeid.TypeID
+type IDType interface {
+	~struct{ typeid.TypeID }
+}
+
+// These helpers exist because we decided to create subtypes for each ID type.
+// With the new type id implementation, we could choose to get rid of these different
+// types and just pass typeid.TypeID around. If we do that, it would be slightly less
+// type safe, but we could completely get rid of these helpers.
+
+// parse is a generic helper for parsing ID strings
+func parse[T IDType](s string, prefix string) (T, error) {
+	var zero T
+	tid, err := typeid.Parse(s)
+	if err != nil {
+		return zero, err
+	}
+	if tid.Prefix() != prefix {
+		return zero, fmt.Errorf("invalid %s ID: %s", prefix, s)
+	}
+	return T{TypeID: tid}, nil
+}
+
+// new is a generic helper for generating new IDs
+func new[T IDType](prefix string) (T, error) {
+	var zero T
+	tid, err := typeid.Generate(prefix)
+	if err != nil {
+		return zero, err
+	}
+	return T{TypeID: tid}, nil
 }
