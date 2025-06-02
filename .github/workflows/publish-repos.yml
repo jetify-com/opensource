@@ -23,34 +23,6 @@ jobs:
   go-tests:
     uses: ./.github/workflows/monorepo-go.yml
 
-  publish-template-images:
-    strategy:
-      matrix:
-        project_id: [dev-j3tpk, nonprod-j3tpk, prod-j3tpk]
-        template: [deno-fresh, elixir-phoenix, php-laravel, python-flask]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: ./actions/publish-image
-        if: ${{ matrix.project_id == 'dev-j3tpk' || github.ref == 'refs/heads/main' }}
-        env:
-          GITHUB_TOKEN: $${{ secrets.GITHUB_TOKEN }}
-        with:
-          gcp_project: ${{ matrix.project_id }}
-          template: templates/${{ matrix.template }}
-      - uses: webfactory/ssh-agent@v0.9.0
-        if: ${{ matrix.project_id == 'prod-j3tpk' && github.ref == 'refs/heads/main' }}
-        with:
-          ssh-private-key: ${{ secrets.CODEBOT_SSH_KEY }}
-      - uses: ./actions/publish-code
-        if: ${{ matrix.project_id == 'prod-j3tpk' && github.ref == 'refs/heads/main' }}
-        with:
-          origin: ${{ github.repository }}
-          targets: >
-            templates/${{ matrix.template}}:jetify-examples/${{ matrix.template }}
-
   publish-repos:
     # Only publish if tests pass. Right now all tests for all repos need to pass, but as the monorepo
     # gets larger, we might want to change this so that we treat each subrepo independently.
