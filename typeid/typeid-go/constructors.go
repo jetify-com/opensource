@@ -3,7 +3,6 @@ package typeid
 import (
 	"fmt"
 	"strings"
-	"unsafe"
 
 	"github.com/gofrs/uuid/v5"
 	"go.jetify.com/typeid/base32"
@@ -107,13 +106,13 @@ func newTypeID(prefix string, suffixBuf [26]byte) TypeID {
 		tid.value = string(suffixBuf[:])
 		tid.prefixLen = 0
 	} else {
-		// Single allocation: build complete string directly
+		var builder strings.Builder
 		totalLen := len(prefix) + 1 + len(suffixBuf)
-		buf := make([]byte, totalLen)
-		n := copy(buf, prefix)
-		buf[n] = '_'
-		copy(buf[n+1:], suffixBuf[:])
-		tid.value = unsafe.String(&buf[0], totalLen)
+		builder.Grow(totalLen) // Pre-allocate capacity to avoid reallocations
+		builder.WriteString(prefix)
+		builder.WriteByte('_')
+		builder.Write(suffixBuf[:])
+		tid.value = builder.String()
 		tid.prefixLen = uint8(len(prefix))
 	}
 	return tid

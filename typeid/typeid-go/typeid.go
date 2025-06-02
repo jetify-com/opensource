@@ -96,7 +96,7 @@ func (tid TypeID) HasSuffix() bool {
 //
 // Note that the empty struct TypeID{} is encoded as the zero id.
 func (tid TypeID) IsZero() bool {
-	return tid.Prefix() == "" && !tid.HasSuffix()
+	return tid.value == ""
 }
 
 // Must returns a TypeID if the error is nil, otherwise panics.
