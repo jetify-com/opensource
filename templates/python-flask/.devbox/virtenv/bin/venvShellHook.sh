@@ -1,1 +1,0 @@
-/Users/mike/work/opensource/templates/python-flask/.devbox/virtenv/python/bin/venvShellHook.sh
