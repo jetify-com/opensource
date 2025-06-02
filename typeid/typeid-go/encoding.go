@@ -26,6 +26,14 @@ func (tid *TypeID) UnmarshalText(text []byte) error {
 // MarshalText implements the encoding.TextMarshaler interface.
 // It encodes a TypeID as a string using the same logic as String()
 func (tid TypeID) MarshalText() (text []byte, err error) {
-	encoded := tid.String()
-	return []byte(encoded), nil
+	return tid.AppendText(nil)
+}
+
+// AppendText appends the text representation of the TypeID to dst and returns
+// the extended buffer.
+func (tid TypeID) AppendText(dst []byte) ([]byte, error) {
+	if tid.value == "" {
+		return append(dst, ZeroSuffix...), nil
+	}
+	return append(dst, tid.value...), nil
 }

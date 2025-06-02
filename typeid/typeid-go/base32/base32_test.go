@@ -136,11 +136,10 @@ func TestCorruptInputError(t *testing.T) {
 	_, err := DecodeString(invalidInput)
 	assert.Error(t, err)
 
-	// Check that it's the right error type and position
 	var corruptErr CorruptInputError
 	assert.ErrorAs(t, err, &corruptErr)
 	assert.Equal(t, CorruptInputError(5), corruptErr)
-	assert.Contains(t, err.Error(), "illegal base32 data at input byte 5")
+	assert.Contains(t, err.Error(), "illegal base32 data at offset 5")
 
 	// Test with invalid character at position 0
 	invalidInput0 := "!123456789abcdefghjkmnpqrs"
@@ -148,7 +147,7 @@ func TestCorruptInputError(t *testing.T) {
 	assert.Error(t, err)
 	assert.ErrorAs(t, err, &corruptErr)
 	assert.Equal(t, CorruptInputError(0), corruptErr)
-	assert.Contains(t, err.Error(), "illegal base32 data at input byte 0")
+	assert.Contains(t, err.Error(), "illegal base32 data at offset 0")
 
 	// Test with wrong length
 	shortInput := "01234"
@@ -156,7 +155,7 @@ func TestCorruptInputError(t *testing.T) {
 	assert.Error(t, err)
 	assert.ErrorAs(t, err, &corruptErr)
 	assert.Equal(t, CorruptInputError(26), corruptErr) // Length error reports position 26
-	assert.Contains(t, err.Error(), "illegal base32 data at input byte 26")
+	assert.Contains(t, err.Error(), "illegal base32 data at offset 26")
 }
 
 // TestKnownVectors tests encoding/decoding with known test vectors from the spec
@@ -328,7 +327,7 @@ func TestInvalidCharacterAtEachPosition(t *testing.T) {
 			var corruptErr CorruptInputError
 			assert.ErrorAs(t, err, &corruptErr, "should be CorruptInputError")
 			assert.Equal(t, CorruptInputError(pos), corruptErr, "should report correct position")
-			assert.Contains(t, err.Error(), fmt.Sprintf("illegal base32 data at input byte %d", pos))
+			assert.Contains(t, err.Error(), fmt.Sprintf("illegal base32 data at offset %d", pos))
 		})
 	}
 }

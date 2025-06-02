@@ -36,7 +36,7 @@ func (tid TypeID) Value() (driver.Value, error) {
 	return tid.String(), nil
 }
 
-// NullableID: wrapper for nullable columns
+// NullableID is wrapper for nullable columns.
 type NullableID struct {
 	TypeID TypeID
 	Valid  bool

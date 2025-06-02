@@ -7,7 +7,7 @@ import (
 
 // TypeID is a unique identifier with a given type as defined by the TypeID spec
 type TypeID struct {
-	value     string // The complete "prefix_suffix" string
+	value     string // The complete "prefix_suffix" string, where suffix is the base32 representation.
 	prefixLen uint8  // Length of prefix for extracting parts
 }
 
@@ -94,8 +94,7 @@ func (tid TypeID) HasSuffix() bool {
 // + The prefix is empty (no type specified)
 // + The suffix is the zero suffix "00000000000000000000000000"
 //
-// Only this TypeID would return `IsZero() == true`:
-// + "00000000000000000000000000"
+// Note that the empty struct TypeID{} is encoded as the zero id.
 func (tid TypeID) IsZero() bool {
 	return tid.Prefix() == "" && !tid.HasSuffix()
 }

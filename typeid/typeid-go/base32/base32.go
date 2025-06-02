@@ -13,10 +13,10 @@ import (
 const alphabet = "0123456789abcdefghjkmnpqrstvwxyz"
 
 // CorruptInputError is returned when invalid base32 data is encountered.
-type CorruptInputError int64
+type CorruptInputError int
 
 func (e CorruptInputError) Error() string {
-	return "illegal base32 data at input byte " + strconv.FormatInt(int64(e), 10)
+	return "illegal base32 data at offset " + strconv.FormatInt(int64(e), 10)
 }
 
 // Encode encodes src using the base32 alphabet,
