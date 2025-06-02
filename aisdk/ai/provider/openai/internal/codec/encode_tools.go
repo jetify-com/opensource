@@ -7,7 +7,6 @@ import (
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/packages/param"
 	"github.com/openai/openai-go/responses"
-	"github.com/openai/openai-go/shared"
 	"github.com/sashabaranov/go-openai/jsonschema"
 	"go.jetify.com/ai/api"
 )
@@ -32,63 +31,42 @@ func getIsStrict(opts api.CallOptions) bool {
 	return isStrict
 }
 
-func EncodeToolMode(mode api.ModeConfig, opts api.CallOptions) (OpenAITools, error) {
-	switch m := mode.(type) {
-	case api.RegularMode:
-		return EncodeRegularMode(m, opts)
-	case *api.RegularMode:
-		return EncodeRegularMode(*m, opts)
-
-	case api.ObjectJSONMode:
-		return encodeObjectJSONMode(m, opts)
-	case *api.ObjectJSONMode:
-		return encodeObjectJSONMode(*m, opts)
-
-	case api.ObjectToolMode:
-		return encodeObjectToolMode(m, opts)
-	case *api.ObjectToolMode:
-		return encodeObjectToolMode(*m, opts)
-
-	default:
-		return OpenAITools{}, fmt.Errorf("unsupported mode type: %T", mode)
-	}
-}
-
-func EncodeRegularMode(mode api.RegularMode, opts api.CallOptions) (OpenAITools, error) {
-	if len(mode.Tools) == 0 {
+func EncodeTools(tools []api.ToolDefinition, toolChoice *api.ToolChoice, opts api.CallOptions) (OpenAITools, error) {
+	if len(tools) == 0 && toolChoice == nil {
 		return OpenAITools{}, nil
 	}
 
-	tools := make([]responses.ToolUnionParam, 0, len(mode.Tools))
-	warnings := []api.CallWarning{}
+	result := OpenAITools{
+		Tools:    make([]responses.ToolUnionParam, 0, len(tools)),
+		Warnings: []api.CallWarning{},
+	}
 
 	// Process each tool
-	for _, toolItem := range mode.Tools {
+	for _, toolItem := range tools {
 		tool, toolWarnings, err := encodeToolDefinition(toolItem)
 		if err != nil {
 			return OpenAITools{}, err
 		}
 
 		if len(toolWarnings) > 0 {
-			warnings = append(warnings, toolWarnings...)
+			result.Warnings = append(result.Warnings, toolWarnings...)
 		}
 
 		if tool != nil {
-			tools = append(tools, *tool)
+			result.Tools = append(result.Tools, *tool)
 		}
 	}
 
 	// Process tool choice
-	toolChoice, err := encodeToolChoice(mode.ToolChoice)
-	if err != nil {
-		return OpenAITools{}, err
+	if toolChoice != nil {
+		choice, err := encodeToolChoice(toolChoice)
+		if err != nil {
+			return OpenAITools{}, err
+		}
+		result.ToolChoice = choice
 	}
 
-	return OpenAITools{
-		Tools:      tools,
-		ToolChoice: toolChoice,
-		Warnings:   warnings,
-	}, nil
+	return result, nil
 }
 
 // encodeTool encodes a single tool into a ToolUnionParam
@@ -147,6 +125,24 @@ func encodeProviderDefinedTool(tool api.ProviderDefinedTool) (*responses.ToolUni
 			return nil, nil, err
 		}
 	case "openai.web_search_preview":
+		// TODO: Decide how to evolve handling of the web search tool.
+		// So far, there are three types of tools:
+		// 1. User provided tools (function calls)
+		// 2. Built in or provider defined tools that require the client to perform the action
+		// 3. Built in or provider defined tools where the LLM can perform the action by itself.
+		//
+		// Web search is an example where the LLM already performs the action automatically,
+		// and it's already returning a list of sources, along with the text that it generated.
+		//
+		// We have a few options:
+		// 1. Ignore it. The tool has already been executed. The text already contains the sources.
+		//This is what Vercel does.
+		// 2. Include it. But maybe we should mark it as already executed somehow so users can distinguish.
+		// 3. Instead of including it as a ToolCall, include it as a ToolResult. Normally, ToolResults are
+		//    sent by the client as part of the prompt, letting the LLM know that the tool it requested has
+		//    been executed. But it might be OK, to allow the LLM to return a ToolResult as part of the response
+		//    in cases when it executes a tool by itself.
+
 		result, err = encodeWebSearchTool(tool)
 		if err != nil {
 			return nil, nil, err
@@ -320,89 +316,4 @@ func jsonSchemaAsMap(schema *jsonschema.Definition) (map[string]any, error) {
 	}
 
 	return result, nil
-}
-
-func encodeObjectToolMode(mode api.ObjectToolMode, opts api.CallOptions) (OpenAITools, error) {
-	// Convert the schema to a map
-	// TODO: the schema struct itself should have an .AsMap() method to convert to a map
-	props, err := jsonSchemaAsMap(mode.Tool.InputSchema)
-	if err != nil {
-		return OpenAITools{}, fmt.Errorf("failed to convert tool parameters: %w", err)
-	}
-
-	// Get isStrict from opts
-	isStrict := getIsStrict(opts)
-
-	// Convert the tool to a function tool format
-	tool := responses.ToolParamOfFunction(
-		mode.Tool.Name,
-		props,
-		isStrict,
-	)
-
-	// Add description if provided
-	if mode.Tool.Description != "" {
-		if functionToolParam := tool.OfFunction; functionToolParam != nil {
-			functionToolParam.Description = openai.String(mode.Tool.Description)
-		}
-	}
-
-	tools := []responses.ToolUnionParam{tool}
-
-	// Set tool choice to require this specific function
-	toolChoice := responses.ResponseNewParamsToolChoiceUnion{
-		OfFunctionTool: &responses.ToolChoiceFunctionParam{
-			Name: mode.Tool.Name,
-		},
-	}
-
-	return OpenAITools{
-		Tools:      tools,
-		ToolChoice: toolChoice,
-		Warnings:   []api.CallWarning{},
-	}, nil
-}
-
-func encodeObjectJSONMode(mode api.ObjectJSONMode, opts api.CallOptions) (OpenAITools, error) {
-	isStrict := getIsStrict(opts)
-	var responseFormat *responses.ResponseTextConfigParam
-
-	if mode.Schema != nil {
-		// Convert schema to map
-		schemaMap, err := jsonSchemaAsMap(mode.Schema)
-		if err != nil {
-			return OpenAITools{}, fmt.Errorf("failed to convert JSON schema: %w", err)
-		}
-
-		// Create response format with JSON schema
-		responseFormat = &responses.ResponseTextConfigParam{
-			Format: responses.ResponseFormatTextConfigUnionParam{
-				OfJSONSchema: &responses.ResponseFormatTextJSONSchemaConfigParam{
-					Type:   "json_schema",
-					Name:   mode.Name,
-					Schema: schemaMap,
-					Strict: openai.Bool(isStrict),
-				},
-			},
-		}
-
-		// Add description if provided
-		if mode.Description != "" {
-			responseFormat.Format.OfJSONSchema.Description = openai.String(mode.Description)
-		}
-	} else {
-		// Generic JSON object format
-		responseFormat = &responses.ResponseTextConfigParam{
-			Format: responses.ResponseFormatTextConfigUnionParam{
-				OfJSONObject: &shared.ResponseFormatJSONObjectParam{
-					Type: "json_object",
-				},
-			},
-		}
-	}
-
-	return OpenAITools{
-		ResponseFormat: responseFormat,
-		Warnings:       []api.CallWarning{},
-	}, nil
 }

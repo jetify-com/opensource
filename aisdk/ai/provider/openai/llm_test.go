@@ -147,7 +147,9 @@ func TestGenerate(t *testing.T) {
 			prompt:    standardPrompt,
 			exchanges: standardExchange,
 			expectedResp: api.Response{
-				Text: "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 			},
 		},
 		{
@@ -157,8 +159,11 @@ func TestGenerate(t *testing.T) {
 			exchanges: standardExchange,
 			expectedResp: api.Response{
 				Usage: api.Usage{
-					PromptTokens:     345,
-					CompletionTokens: 538,
+					InputTokens:       345,
+					OutputTokens:      538,
+					TotalTokens:       883,
+					ReasoningTokens:   123,
+					CachedInputTokens: 234,
 				},
 			},
 		},
@@ -232,7 +237,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text: "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				// We don't expect any warnings
 				Warnings: []api.CallWarning{},
 			},
@@ -279,7 +286,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text: "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{
 					{
 						Type:    "unsupported-setting",
@@ -344,7 +353,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text: "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{
 					{
 						Type:    "unsupported-setting",
@@ -425,7 +436,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -470,7 +483,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -513,7 +528,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -556,7 +573,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -599,7 +618,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -642,7 +663,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -687,7 +710,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -730,7 +755,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -773,7 +800,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -782,8 +811,8 @@ func TestGenerate(t *testing.T) {
 			modelID: "gpt-4o",
 			prompt:  standardPrompt,
 			options: api.CallOptions{
-				Mode: api.ObjectToolMode{
-					Tool: api.FunctionTool{
+				Tools: []api.ToolDefinition{
+					api.FunctionTool{
 						Name:        "response",
 						Description: "A response",
 						InputSchema: &jsonschema.Definition{
@@ -795,6 +824,10 @@ func TestGenerate(t *testing.T) {
 							AdditionalProperties: false,
 						},
 					},
+				},
+				ToolChoice: &api.ToolChoice{
+					Type:     "tool",
+					ToolName: "response",
 				},
 			},
 			exchanges: []httpmock.Exchange{
@@ -846,7 +879,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -855,7 +890,9 @@ func TestGenerate(t *testing.T) {
 			modelID: "gpt-4o",
 			prompt:  standardPrompt,
 			options: api.CallOptions{
-				Mode: api.ObjectJSONMode{},
+				ResponseFormat: &api.ResponseFormat{
+					Type: "json",
+				},
 			},
 			exchanges: []httpmock.Exchange{
 				{
@@ -889,7 +926,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -898,7 +937,8 @@ func TestGenerate(t *testing.T) {
 			modelID: "gpt-4o",
 			prompt:  standardPrompt,
 			options: api.CallOptions{
-				Mode: api.ObjectJSONMode{
+				ResponseFormat: &api.ResponseFormat{
+					Type:        "json",
 					Name:        "response",
 					Description: "A response",
 					Schema: &jsonschema.Definition{
@@ -956,7 +996,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -965,7 +1007,8 @@ func TestGenerate(t *testing.T) {
 			modelID: "gpt-4o",
 			prompt:  standardPrompt,
 			options: api.CallOptions{
-				Mode: api.ObjectJSONMode{
+				ResponseFormat: &api.ResponseFormat{
+					Type:        "json",
 					Name:        "response",
 					Description: "A response",
 					Schema: &jsonschema.Definition{
@@ -1028,7 +1071,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -1037,13 +1082,11 @@ func TestGenerate(t *testing.T) {
 			modelID: "gpt-4o",
 			prompt:  standardPrompt,
 			options: api.CallOptions{
-				Mode: api.RegularMode{
-					Tools: []api.ToolDefinition{
-						&codec.WebSearchTool{
-							SearchContextSize: "high",
-							UserLocation: &codec.WebSearchUserLocation{
-								City: "San Francisco",
-							},
+				Tools: []api.ToolDefinition{
+					&codec.WebSearchTool{
+						SearchContextSize: "high",
+						UserLocation: &codec.WebSearchUserLocation{
+							City: "San Francisco",
 						},
 					},
 				},
@@ -1085,7 +1128,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -1094,17 +1139,15 @@ func TestGenerate(t *testing.T) {
 			modelID: "gpt-4o",
 			prompt:  standardPrompt,
 			options: api.CallOptions{
-				Mode: api.RegularMode{
-					ToolChoice: &api.ToolChoice{
-						Type:     "tool",
-						ToolName: "web_search_preview",
-					},
-					Tools: []api.ToolDefinition{
-						&codec.WebSearchTool{
-							SearchContextSize: "high",
-							UserLocation: &codec.WebSearchUserLocation{
-								City: "San Francisco",
-							},
+				ToolChoice: &api.ToolChoice{
+					Type:     "tool",
+					ToolName: "web_search_preview",
+				},
+				Tools: []api.ToolDefinition{
+					&codec.WebSearchTool{
+						SearchContextSize: "high",
+						UserLocation: &codec.WebSearchUserLocation{
+							City: "San Francisco",
 						},
 					},
 				},
@@ -1149,7 +1192,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text:     "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{},
 			},
 		},
@@ -1158,7 +1203,6 @@ func TestGenerate(t *testing.T) {
 			modelID: "gpt-4o",
 			prompt:  standardPrompt,
 			options: api.CallOptions{
-				Mode:             api.RegularMode{},
 				StopSequences:    []string{"\n\n"},
 				TopK:             1,
 				PresencePenalty:  0.1,
@@ -1192,7 +1236,9 @@ func TestGenerate(t *testing.T) {
 				},
 			},
 			expectedResp: api.Response{
-				Text: "answer text",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "answer text"},
+				},
 				Warnings: []api.CallWarning{
 					{Type: "unsupported-setting", Setting: "FrequencyPenalty"},
 					{Type: "unsupported-setting", Setting: "PresencePenalty"},
@@ -1336,19 +1382,17 @@ func TestGenerate_ToolCalls(t *testing.T) {
 			modelID: "gpt-4o",
 			prompt:  standardPrompt,
 			options: api.CallOptions{
-				Mode: api.RegularMode{
-					Tools: standardTools,
-				},
+				Tools: standardTools,
 			},
 			exchanges: standardExchange,
 			expectedResp: api.Response{
-				ToolCalls: []api.ToolCallBlock{
-					{
+				Content: []api.ContentBlock{
+					&api.ToolCallBlock{
 						ToolCallID: "call_0NdsJqOS8N3J9l2p0p4WpYU9",
 						ToolName:   "weather",
 						Args:       json.RawMessage(`{"location":"San Francisco"}`),
 					},
-					{
+					&api.ToolCallBlock{
 						ToolCallID: "call_gexo0HtjUfmAIW4gjNOgyrcr",
 						ToolName:   "cityAttractions",
 						Args:       json.RawMessage(`{"city":"San Francisco"}`),
@@ -1361,9 +1405,7 @@ func TestGenerate_ToolCalls(t *testing.T) {
 			modelID: "gpt-4o",
 			prompt:  standardPrompt,
 			options: api.CallOptions{
-				Mode: api.RegularMode{
-					Tools: standardTools,
-				},
+				Tools: standardTools,
 			},
 			exchanges: standardExchange,
 			expectedResp: api.Response{
@@ -1543,19 +1585,23 @@ func TestGenerate_WebSearch(t *testing.T) {
 			prompt:    standardPrompt,
 			exchanges: standardExchange,
 			options: api.CallOptions{
-				Mode: api.RegularMode{
-					Tools: []api.ToolDefinition{
-						&codec.WebSearchTool{
-							SearchContextSize: "medium",
-							UserLocation: &codec.WebSearchUserLocation{
-								Country: "US",
-							},
+				Tools: []api.ToolDefinition{
+					&codec.WebSearchTool{
+						SearchContextSize: "medium",
+						UserLocation: &codec.WebSearchUserLocation{
+							Country: "US",
 						},
 					},
 				},
 			},
 			expectedResp: api.Response{
-				Text: expectedText,
+				Content: []api.ContentBlock{
+					&api.ToolCallBlock{
+						ToolCallID: "ws_67cf2b3051e88190b006770db6fdb13d",
+						ToolName:   "openai.web_search_preview",
+					},
+					&api.TextBlock{Text: expectedText},
+				},
 			},
 		},
 		{
@@ -1564,48 +1610,46 @@ func TestGenerate_WebSearch(t *testing.T) {
 			prompt:    standardPrompt,
 			exchanges: standardExchange,
 			options: api.CallOptions{
-				Mode: api.RegularMode{
-					Tools: []api.ToolDefinition{
-						&codec.WebSearchTool{
-							SearchContextSize: "medium",
-							UserLocation: &codec.WebSearchUserLocation{
-								Country: "US",
-							},
+				Tools: []api.ToolDefinition{
+					&codec.WebSearchTool{
+						SearchContextSize: "medium",
+						UserLocation: &codec.WebSearchUserLocation{
+							Country: "US",
 						},
 					},
 				},
 			},
 			expectedResp: api.Response{
-				Sources: []api.Source{
-					{
-						SourceType: "url",
-						ID:         "source-0",
-						URL:        "https://www.axios.com/local/san-francisco/2025/03/07/bruce-lee-statue-sf-chinatown?utm_source=chatgpt.com",
-						Title:      "Bruce Lee statue to be installed in SF Chinatown",
+				Content: []api.ContentBlock{
+					&api.ToolCallBlock{
+						ToolCallID: "ws_67cf2b3051e88190b006770db6fdb13d",
+						ToolName:   "openai.web_search_preview",
 					},
-					{
-						SourceType: "url",
-						ID:         "source-1",
-						URL:        "https://www.axios.com/local/san-francisco/2025/03/03/bay-area-office-leasing-activity?utm_source=chatgpt.com",
-						Title:      "The Bay Area is set to make an office leasing comeback",
+					&api.TextBlock{Text: expectedText},
+					&api.SourceBlock{
+						ID:    "source-0",
+						URL:   "https://www.axios.com/local/san-francisco/2025/03/07/bruce-lee-statue-sf-chinatown?utm_source=chatgpt.com",
+						Title: "Bruce Lee statue to be installed in SF Chinatown",
 					},
-					{
-						SourceType: "url",
-						ID:         "source-2",
-						URL:        "https://www.axios.com/local/san-francisco/2025/03/03/where-to-see-spring-blooms-bay-area?utm_source=chatgpt.com",
-						Title:      "Where to see spring blooms in the Bay Area",
+					&api.SourceBlock{
+						ID:    "source-1",
+						URL:   "https://www.axios.com/local/san-francisco/2025/03/03/bay-area-office-leasing-activity?utm_source=chatgpt.com",
+						Title: "The Bay Area is set to make an office leasing comeback",
 					},
-					{
-						SourceType: "url",
-						ID:         "source-3",
-						URL:        "https://www.axios.com/local/san-francisco/2025/03/03/great-highway-park-opening-april-recall-campaign?utm_source=chatgpt.com",
-						Title:      "Oceanfront Great Highway park set to open in April",
+					&api.SourceBlock{
+						ID:    "source-2",
+						URL:   "https://www.axios.com/local/san-francisco/2025/03/03/where-to-see-spring-blooms-bay-area?utm_source=chatgpt.com",
+						Title: "Where to see spring blooms in the Bay Area",
 					},
-					{
-						SourceType: "url",
-						ID:         "source-4",
-						URL:        "https://www.axios.com/local/san-francisco/2025/03/03/climate-weather-spring-temperatures-warmer-sf?utm_source=chatgpt.com",
-						Title:      "San Francisco's spring seasons are getting warmer",
+					&api.SourceBlock{
+						ID:    "source-3",
+						URL:   "https://www.axios.com/local/san-francisco/2025/03/03/great-highway-park-opening-april-recall-campaign?utm_source=chatgpt.com",
+						Title: "Oceanfront Great Highway park set to open in April",
+					},
+					&api.SourceBlock{
+						ID:    "source-4",
+						URL:   "https://www.axios.com/local/san-francisco/2025/03/03/climate-weather-spring-temperatures-warmer-sf?utm_source=chatgpt.com",
+						Title: "San Francisco's spring seasons are getting warmer",
 					},
 				},
 			},
@@ -1817,7 +1861,7 @@ func TestStream(t *testing.T) {
 				&api.ResponseMetadataEvent{
 					ID:        "resp_67c9a81b6a048190a9ee441c5755a4e8",
 					ModelID:   "gpt-4o-2024-07-18",
-					Timestamp: pointer.Ptr(time.Date(2025, 3, 6, 13, 50, 19, 0, time.UTC)),
+					Timestamp: time.Date(2025, 3, 6, 13, 50, 19, 0, time.UTC),
 				},
 				&api.TextDeltaEvent{
 					TextDelta: "Hello,",
@@ -1827,9 +1871,12 @@ func TestStream(t *testing.T) {
 				},
 				&api.FinishEvent{
 					FinishReason: api.FinishReasonStop,
-					Usage: &api.Usage{
-						PromptTokens:     543,
-						CompletionTokens: 478,
+					Usage: api.Usage{
+						InputTokens:       543,
+						OutputTokens:      478,
+						TotalTokens:       512,
+						ReasoningTokens:   123,
+						CachedInputTokens: 234,
 					},
 					ProviderMetadata: api.NewProviderMetadata(map[string]any{
 						"openai": &Metadata{
@@ -2000,16 +2047,16 @@ func TestStream(t *testing.T) {
 				&api.ResponseMetadataEvent{
 					ID:        "resp_67c9a81b6a048190a9ee441c5755a4e8",
 					ModelID:   "gpt-4o-2024-07-18",
-					Timestamp: pointer.Ptr(time.Date(2025, 3, 6, 13, 50, 19, 0, time.UTC)),
+					Timestamp: time.Date(2025, 3, 6, 13, 50, 19, 0, time.UTC),
 				},
 				&api.TextDeltaEvent{
 					TextDelta: "Hello,",
 				},
 				&api.FinishEvent{
 					FinishReason: api.FinishReasonLength,
-					Usage: &api.Usage{
-						PromptTokens:     0,
-						CompletionTokens: 0,
+					Usage: api.Usage{
+						InputTokens:  0,
+						OutputTokens: 0,
 					},
 					ProviderMetadata: api.NewProviderMetadata(map[string]any{
 						"openai": &Metadata{
@@ -2025,9 +2072,7 @@ func TestStream(t *testing.T) {
 			modelID: "gpt-4o",
 			prompt:  standardPrompt,
 			options: api.CallOptions{
-				Mode: api.RegularMode{
-					Tools: standardTools,
-				},
+				Tools: standardTools,
 			},
 			exchanges: []httpmock.Exchange{
 				{
@@ -2283,19 +2328,17 @@ func TestStream(t *testing.T) {
 				&api.ResponseMetadataEvent{
 					ID:        "resp_67cb13a755c08190acbe3839a49632fc",
 					ModelID:   "gpt-4o-2024-07-18",
-					Timestamp: pointer.Ptr(time.Date(2025, 3, 7, 15, 41, 27, 0, time.UTC)),
+					Timestamp: time.Date(2025, 3, 7, 15, 41, 27, 0, time.UTC),
 				},
 				&api.ToolCallDeltaEvent{
-					ToolCallID:   "call_6KxSghkb4MVnunFH2TxPErLP",
-					ToolName:     "currentLocation",
-					ToolCallType: "function",
-					ArgsDelta:    []byte(""),
+					ToolCallID: "call_6KxSghkb4MVnunFH2TxPErLP",
+					ToolName:   "currentLocation",
+					ArgsDelta:  []byte(""),
 				},
 				&api.ToolCallDeltaEvent{
-					ToolCallID:   "call_6KxSghkb4MVnunFH2TxPErLP",
-					ToolName:     "currentLocation",
-					ToolCallType: "function",
-					ArgsDelta:    []byte("{}"),
+					ToolCallID: "call_6KxSghkb4MVnunFH2TxPErLP",
+					ToolName:   "currentLocation",
+					ArgsDelta:  []byte("{}"),
 				},
 				&api.ToolCallEvent{
 					ToolCallID: "call_pgjcAI4ZegMkP6bsAV7sfrJA",
@@ -2303,40 +2346,34 @@ func TestStream(t *testing.T) {
 					Args:       json.RawMessage(`{}`),
 				},
 				&api.ToolCallDeltaEvent{
-					ToolCallID:   "call_Dg6WUmFHNeR5JxX1s53s1G4b",
-					ToolName:     "weather",
-					ToolCallType: "function",
-					ArgsDelta:    []byte(""),
+					ToolCallID: "call_Dg6WUmFHNeR5JxX1s53s1G4b",
+					ToolName:   "weather",
+					ArgsDelta:  []byte(""),
 				},
 				&api.ToolCallDeltaEvent{
-					ToolCallID:   "call_Dg6WUmFHNeR5JxX1s53s1G4b",
-					ToolName:     "weather",
-					ToolCallType: "function",
-					ArgsDelta:    []byte("{"),
+					ToolCallID: "call_Dg6WUmFHNeR5JxX1s53s1G4b",
+					ToolName:   "weather",
+					ArgsDelta:  []byte("{"),
 				},
 				&api.ToolCallDeltaEvent{
-					ToolCallID:   "call_Dg6WUmFHNeR5JxX1s53s1G4b",
-					ToolName:     "weather",
-					ToolCallType: "function",
-					ArgsDelta:    []byte("\"location\""),
+					ToolCallID: "call_Dg6WUmFHNeR5JxX1s53s1G4b",
+					ToolName:   "weather",
+					ArgsDelta:  []byte("\"location\""),
 				},
 				&api.ToolCallDeltaEvent{
-					ToolCallID:   "call_Dg6WUmFHNeR5JxX1s53s1G4b",
-					ToolName:     "weather",
-					ToolCallType: "function",
-					ArgsDelta:    []byte("\":\""),
+					ToolCallID: "call_Dg6WUmFHNeR5JxX1s53s1G4b",
+					ToolName:   "weather",
+					ArgsDelta:  []byte("\":\""),
 				},
 				&api.ToolCallDeltaEvent{
-					ToolCallID:   "call_Dg6WUmFHNeR5JxX1s53s1G4b",
-					ToolName:     "weather",
-					ToolCallType: "function",
-					ArgsDelta:    []byte("\"Rome\""),
+					ToolCallID: "call_Dg6WUmFHNeR5JxX1s53s1G4b",
+					ToolName:   "weather",
+					ArgsDelta:  []byte("\"Rome\""),
 				},
 				&api.ToolCallDeltaEvent{
-					ToolCallID:   "call_Dg6WUmFHNeR5JxX1s53s1G4b",
-					ToolName:     "weather",
-					ToolCallType: "function",
-					ArgsDelta:    []byte("\"}\""),
+					ToolCallID: "call_Dg6WUmFHNeR5JxX1s53s1G4b",
+					ToolName:   "weather",
+					ArgsDelta:  []byte("\"}\""),
 				},
 				&api.ToolCallEvent{
 					ToolCallID: "call_X2PAkDJInno9VVnNkDrfhboW",
@@ -2345,9 +2382,9 @@ func TestStream(t *testing.T) {
 				},
 				&api.FinishEvent{
 					FinishReason: api.FinishReasonToolCalls,
-					Usage: &api.Usage{
-						PromptTokens:     0,
-						CompletionTokens: 0,
+					Usage: api.Usage{
+						InputTokens:  0,
+						OutputTokens: 0,
 					},
 					ProviderMetadata: api.NewProviderMetadata(map[string]any{
 						"openai": &Metadata{
@@ -2359,17 +2396,15 @@ func TestStream(t *testing.T) {
 			},
 		},
 		{
-			name:    "should_stream_sources",
+			name:    "should stream sources",
 			modelID: "gpt-4o-mini",
 			prompt:  standardPrompt,
 			options: api.CallOptions{
-				Mode: api.RegularMode{
-					Tools: []api.ToolDefinition{
-						&codec.WebSearchTool{
-							SearchContextSize: "medium",
-							UserLocation: &codec.WebSearchUserLocation{
-								Country: "US",
-							},
+				Tools: []api.ToolDefinition{
+					&codec.WebSearchTool{
+						SearchContextSize: "medium",
+						UserLocation: &codec.WebSearchUserLocation{
+							Country: "US",
 						},
 					},
 				},
@@ -2719,7 +2754,7 @@ func TestStream(t *testing.T) {
 				&api.ResponseMetadataEvent{
 					ID:        "resp_67cf3390786881908b27489d7e8cfb6b",
 					ModelID:   "gpt-4o-mini-2024-07-18",
-					Timestamp: pointer.Ptr(time.Date(2025, 3, 10, 18, 46, 40, 0, time.UTC)),
+					Timestamp: time.Date(2025, 3, 10, 18, 46, 40, 0, time.UTC),
 				},
 				&api.TextDeltaEvent{
 					TextDelta: "Last week",
@@ -2754,9 +2789,12 @@ func TestStream(t *testing.T) {
 				},
 				&api.FinishEvent{
 					FinishReason: api.FinishReasonStop,
-					Usage: &api.Usage{
-						PromptTokens:     327,
-						CompletionTokens: 834,
+					Usage: api.Usage{
+						InputTokens:       327,
+						OutputTokens:      834,
+						TotalTokens:       1161,
+						ReasoningTokens:   0,
+						CachedInputTokens: 0,
 					},
 					ProviderMetadata: api.NewProviderMetadata(map[string]any{
 						"openai": &Metadata{
@@ -2877,7 +2915,7 @@ func TestStream(t *testing.T) {
 				&api.ResponseMetadataEvent{
 					ID:        "resp_67c9a81b6a048190a9ee441c5755a4e8",
 					ModelID:   "o3-mini-2025-01-31",
-					Timestamp: pointer.Ptr(time.Date(2025, 3, 6, 13, 50, 19, 0, time.UTC)),
+					Timestamp: time.Date(2025, 3, 6, 13, 50, 19, 0, time.UTC),
 				},
 				&api.ReasoningEvent{
 					TextDelta: "**Exploring burrito origins**\n\nThe user is",
@@ -2893,9 +2931,12 @@ func TestStream(t *testing.T) {
 				},
 				&api.FinishEvent{
 					FinishReason: api.FinishReasonStop,
-					Usage: &api.Usage{
-						PromptTokens:     543,
-						CompletionTokens: 478,
+					Usage: api.Usage{
+						InputTokens:       543,
+						OutputTokens:      478,
+						TotalTokens:       1021,
+						ReasoningTokens:   350,
+						CachedInputTokens: 234,
 					},
 					ProviderMetadata: api.NewProviderMetadata(map[string]any{
 						"openai": &Metadata{
@@ -3018,7 +3059,7 @@ func runStreamTests(t *testing.T, tests []struct {
 
 			// Collect all events from the stream
 			var gotEvents []api.StreamEvent
-			for event := range resp.Events {
+			for event := range resp.Stream {
 				gotEvents = append(gotEvents, event)
 			}
 

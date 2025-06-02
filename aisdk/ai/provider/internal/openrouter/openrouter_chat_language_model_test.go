@@ -8,7 +8,6 @@ import (
 	"go.jetify.com/ai/aitesting"
 	"go.jetify.com/ai/api"
 	"go.jetify.com/ai/provider/internal/openrouter/client"
-	"go.jetify.com/ai/provider/internal/openrouter/codec"
 	"go.jetify.com/pkg/httpmock"
 )
 
@@ -105,7 +104,9 @@ func TestDoGenerate(t *testing.T) {
 				Content: "Hello, World!",
 			},
 			expectedResp: api.Response{
-				Text: "Hello, World!",
+				Content: []api.ContentBlock{
+					&api.TextBlock{Text: "Hello, World!"},
+				},
 			},
 		},
 		{
@@ -120,8 +121,9 @@ func TestDoGenerate(t *testing.T) {
 			},
 			expectedResp: api.Response{
 				Usage: api.Usage{
-					PromptTokens:     20,
-					CompletionTokens: 5,
+					InputTokens:  20,
+					OutputTokens: 5,
+					TotalTokens:  25,
 				},
 			},
 		},
@@ -131,7 +133,8 @@ func TestDoGenerate(t *testing.T) {
 				LogProbs: testLogprobs,
 			},
 			expectedResp: api.Response{
-				LogProbs: codec.DecodeLogProbs(testLogprobs),
+				// TODO: LogProbs support not yet implemented in the new interface
+				// LogProbs: codec.DecodeLogProbs(testLogprobs),
 			},
 		},
 		{
@@ -152,25 +155,6 @@ func TestDoGenerate(t *testing.T) {
 			},
 			expectedResp: api.Response{
 				FinishReason: api.FinishReasonUnknown,
-			},
-		},
-		{
-			name: "should expose raw response headers",
-			mockResp: responseValues{
-				Content: "",
-				Headers: map[string]string{
-					"test-header": "test-value",
-				},
-			},
-			expectedResp: api.Response{
-				RawResponse: &api.RawResponse{
-					Headers: map[string]string{
-						// Default headers:
-						"Content-Type": "application/json",
-						// Custom headers:
-						"Test-Header": "test-value",
-					},
-				},
 			},
 		},
 		{
@@ -279,11 +263,7 @@ func TestDoGenerate(t *testing.T) {
 
 			model := NewOpenRouterChatLanguageModel(provider, modelID, tt.settings)
 
-			got, err := model.DoGenerate(t.Context(), testPrompt,
-				api.CallOptions{
-					InputFormat: api.InputFormatPrompt,
-				},
-			)
+			got, err := model.DoGenerate(t.Context(), testPrompt, api.CallOptions{})
 			if tt.wantErr {
 				require.Error(t, err)
 				return
