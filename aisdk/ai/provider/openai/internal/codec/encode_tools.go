@@ -116,6 +116,10 @@ func encodeFunctionTool(tool api.FunctionTool) (*responses.ToolUnionParam, []api
 // convertArgs is a generic helper function that converts tool.Args to the expected struct type.
 // It handles both cases where Args is already the correct struct type or a map[string]any.
 func convertArgs[T any](args any) (*T, error) {
+	// Check if args is nil
+	if args == nil {
+		return nil, fmt.Errorf("args cannot be nil")
+	}
 	// Try direct type assertion first
 	if typedArgs, ok := args.(*T); ok {
 		return typedArgs, nil
