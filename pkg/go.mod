@@ -34,7 +34,7 @@ require (
 
 require (
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
-	github.com/cloudflare/circl v1.6.0 // indirect
+	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
 	github.com/gofrs/uuid/v5 v5.3.2 // indirect
@@ -54,5 +54,5 @@ require (
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 )
