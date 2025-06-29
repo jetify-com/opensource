@@ -67,34 +67,42 @@ language plpgsql
 immutable;
 
 -- Function that parses a string into a typeid.
-create or replace function typeid_parse(typeid_str text)
-returns typeid
-as $$
+create or replace function public.typeid_parse(typeid_str text)
+ returns uuid
+ language plpgsql
+ immutable
+as $function$
 declare
+  parts text[];  -- array to hold split parts of the string
   prefix text;
   suffix text;
 begin
   if (typeid_str is null) then
     return null;
   end if;
-  if position('_' in typeid_str) = 0 then
-    return ('', base32_decode(typeid_str))::typeid;
+  parts := string_to_array(typeid_str, '_');
+  if array_length(parts, 1) = 1 then
+    suffix := parts[1];
+    prefix := '';
+  else
+    suffix := parts[array_length(parts, 1)];  -- last part is the suffix
+    prefix := array_to_string(parts[1:array_length(parts, 1)-1], '_');  -- join all but last part with '_'
+    if prefix = '' then
+      raise exception 'typeid prefix cannot be empty with a delimiter';
+    end if;
   end if;
-  prefix = split_part(typeid_str, '_', 1);
-  suffix = split_part(typeid_str, '_', 2);
-  if prefix is null or prefix = '' then
-    raise exception 'typeid prefix cannot be empty with a delimiter';
+  if prefix != '' then
+    -- updated regex allows underscores in prefix, e.g., "doctor_note_schema"
+    if not prefix ~ '^[a-z]+(_[a-z]+)*$' then
+      raise exception 'typeid prefix must match the regular expression ^[a-z]+(_[a-z]+)*$';
+    end if;
+    if length(prefix) > 63 then
+      raise exception 'typeid prefix must be at most 63 characters';
+    end if;
   end if;
-  -- prefix must match the regular expression [a-z]{0,63}
-  if not prefix ~ '^[a-z]{0,63}$' then
-    raise exception 'typeid prefix must match the regular expression [a-z]{0,63}';
-  end if;
-
-  return (prefix, base32_decode(suffix))::typeid;
+  return base32_decode(suffix)::uuid;
 end
-$$
-language plpgsql
-immutable;
+$function$
 
 -- Function that serializes a typeid into a string.
 create or replace function typeid_print(tid typeid)
