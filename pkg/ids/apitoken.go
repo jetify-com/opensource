@@ -1,7 +1,7 @@
 package ids
 
 import (
-	"go.jetify.com/typeid"
+	"go.jetify.com/typeid/v2"
 )
 
 const APITokenPrefix = "api_token"
