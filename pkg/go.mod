@@ -24,7 +24,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	github.com/tailscale/hujson v0.0.0-20250226034555-ec1d1c113d33
-	go.jetify.com/typeid v1.3.0
+	go.jetify.com/typeid v1.3.1-0.20250708200829-05dce5112f3d
 	golang.org/x/oauth2 v0.28.0
 	golang.org/x/sys v0.31.0
 	google.golang.org/protobuf v1.36.5
@@ -50,7 +50,6 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
