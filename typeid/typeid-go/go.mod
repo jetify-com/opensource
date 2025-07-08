@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/stretchr/testify v1.10.0
-	go.jetify.com/typeid v1.3.1-0.20250602221042-e26d10b64640
+	go.jetify.com/typeid v1.3.1-0.20250708200829-05dce5112f3d
 	gopkg.in/yaml.v2 v2.4.0
 )
 
