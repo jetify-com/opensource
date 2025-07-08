@@ -48,7 +48,7 @@ func ExampleTypeID_MarshalText() {
 
 	// Create a product with TypeID
 	product := Product{
-		ID:    typeid.Must(typeid.Parse("product_00041061050r3gg28a1c60t3gf")),
+		ID:    typeid.MustParse("product_00041061050r3gg28a1c60t3gf"),
 		Name:  "Widget",
 		Price: 29.99,
 	}

@@ -31,7 +31,7 @@ func TestScanValid(t *testing.T) {
 			err := scanned.Scan(td.Tid)
 			assert.NoError(t, err)
 
-			expected := typeid.Must(typeid.Parse(td.Tid))
+			expected := typeid.MustParse(td.Tid)
 			assert.Equal(t, expected, scanned)
 			assert.Equal(t, td.Tid, scanned.String())
 		})
@@ -114,7 +114,7 @@ func TestValue(t *testing.T) {
 
 	for _, td := range testdata {
 		t.Run(td.Name, func(t *testing.T) {
-			tid := typeid.Must(typeid.Parse(td.Tid))
+			tid := typeid.MustParse(td.Tid)
 			actual, err := tid.Value()
 			assert.NoError(t, err)
 			assert.Equal(t, td.Tid, actual)
@@ -135,7 +135,7 @@ func TestSQLNullScanValid(t *testing.T) {
 			err := scanned.Scan(td.Tid)
 			assert.NoError(t, err)
 
-			expected := typeid.Must(typeid.Parse(td.Tid))
+			expected := typeid.MustParse(td.Tid)
 			assert.True(t, scanned.Valid, "sql.Null[TypeID] should be valid for valid typeid")
 			assert.Equal(t, expected, scanned.V)
 			assert.Equal(t, td.Tid, scanned.V.String())
@@ -191,7 +191,7 @@ func TestSQLNullValue(t *testing.T) {
 
 	for _, td := range testdata {
 		t.Run(td.Name, func(t *testing.T) {
-			tid := typeid.Must(typeid.Parse(td.Tid))
+			tid := typeid.MustParse(td.Tid)
 			nullable := sql.Null[typeid.TypeID]{V: tid, Valid: true}
 			actual, err := nullable.Value()
 			assert.NoError(t, err)
