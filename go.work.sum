@@ -140,9 +140,8 @@ github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/yuin/goldmark v1.4.13 h1:fVcFKWvrslecOb/tg+Cc05dkeYx540o0FuFt3nUVDoE=
-go.jetify.com/typeid v1.3.0/go.mod h1:CtVGyt2+TSp4Rq5+ARLvGsJqdNypKBAC6INQ9TLPlmk=
-go.jetify.com/typeid v1.3.1-0.20241211224430-39758d55f188/go.mod h1:Qlbkqu/YQVknz7AhsKUnDJDmOfKR6G/YUiEbxt12PXY=
-go.jetify.com/typeid v1.3.1-0.20250602221042-e26d10b64640/go.mod h1:x8vtxYf2h/0T0a4fS2K2vqVM0aBsGwkw03tal6PxK1s=
+go.jetify.com/typeid v1.3.1-0.20250708200829-05dce5112f3d h1:KfAndOJ7MZvJki9kM/C7diLvGtbU64O5ZCCdvwUgXYc=
+go.jetify.com/typeid v1.3.1-0.20250708200829-05dce5112f3d/go.mod h1:x8vtxYf2h/0T0a4fS2K2vqVM0aBsGwkw03tal6PxK1s=
 go.opencensus.io v0.24.0 h1:y73uSU6J157QMP2kn2r30vwW1A2W2WFwSCGnAVxeaD0=
 go.opencensus.io v0.24.0/go.mod h1:vNK8G9p7aAivkbmorf4v+7Hgx+Zs0yY+0fOtgBfjQKo=
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 h1:4Pp6oUg3+e/6M4C0A/3kJ2VYa++dsWVTtGgLVj5xtHg=
