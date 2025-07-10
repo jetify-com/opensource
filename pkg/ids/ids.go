@@ -7,7 +7,7 @@ package ids
 import (
 	"fmt"
 
-	"go.jetify.com/typeid"
+	"go.jetify.com/typeid/v2"
 )
 
 const UserPrefix = "user"
