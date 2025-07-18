@@ -49,8 +49,9 @@ func (t *Token) IDClaims() *IDClaims {
 		return nil
 	}
 
-	// Since we're using UnsafeClaimsWithoutVerification, we accept common algorithms
-	// but don't actually verify the signature. Per JWT spec (RFC 7519), we include:
+	// Parse the JWT to validate its structure and ensure it uses a supported algorithm.
+	// We then use UnsafeClaimsWithoutVerification to extract claims without signature
+	// verification. Per JWT spec (RFC 7519), we accept:
 	// - MUST: HS256 ("none" is not supported by go-jose for security reasons)
 	// - RECOMMENDED: RS256, ES256
 	// - Optional but common: other variants for broader compatibility
