@@ -9,8 +9,8 @@ require (
 	github.com/codeclysm/extract/v4 v4.0.0
 	github.com/coreos/go-oidc/v3 v3.14.1
 	github.com/fatih/color v1.18.0
-	github.com/go-jose/go-jose/v3 v3.0.4
-	github.com/google/go-github/v53 v53.2.0
+	github.com/go-jose/go-jose/v4 v4.1.1
+	github.com/google/go-github/v73 v73.0.0
 	github.com/google/renameio/v2 v2.0.0
 	github.com/gosimple/slug v1.15.0
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
@@ -33,13 +33,10 @@ require (
 )
 
 require (
-	github.com/ProtonMail/go-crypto v1.3.0 // indirect
-	github.com/cloudflare/circl v1.6.1 // indirect
+	github.com/arduino/go-paths-helper v1.13.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.1 // indirect
 	github.com/gofrs/uuid/v5 v5.3.2 // indirect
 	github.com/google/btree v1.1.3 // indirect
-	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
@@ -53,4 +50,5 @@ require (
 	github.com/spf13/pflag v1.0.7 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
 	golang.org/x/crypto v0.40.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
 )
