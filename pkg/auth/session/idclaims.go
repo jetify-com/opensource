@@ -1,7 +1,8 @@
 package session
 
 import (
-	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4/jwt"
 )
 
 // Standard claims:
@@ -48,7 +49,18 @@ func (t *Token) IDClaims() *IDClaims {
 		return nil
 	}
 
-	jwtTok, err := jwt.ParseSigned(t.IDToken)
+	// Since we're using UnsafeClaimsWithoutVerification, we accept common algorithms
+	// but don't actually verify the signature. Per JWT spec (RFC 7519), we include:
+	// - MUST: HS256 ("none" is not supported by go-jose for security reasons)
+	// - RECOMMENDED: RS256, ES256
+	// - Optional but common: other variants for broader compatibility
+	jwtTok, err := jwt.ParseSigned(t.IDToken, []jose.SignatureAlgorithm{
+		jose.HS256, jose.HS384, jose.HS512,
+		jose.RS256, jose.RS384, jose.RS512,
+		jose.ES256, jose.ES384, jose.ES512,
+		jose.PS256, jose.PS384, jose.PS512,
+		jose.EdDSA,
+	})
 	if err != nil {
 		return nil
 	}
