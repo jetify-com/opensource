@@ -4,13 +4,13 @@ go 1.24.0
 
 require (
 	connectrpc.com/connect v1.18.1
-	github.com/bmatcuk/doublestar/v4 v4.9.0
+	github.com/bmatcuk/doublestar/v4 v4.9.1
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/codeclysm/extract/v4 v4.0.0
-	github.com/coreos/go-oidc/v3 v3.14.1
+	github.com/coreos/go-oidc/v3 v3.15.0
 	github.com/fatih/color v1.18.0
 	github.com/go-jose/go-jose/v4 v4.1.1
-	github.com/google/go-github/v73 v73.0.0
+	github.com/google/go-github/v74 v74.0.0
 	github.com/google/renameio/v2 v2.0.0
 	github.com/gosimple/slug v1.15.0
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
