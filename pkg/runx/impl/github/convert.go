@@ -1,7 +1,7 @@
 package github
 
 import (
-	githubimpl "github.com/google/go-github/v73/github"
+	githubimpl "github.com/google/go-github/v74/github"
 	"go.jetify.com/pkg/runx/impl/types"
 )
 

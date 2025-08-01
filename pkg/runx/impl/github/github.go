@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	githubimpl "github.com/google/go-github/v73/github"
+	githubimpl "github.com/google/go-github/v74/github"
 	"go.jetify.com/pkg/runx/impl/httpcacher"
 	"go.jetify.com/pkg/runx/impl/types"
 	"golang.org/x/oauth2"
