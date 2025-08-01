@@ -516,7 +516,7 @@ func TestEncodeProviderDefinedTool(t *testing.T) {
 			}
 
 			require.NotNil(t, tool, "Tool should not be nil")
-			
+
 			// Validate that GetType() returns a non-empty value (implementation sets it correctly)
 			require.NotNil(t, tool.GetType(), "Tool type should not be nil")
 			require.NotEmpty(t, *tool.GetType(), "Tool type should not be empty")

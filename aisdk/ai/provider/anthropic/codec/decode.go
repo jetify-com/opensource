@@ -123,7 +123,6 @@ func decodeReasoning(block anthropic.BetaContentBlockUnion) api.Reasoning {
 	return nil
 }
 
-
 // decodeUsage converts Anthropic Usage to API SDK Usage
 func decodeUsage(usage anthropic.BetaUsage) api.Usage {
 	return api.Usage{

@@ -612,7 +612,7 @@ func NewToolResultBlock(toolUseID string, content string, isError bool) anthropi
 		Type:      "tool_result",
 		ToolUseID: toolUseID,
 		Content: []anthropic.BetaToolResultBlockParamContentUnion{
-			anthropic.BetaToolResultBlockParamContentUnion{
+			{
 				OfText: &anthropic.BetaTextBlockParam{
 					Text: content,
 					Type: "text",
