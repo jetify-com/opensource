@@ -486,30 +486,30 @@ func TestEncodeProviderDefinedTool(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			tool, betas, warnings, err := EncodeProviderDefinedTool(tc.input)
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			tool, betas, warnings, err := EncodeProviderDefinedTool(testCase.input)
 
-			if tc.wantErrMsg != "" {
+			if testCase.wantErrMsg != "" {
 				assert.Error(t, err, "Expected an error")
-				assert.Contains(t, err.Error(), tc.wantErrMsg, "Error message should contain expected substring")
+				assert.Contains(t, err.Error(), testCase.wantErrMsg, "Error message should contain expected substring")
 				return
 			}
 
 			require.NoError(t, err)
 
 			// Check warnings
-			if len(tc.wantWarnings) == 0 {
+			if len(testCase.wantWarnings) == 0 {
 				assert.Empty(t, warnings, "No warnings should be returned")
 			} else {
-				assert.ElementsMatch(t, tc.wantWarnings, warnings, "Warnings mismatch")
+				assert.ElementsMatch(t, testCase.wantWarnings, warnings, "Warnings mismatch")
 			}
 
 			// Check betas
-			assert.ElementsMatch(t, tc.expectBetas, betas, "Betas mismatch")
+			assert.ElementsMatch(t, testCase.expectBetas, betas, "Betas mismatch")
 
 			// Check if tool should be empty (empty union)
-			if tc.expectNil {
+			if testCase.expectNil {
 				// Check that the tool is empty using GetType()
 				assert.Nil(t, tool.GetType(), "Tool should be empty")
 				return
@@ -523,13 +523,13 @@ func TestEncodeProviderDefinedTool(t *testing.T) {
 
 			// Validate the JSON representation matches
 			// This will verify our type matches the SDK's default when marshaled
-			expectedJSON, err := json.Marshal(tc.want)
+			expectedJSON, err := json.Marshal(testCase.want)
 			require.NoError(t, err, "Failed to marshal expected tool to JSON")
 
 			actualJSON, err := json.Marshal(tool)
 			require.NoError(t, err, "Failed to marshal actual tool to JSON")
 
-			assert.JSONEq(t, string(expectedJSON), string(actualJSON), "Tool JSON content mismatch for %s", tc.name)
+			assert.JSONEq(t, string(expectedJSON), string(actualJSON), "Tool JSON content mismatch for %s", testCase.name)
 		})
 	}
 }

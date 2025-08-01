@@ -490,81 +490,93 @@ func EncodeToolMessage(msg *api.ToolMessage) (anthropic.BetaMessageParam, error)
 			return anthropic.BetaMessageParam{}, fmt.Errorf("tool call ID cannot be empty")
 		}
 
-		var block anthropic.BetaContentBlockParamUnion
-		if result.Content != nil {
-			// Handle rich content if present
-			content := make([]anthropic.BetaToolResultBlockParamContentUnion, 0, len(result.Content))
-			for _, part := range result.Content {
-				var param anthropic.BetaToolResultBlockParamContentUnion
-
-				switch block := part.(type) {
-				case *api.TextBlock:
-					textParam, err := EncodeTextBlock(block)
-					if err != nil {
-						return anthropic.BetaMessageParam{}, fmt.Errorf("failed to encode text block: %v", err)
-					}
-					param = anthropic.BetaToolResultBlockParamContentUnion{
-						OfText: &textParam,
-					}
-				case api.TextBlock:
-					textParam, err := EncodeTextBlock(&block)
-					if err != nil {
-						return anthropic.BetaMessageParam{}, fmt.Errorf("failed to encode text block: %v", err)
-					}
-					param = anthropic.BetaToolResultBlockParamContentUnion{
-						OfText: &textParam,
-					}
-				case *api.ImageBlock:
-					imageParam, err := EncodeImageBlock(block)
-					if err != nil {
-						return anthropic.BetaMessageParam{}, fmt.Errorf("failed to encode image block: %v", err)
-					}
-					param = anthropic.BetaToolResultBlockParamContentUnion{
-						OfImage: &imageParam,
-					}
-				case api.ImageBlock:
-					imageParam, err := EncodeImageBlock(&block)
-					if err != nil {
-						return anthropic.BetaMessageParam{}, fmt.Errorf("failed to encode image block: %v", err)
-					}
-					param = anthropic.BetaToolResultBlockParamContentUnion{
-						OfImage: &imageParam,
-					}
-				default:
-					return anthropic.BetaMessageParam{}, fmt.Errorf("unsupported tool result content type: %T", block)
-				}
-				content = append(content, param)
-			}
-
-			param := anthropic.BetaToolResultBlockParam{
-				Type:      "tool_result",
-				ToolUseID: result.ToolCallID,
-				Content:   content,
-				IsError:   anthropic.Bool(result.IsError),
-			}
-			if cacheControl := getCacheControl(result); cacheControl != nil {
-				param.CacheControl = *cacheControl
-			}
-			block = anthropic.BetaContentBlockParamUnion{
-				OfToolResult: &param,
-			}
-		} else {
-			// Fallback to JSON encoding the Result field
-			resultJSON, err := json.Marshal(result.Result)
-			if err != nil {
-				return anthropic.BetaMessageParam{}, fmt.Errorf("failed to marshal tool result: %v", err)
-			}
-			toolResultParam := NewToolResultBlock(result.ToolCallID, string(resultJSON), result.IsError)
-			if cacheControl := getCacheControl(result); cacheControl != nil {
-				toolResultParam.CacheControl = *cacheControl
-			}
-			block = anthropic.BetaContentBlockParamUnion{
-				OfToolResult: &toolResultParam,
-			}
+		block, err := encodeToolResult(result)
+		if err != nil {
+			return anthropic.BetaMessageParam{}, err
 		}
 		blocks = append(blocks, block)
 	}
 	return NewUserMessage(blocks...), nil
+}
+
+func encodeToolResult(result api.ToolResultBlock) (anthropic.BetaContentBlockParamUnion, error) {
+	if result.Content != nil {
+		return encodeToolResultContent(result)
+	}
+	return encodeToolResultJSON(result)
+}
+
+func encodeToolResultContent(result api.ToolResultBlock) (anthropic.BetaContentBlockParamUnion, error) {
+	content := make([]anthropic.BetaToolResultBlockParamContentUnion, 0, len(result.Content))
+	for _, part := range result.Content {
+		param, err := encodeToolResultPart(part)
+		if err != nil {
+			return anthropic.BetaContentBlockParamUnion{}, err
+		}
+		content = append(content, param)
+	}
+
+	param := anthropic.BetaToolResultBlockParam{
+		Type:      "tool_result",
+		ToolUseID: result.ToolCallID,
+		Content:   content,
+		IsError:   anthropic.Bool(result.IsError),
+	}
+	if cacheControl := getCacheControl(result); cacheControl != nil {
+		param.CacheControl = *cacheControl
+	}
+	return anthropic.BetaContentBlockParamUnion{
+		OfToolResult: &param,
+	}, nil
+}
+
+func encodeToolResultJSON(result api.ToolResultBlock) (anthropic.BetaContentBlockParamUnion, error) {
+	resultJSON, err := json.Marshal(result.Result)
+	if err != nil {
+		return anthropic.BetaContentBlockParamUnion{}, fmt.Errorf("failed to marshal tool result: %v", err)
+	}
+	toolResultParam := NewToolResultBlock(result.ToolCallID, string(resultJSON), result.IsError)
+	if cacheControl := getCacheControl(result); cacheControl != nil {
+		toolResultParam.CacheControl = *cacheControl
+	}
+	return anthropic.BetaContentBlockParamUnion{
+		OfToolResult: &toolResultParam,
+	}, nil
+}
+
+func encodeToolResultPart(part api.ContentBlock) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+	switch block := part.(type) {
+	case *api.TextBlock:
+		return encodeToolResultTextPart(block)
+	case api.TextBlock:
+		return encodeToolResultTextPart(&block)
+	case *api.ImageBlock:
+		return encodeToolResultImagePart(block)
+	case api.ImageBlock:
+		return encodeToolResultImagePart(&block)
+	default:
+		return anthropic.BetaToolResultBlockParamContentUnion{}, fmt.Errorf("unsupported tool result content type: %T", block)
+	}
+}
+
+func encodeToolResultTextPart(block *api.TextBlock) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+	textParam, err := EncodeTextBlock(block)
+	if err != nil {
+		return anthropic.BetaToolResultBlockParamContentUnion{}, fmt.Errorf("failed to encode text block: %v", err)
+	}
+	return anthropic.BetaToolResultBlockParamContentUnion{
+		OfText: &textParam,
+	}, nil
+}
+
+func encodeToolResultImagePart(block *api.ImageBlock) (anthropic.BetaToolResultBlockParamContentUnion, error) {
+	imageParam, err := EncodeImageBlock(block)
+	if err != nil {
+		return anthropic.BetaToolResultBlockParamContentUnion{}, fmt.Errorf("failed to encode image block: %v", err)
+	}
+	return anthropic.BetaToolResultBlockParamContentUnion{
+		OfImage: &imageParam,
+	}, nil
 }
 
 func EncodeSystemMessage(msg *api.SystemMessage) (anthropic.BetaTextBlockParam, error) {
