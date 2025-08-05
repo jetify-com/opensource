@@ -100,5 +100,15 @@ func encodeInputSchema(schema *jsonschema.Schema) (anthropic.BetaToolInputSchema
 		}
 	}
 
+	// Add any other fields to ExtraFields
+	for k, v := range schemaMap {
+		if k != "type" && k != "properties" && k != "required" {
+			if inputSchema.ExtraFields == nil {
+				inputSchema.ExtraFields = make(map[string]interface{})
+			}
+			inputSchema.ExtraFields[k] = v
+		}
+	}
+
 	return inputSchema, nil
 }

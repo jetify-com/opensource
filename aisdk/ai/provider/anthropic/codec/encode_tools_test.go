@@ -64,6 +64,7 @@ func TestEncodeFunctionTool(t *testing.T) {
 				},
 			},
 			want: `{
+				"type": "tool",
 				"name": "test_function",
 				"description": "A test function",
 				"input_schema": {
