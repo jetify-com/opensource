@@ -426,7 +426,7 @@ func encodeComputerToolResult(result *api.ToolResultBlock) (responses.ResponseIn
 			imageBlock = &b
 		default:
 			// Single non-image block - check if it's text
-			if content.Type() == api.ContentBlockTypeText {
+			if _, ok := content.(*api.TextBlock); ok {
 				return encodeTextToolResult(result)
 			}
 			// Single block that's neither image nor text - this is invalid
@@ -469,7 +469,7 @@ func encodeComputerToolResult(result *api.ToolResultBlock) (responses.ResponseIn
 	// Multiple blocks - check if any are text
 	hasText := false
 	for _, content := range result.Content {
-		if content.Type() == api.ContentBlockTypeText {
+		if _, ok := content.(*api.TextBlock); ok {
 			hasText = true
 			break
 		}
@@ -491,8 +491,7 @@ func encodeTextToolResult(result *api.ToolResultBlock) (responses.ResponseInputI
 	// Check Content[] first - more expressive when available
 	if len(result.Content) > 0 {
 		for _, content := range result.Content {
-			if content.Type() == api.ContentBlockTypeText {
-				textBlock := content.(*api.TextBlock)
+			if textBlock, ok := content.(*api.TextBlock); ok {
 				output += textBlock.Text + "\n"
 			}
 		}
