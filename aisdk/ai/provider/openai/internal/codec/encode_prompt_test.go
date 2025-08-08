@@ -1143,6 +1143,25 @@ var toolMessageTests = []testCase{
 		expectedError: "expected at least 1 content block for computer use tool result, got 0",
 	},
 	{
+		name: "computer tool result with single reasoning block",
+		input: []api.Message{
+			&api.ToolMessage{
+				Content: []api.ToolResultBlock{
+					{
+						ToolCallID: "openai.computer_use_preview",
+						Content: []api.ContentBlock{
+							&api.ReasoningBlock{
+								Text:      "Processing the request...",
+								Signature: "signature_123",
+							},
+						},
+					},
+				},
+			},
+		},
+		expectedError: "computer use tool result has 1 content block of type reasoning, expected image or text",
+	},
+	{
 		name: "tool message value type (not pointer)",
 		input: []api.Message{
 			api.ToolMessage{

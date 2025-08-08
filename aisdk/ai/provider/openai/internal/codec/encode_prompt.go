@@ -425,8 +425,12 @@ func encodeComputerToolResult(result *api.ToolResultBlock) (responses.ResponseIn
 		case api.ImageBlock:
 			imageBlock = &b
 		default:
-			// Single non-image block - fall through to text handler
-			return encodeTextToolResult(result)
+			// Single non-image block - check if it's text
+			if content.Type() == api.ContentBlockTypeText {
+				return encodeTextToolResult(result)
+			}
+			// Single block that's neither image nor text - this is invalid
+			return responses.ResponseInputItemUnionParam{}, fmt.Errorf("computer use tool result has 1 content block of type %s, expected image or text", content.Type())
 		}
 
 		// Create data URL from image data
