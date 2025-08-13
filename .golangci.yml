@@ -1,14 +1,12 @@
+version: "2"
+
 run:
   go: "1.23"
 linters:
-  disable-all: true
   enable:
     - dupl
     - errcheck
     - errorlint
-    - gofmt
-    - goimports
-    - gosimple
     - govet
     - importas
     - ineffassign
@@ -17,8 +15,6 @@ linters:
     - reassign
     - revive
     - staticcheck
-    - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - unused
@@ -26,92 +22,88 @@ linters:
     - usetesting
     - varnamelen
     # - wrapcheck
-issues:
-  exclude-files:
-    - ".*\\.connect\\.go$"
-    - ".*\\.pb\\.go$"
-  exclude:
-    # It's usually better to start off _not_ wrapping an error unless it
-    # should be part of your API. Errors should be wrapped only when it's
-    # useful.
-    #
-    # See https://go.dev/blog/go1.13-errors
-    - "non-wrapping format verb for fmt.Errorf"
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - dupl
-
-    # Disable only cognitive-complexity check in test files
-    - path: _test\.go
-      linters:
-        - revive
-      text: "cognitive-complexity:"
-
-    # TODO(gcurtis): temporary until this file is used.
-    - path: terminal.*\.go
-      linters:
-        - unused
-linters-settings:
-  errcheck:
-    exclude-functions:
-      # Dropped/canceled/timed out connections or bad clients make checking this
-      # error pointless 99% of the time.
-      - (net/http.ResponseWriter).Write
-      - (flag/*FlagSet).Parse
-  revive:
-    rules: # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md
-      - name: atomic
-      - name: bare-return
-      - name: bool-literal-in-expr
-      - name: cognitive-complexity
-        arguments:
-          - 30
-      - name: datarace
-      - name: duplicated-imports
-      - name: early-return
-      - name: error-return
-      - name: error-strings
-      - name: if-return
-      - name: indent-error-flow
-      - name: range-val-address
-      - name: receiver-naming
-      - name: time-naming
-      - name: var-naming
-      - name: unreachable-code
-  varnamelen:
-    max-distance: 40
-    ignore-decls:
-      - c echo.Context
-      - const C
-      - db database.Db
-      - db db
-      - e error
-      - e watch.Event
-      - f *foo.Bar
-      - i int
-      - id string
-      - id any
-      - m map[string]any
-      - m map[string]int
-      - mc api.CliServiceClient
-      - ns *komponents.Namespace
-      - ns komponents.Namespace
-      - ns string
-      - r *http.Request
-      - T any
-      - t testing.T
-      - vc *viewer.MockViewer
-      - vc Context
-      - vc viewer
-      - vc viewer.CommonContext
-      - vc viewer.Context
-      - w http.ResponseWriter
-      - w io.Writer
-  unconvert:
-    fast-math: true
-  wrapcheck:
-    ignoreSigRegexps:
-      - ".*confkit.*Validate.*"
-    ignorePackageGlobs:
-      - "go.jetify.com/axiom/api/*"
+  settings:
+    errcheck:
+      exclude-functions:
+        # Dropped/canceled/timed out connections or bad clients make checking this
+        # error pointless 99% of the time.
+        - (net/http.ResponseWriter).Write
+        - (flag/*FlagSet).Parse
+    revive:
+      rules: # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md
+        - name: package-comments
+          disabled: true
+        - name: exported
+          disabled: true
+        - name: atomic
+        - name: bare-return
+        - name: bool-literal-in-expr
+        - name: cognitive-complexity
+          arguments:
+            - 30
+        - name: datarace
+        - name: duplicated-imports
+        - name: early-return
+        - name: error-return
+        - name: error-strings
+        - name: if-return
+        - name: indent-error-flow
+        - name: range-val-address
+        - name: receiver-naming
+        - name: time-naming
+        - name: var-naming
+          arguments:
+            - [] # AllowList
+            - [] # DenyList
+            - - skip-package-name-checks: true
+        - name: unreachable-code
+    varnamelen:
+      max-distance: 40
+      ignore-decls:
+        - c echo.Context
+        - const C
+        - db database.Db
+        - db db
+        - e error
+        - e watch.Event
+        - f *foo.Bar
+        - i int
+        - id string
+        - id any
+        - m map[string]any
+        - m map[string]int
+        - mc api.CliServiceClient
+        - ns *komponents.Namespace
+        - ns komponents.Namespace
+        - ns string
+        - r *http.Request
+        - T any
+        - t testing.T
+        - vc *viewer.MockViewer
+        - vc Context
+        - vc viewer
+        - vc viewer.CommonContext
+        - vc viewer.Context
+        - w http.ResponseWriter
+        - w io.Writer
+    unconvert:
+      fast-math: true
+    wrapcheck:
+      ignore-sig-regexps:
+        - ".*confkit.*Validate.*"
+      ignore-package-globs:
+        - "go.jetify.com/axiom/api/*"
+  exclusions:
+    rules:
+      # Exclude dupl linter from test files
+      - path: _test\.go
+        linters:
+          - dupl
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    gofumpt:
+      extra-rules: true
+      module-path: go.jetify.com

@@ -138,7 +138,7 @@ type IDType interface {
 // type safe, but we could completely get rid of these helpers.
 
 // parse is a generic helper for parsing ID strings
-func parse[T IDType](s string, prefix string) (T, error) {
+func parse[T IDType](s, prefix string) (T, error) {
 	var zero T
 	tid, err := typeid.Parse(s)
 	if err != nil {

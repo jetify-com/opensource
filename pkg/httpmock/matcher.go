@@ -56,7 +56,7 @@ func checkBasicProperties(tester T, expected cassette.Request, actual *http.Requ
 }
 
 // checkHeaders validates the HTTP headers match the expected values
-func checkHeaders(tester T, expected http.Header, actual http.Header) bool {
+func checkHeaders(tester T, expected, actual http.Header) bool {
 	filteredActual := make(http.Header)
 	for k, v := range actual {
 		filteredActual[http.CanonicalHeaderKey(k)] = v
@@ -169,7 +169,7 @@ func checkMetadata(tester T, expected cassette.Request, actual *http.Request) bo
 }
 
 // checkTrailers validates the trailer headers match the expected values
-func checkTrailers(tester T, expected http.Header, actual http.Header) bool {
+func checkTrailers(tester T, expected, actual http.Header) bool {
 	if len(expected) == 0 {
 		return true
 	}

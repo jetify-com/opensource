@@ -206,12 +206,12 @@ func (e *safeError) Format(state fmt.State, verb rune) {
 		_, _ = state.Write([]byte(e.Error()))
 		if state.Flag('+') {
 			for _, fr := range e.StackTrace() {
-				fmt.Fprintf(state, "\n%s\n\t%s:%d", fr.Function, fr.File, fr.Line)
+				_, _ = fmt.Fprintf(state, "\n%s\n\t%s:%d", fr.Function, fr.File, fr.Line)
 			}
 			return
 		}
 	case 'q':
-		fmt.Fprintf(state, "%q", e.Error())
+		_, _ = fmt.Fprintf(state, "%q", e.Error())
 	}
 }
 

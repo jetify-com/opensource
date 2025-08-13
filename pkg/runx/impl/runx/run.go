@@ -58,8 +58,8 @@ func (r *RunX) run(ctx context.Context, args parsedArgs) error {
 func lookupBin(paths []string, bin string) (string, error) {
 	oldPATH := os.Getenv("PATH")
 	newPATH := strings.Join(paths, ":")
-	os.Setenv("PATH", newPATH)
-	defer os.Setenv("PATH", oldPATH)
+	_ = os.Setenv("PATH", newPATH)
+	defer func() { _ = os.Setenv("PATH", oldPATH) }()
 
 	path, err := exec.LookPath(bin)
 	if err != nil {
@@ -72,8 +72,8 @@ func environ(paths []string) []string {
 	oldPATH := os.Getenv("PATH")
 	allPaths := append(paths, oldPATH)
 	newPATH := strings.Join(allPaths, ":")
-	os.Setenv("PATH", newPATH)
-	defer os.Setenv("PATH", oldPATH)
+	_ = os.Setenv("PATH", newPATH)
+	defer func() { _ = os.Setenv("PATH", oldPATH) }()
 
 	return os.Environ()
 }

@@ -114,7 +114,7 @@ func ExampleServer_sequence() {
 		fmt.Println("decode error:", err)
 		return
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	// Get profile using token
 	req, _ := http.NewRequest(http.MethodGet, testServer.Path("/profile"), nil)
@@ -182,7 +182,7 @@ func ExampleServer_delay() {
 		fmt.Println("request error:", err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Output:
 	// Configured delay: 1s
@@ -199,7 +199,7 @@ func ExampleReplayServer_basic() {
 		Cassette: "testdata/successful_get",
 	})
 	require.NoError(mockT, err)
-	defer replayServer.Close()
+	defer func() { _ = replayServer.Close() }()
 
 	// Make a request that will be recorded or replayed
 	req, err := http.NewRequest(http.MethodGet, replayServer.URL()+"/get", nil)
@@ -208,7 +208,7 @@ func ExampleReplayServer_basic() {
 	req.Header.Set("Accept-Encoding", "gzip")
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(mockT, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Read and print the response status and body
 	body, err := io.ReadAll(resp.Body)
@@ -236,7 +236,7 @@ func ExampleReplayServer_headers() {
 		Cassette: "testdata/get_with_header",
 	})
 	require.NoError(mockT, err)
-	defer replayServer.Close()
+	defer func() { _ = replayServer.Close() }()
 
 	// Create a request with custom headers
 	req, err := http.NewRequest(http.MethodGet, replayServer.URL()+"/headers", nil)
@@ -248,7 +248,7 @@ func ExampleReplayServer_headers() {
 	// Make the request
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(mockT, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Print response status
 	fmt.Printf("Status: %d\n", resp.StatusCode)
@@ -266,7 +266,7 @@ func ExampleReplayServer_jsonRequest() {
 		Cassette: "testdata/post_with_body",
 	})
 	require.NoError(mockT, err)
-	defer replayServer.Close()
+	defer func() { _ = replayServer.Close() }()
 
 	// Create a JSON request
 	jsonData := `{"test": "data"}`
@@ -280,7 +280,7 @@ func ExampleReplayServer_jsonRequest() {
 	// Make the request
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(mockT, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Print response status
 	fmt.Printf("Status: %d\n", resp.StatusCode)

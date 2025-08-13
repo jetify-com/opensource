@@ -128,7 +128,7 @@ func TestReplayServerHandler(t *testing.T) {
 				Cassette: "testdata/" + test.name,
 			})
 			require.NoError(t, err)
-			defer server.Close()
+			defer func() { _ = server.Close() }()
 
 			// Build the request using the declarative Request struct
 			req, err := buildRequest(server.URL(), test.request)
@@ -137,7 +137,7 @@ func TestReplayServerHandler(t *testing.T) {
 			// Make the request
 			resp, err := http.DefaultClient.Do(req)
 			require.NoError(t, err)
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			// Check response status
 			assert.Equal(t, test.expectedStatus, resp.StatusCode)
@@ -347,7 +347,7 @@ func TestReplayServerFailures(t *testing.T) {
 				Cassette: filepath.Join("testdata", test.cassette),
 			})
 			require.NoError(t, err)
-			defer replayServer.Close()
+			defer func() { _ = replayServer.Close() }()
 
 			// Build the request using the declarative Request struct
 			req, err := buildRequest(replayServer.URL(), test.request)
@@ -356,7 +356,7 @@ func TestReplayServerFailures(t *testing.T) {
 			// Make the request - this should trigger the test failure via requireCassetteRequest
 			resp, err := http.DefaultClient.Do(req)
 			require.NoError(t, err)
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			// Check if the test failed as expected
 			if test.expectedError {
@@ -432,7 +432,7 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 				Cassette: filepath.Join("testdata", test.cassette),
 			})
 			require.NoError(t, err)
-			defer replayServer.Close()
+			defer func() { _ = replayServer.Close() }()
 
 			// Make all the requests
 			for _, request := range test.requests {
@@ -440,7 +440,7 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 				require.NoError(t, err)
 				resp, err := http.DefaultClient.Do(req)
 				require.NoError(t, err)
-				defer resp.Body.Close()
+				defer func() { _ = resp.Body.Close() }()
 			}
 
 			// Close the server and check for errors

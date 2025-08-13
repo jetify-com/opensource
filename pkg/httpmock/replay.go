@@ -66,7 +66,7 @@ func NewReplayServer(tester T, config ReplayConfig) (*ReplayServer, error) {
 	// Parse and validate the real endpoint we'll proxy to in record mode
 	realURL, err := url.Parse(config.Host)
 	if err != nil {
-		return nil, fmt.Errorf("invalid Host: %v", err)
+		return nil, fmt.Errorf("invalid Host: %w", err)
 	}
 	if realURL.Scheme == "" || realURL.Host == "" {
 		return nil, fmt.Errorf("invalid Host: URL must have scheme and host")
@@ -111,7 +111,7 @@ func (rs *ReplayServer) handler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, fmt.Sprintf("request did not match cassette: %v", roundTripErr), http.StatusInternalServerError)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Increment the used interactions counter
 	rs.usedInteractions.Add(1)
@@ -144,7 +144,7 @@ func (rs *ReplayServer) Close() error {
 	// Get the cassette to check if all interactions were used
 	cassette, err := cassette.Load(rs.cassetteName)
 	if err != nil {
-		return fmt.Errorf("failed to load cassette for verification: %v", err)
+		return fmt.Errorf("failed to load cassette for verification: %w", err)
 	}
 
 	// Check if any interactions were not used
@@ -219,7 +219,7 @@ func createRecorder(tester T, config ReplayConfig) (*recorder.Recorder, error) {
 		}),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create recorder: %v", err)
+		return nil, fmt.Errorf("failed to create recorder: %w", err)
 	}
 	return rec, nil
 }
