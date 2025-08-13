@@ -31,7 +31,7 @@ func New(rootDir string) (*Store, error) {
 	}, nil
 }
 
-func (s *Store) ReadTokens(issuer string, clientID string) ([]*session.Token, error) {
+func (s *Store) ReadTokens(issuer, clientID string) ([]*session.Token, error) {
 	data, err := s.readData(issuer, clientID)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (s *Store) WriteToken(
 	)
 }
 
-func (s *Store) DeleteToken(issuer string, clientID string) error {
+func (s *Store) DeleteToken(issuer, clientID string) error {
 	path := s.path(issuer, clientID)
 
 	_, err := os.Stat(path)

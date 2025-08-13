@@ -205,7 +205,7 @@ func (d DirType) ReadFile(name string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	b, err := io.ReadAll(f)
 	return b, err

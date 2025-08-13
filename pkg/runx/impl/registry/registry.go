@@ -170,7 +170,7 @@ func isExecutableBinary(path string) bool {
 	if err != nil {
 		return false
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	header := make([]byte, 4)
 	_, err = file.Read(header)

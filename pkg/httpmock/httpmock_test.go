@@ -144,7 +144,7 @@ func TestServer_Request(t *testing.T) {
 
 			resp, err := http.DefaultClient.Do(req)
 			require.NoError(t, err)
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			if testCase.wantFail {
 				assert.True(t, mockTester.failed, "Expected test to fail")
@@ -232,7 +232,7 @@ func TestServer_VerifyComplete(t *testing.T) {
 				require.NoError(t, err)
 				resp, err := http.DefaultClient.Do(r)
 				require.NoError(t, err)
-				resp.Body.Close()
+				_ = resp.Body.Close()
 			}
 
 			err := testServer.VerifyComplete()
@@ -631,7 +631,7 @@ func TestServer_ResponseHeaders(t *testing.T) {
 
 			resp, err := http.Get(testServer.Path("/test"))
 			require.NoError(t, err)
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			// Check status code
 			assert.Equal(t, testCase.wantCode, resp.StatusCode)
@@ -679,7 +679,7 @@ func TestServer_Delay(t *testing.T) {
 	// Make the request
 	resp, err := http.Get(testServer.Path("/delayed"))
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Calculate elapsed time
 	elapsed := time.Since(start)
@@ -795,7 +795,7 @@ func TestServer_HandlerErrors(t *testing.T) {
 		// Send a request that isn't expected
 		resp, err := http.Get(server.Path("/unexpected"))
 		require.NoError(t, err)
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		// Should have responded with 500 error and failed the test
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)

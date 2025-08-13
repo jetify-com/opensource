@@ -26,7 +26,7 @@ type AuthFlow struct {
 	oidcProvider *oidc.Provider
 }
 
-func New(issuer string, clientID string, scopes []string, audience []string) (*AuthFlow, error) {
+func New(issuer, clientID string, scopes, audience []string) (*AuthFlow, error) {
 	// TODO: We currently default to using the Auth flow with PCKE
 	// we could instead check if the issuer supports the device flow, if
 	// it does, use that, otherwise use the PKCE flow.
