@@ -85,7 +85,7 @@ type Response struct {
 	Warnings []CallWarning `json:"warnings,omitempty"`
 }
 
-func (r Response) GetProviderMetadata() *ProviderMetadata { return r.ProviderMetadata }
+func (r *Response) GetProviderMetadata() *ProviderMetadata { return r.ProviderMetadata }
 
 // UnmarshalJSON implements custom JSON unmarshaling for Response
 func (r *Response) UnmarshalJSON(data []byte) error {
@@ -153,7 +153,7 @@ type Usage struct {
 }
 
 // IsZero returns true if all fields of the Usage struct are zero.
-func (u Usage) IsZero() bool {
+func (u *Usage) IsZero() bool {
 	return u.InputTokens == 0 &&
 		u.OutputTokens == 0 &&
 		u.TotalTokens == 0 &&
