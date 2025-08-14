@@ -22,7 +22,7 @@ type OpenAITools struct {
 func getIsStrict(opts api.CallOptions) bool {
 	isStrict := true // Default to true
 	if opts.ProviderMetadata != nil {
-		metadata := GetMetadata(opts)
+		metadata := GetMetadata(&opts)
 		if metadata != nil && metadata.StrictSchemas != nil {
 			isStrict = *metadata.StrictSchemas
 		}
@@ -71,12 +71,10 @@ func EncodeTools(tools []api.ToolDefinition, toolChoice *api.ToolChoice, opts ap
 // encodeTool encodes a single tool into a ToolUnionParam
 func encodeToolDefinition(toolItem api.ToolDefinition) (*responses.ToolUnionParam, []api.CallWarning, error) {
 	switch tool := toolItem.(type) {
-	case api.FunctionTool:
-		return encodeFunctionTool(tool)
 	case *api.FunctionTool:
 		return encodeFunctionTool(*tool)
-	case api.ProviderDefinedTool:
-		return encodeProviderDefinedTool(tool)
+	case *api.ProviderDefinedTool:
+		return encodeProviderDefinedTool(*tool)
 	default:
 		warning := api.CallWarning{
 			Type: "unsupported-tool",
@@ -183,7 +181,7 @@ func encodeProviderDefinedTool(tool api.ProviderDefinedTool) (*responses.ToolUni
 	default:
 		warning := api.CallWarning{
 			Type: "unsupported-tool",
-			Tool: tool,
+			Tool: &tool,
 		}
 		return nil, []api.CallWarning{warning}, nil
 	}

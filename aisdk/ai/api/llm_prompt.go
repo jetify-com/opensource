@@ -67,7 +67,7 @@ func (m *SystemMessage) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Role:  string(MessageRoleSystem),
-		Alias: (*Alias)(&m),
+		Alias: (*Alias)(m),
 	})
 }
 
@@ -113,7 +113,7 @@ func (m *UserMessage) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Role:  string(MessageRoleUser),
-		Alias: (*Alias)(&m),
+		Alias: (*Alias)(m),
 	})
 }
 
@@ -178,7 +178,7 @@ func (m *AssistantMessage) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Role:  string(MessageRoleAssistant),
-		Alias: (*Alias)(&m),
+		Alias: (*Alias)(m),
 	})
 }
 
@@ -243,7 +243,7 @@ func (m *ToolMessage) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Role:  string(MessageRoleTool),
-		Alias: (*Alias)(&m),
+		Alias: (*Alias)(m),
 	})
 }
 
@@ -369,7 +369,7 @@ func (b *TextBlock) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Type:  string(ContentBlockTypeText),
-		Alias: (*Alias)(&b),
+		Alias: (*Alias)(b),
 	})
 }
 
@@ -407,7 +407,7 @@ func (b *ReasoningBlock) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Type:  string(ContentBlockTypeReasoning),
-		Alias: (*Alias)(&b),
+		Alias: (*Alias)(b),
 	})
 }
 
@@ -441,7 +441,7 @@ func (b *RedactedReasoningBlock) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Type:  string(ContentBlockTypeRedactedReasoning),
-		Alias: (*Alias)(&b),
+		Alias: (*Alias)(b),
 	})
 }
 
@@ -480,7 +480,7 @@ func (b *ImageBlock) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Type:  string(ContentBlockTypeImage),
-		Alias: (*Alias)(&b),
+		Alias: (*Alias)(b),
 	})
 }
 
@@ -538,7 +538,7 @@ func (b *FileBlock) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Type:  string(ContentBlockTypeFile),
-		Alias: (*Alias)(&b),
+		Alias: (*Alias)(b),
 	})
 }
 
@@ -591,7 +591,7 @@ func (b *ToolCallBlock) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Type:  string(ContentBlockTypeToolCall),
-		Alias: (*Alias)(&b),
+		Alias: (*Alias)(b),
 	})
 }
 
@@ -636,7 +636,7 @@ func (b *ToolResultBlock) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Type:  string(ContentBlockTypeToolResult),
-		Alias: (*Alias)(&b),
+		Alias: (*Alias)(b),
 	})
 }
 
@@ -707,7 +707,7 @@ func (b *SourceBlock) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Type:  string(ContentBlockTypeSource),
-		Alias: (*Alias)(&b),
+		Alias: (*Alias)(b),
 	})
 }
 

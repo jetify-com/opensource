@@ -36,7 +36,7 @@ type LanguageModel interface {
 	// The prompt parameter is a standardized prompt type, not the user-facing prompt.
 	// The AI SDK methods will map the user-facing prompt types such as chat or
 	// instruction prompts to this format.
-	Generate(ctx context.Context, prompt []Message, opts CallOptions) (Response, error)
+	Generate(ctx context.Context, prompt []Message, opts CallOptions) (*Response, error)
 
 	// Stream generates a language model output (streaming).
 	// Returns a stream of events from the model.
@@ -44,7 +44,7 @@ type LanguageModel interface {
 	// The prompt parameter is a standardized prompt type, not the user-facing prompt.
 	// The AI SDK methods will map the user-facing prompt types such as chat or
 	// instruction prompts to this format.
-	Stream(ctx context.Context, prompt []Message, opts CallOptions) (StreamResponse, error)
+	Stream(ctx context.Context, prompt []Message, opts CallOptions) (*StreamResponse, error)
 }
 
 // SupportedURL defines URL patterns supported for a specific media type

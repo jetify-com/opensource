@@ -61,7 +61,7 @@ func (t *FunctionTool) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Type:  "function",
-		Alias: (*Alias)(&t),
+		Alias: (*Alias)(t),
 	})
 }
 
@@ -98,6 +98,6 @@ func (t *ProviderDefinedTool) MarshalJSON() ([]byte, error) {
 		*Alias
 	}{
 		Type:  "provider-defined",
-		Alias: (*Alias)(&t),
+		Alias: (*Alias)(t),
 	})
 }
