@@ -868,14 +868,14 @@ func TestJsonSchemaAsMap(t *testing.T) {
 func TestEncodeProviderDefinedTool(t *testing.T) {
 	tests := []struct {
 		name             string
-		input            api.ProviderDefinedTool
+		input            *api.ProviderDefinedTool
 		expected         string
 		expectedWarnings []api.CallWarning
 		expectedError    string
 	}{
 		{
 			name:  "file search tool (constructor)",
-			input: *FileSearchTool(WithVectorStoreIDs("store1", "store2")),
+			input: FileSearchTool(WithVectorStoreIDs("store1", "store2")),
 			expected: `{
 				"type": "file_search",
 				"vector_store_ids": ["store1", "store2"]
@@ -884,7 +884,7 @@ func TestEncodeProviderDefinedTool(t *testing.T) {
 		},
 		{
 			name: "file search tool (map args)",
-			input: api.ProviderDefinedTool{
+			input: &api.ProviderDefinedTool{
 				ID:   "openai.file_search",
 				Name: "file_search",
 				Args: map[string]any{
@@ -899,7 +899,7 @@ func TestEncodeProviderDefinedTool(t *testing.T) {
 		},
 		{
 			name: "unsupported provider tool",
-			input: api.ProviderDefinedTool{
+			input: &api.ProviderDefinedTool{
 				ID:   "unsupported_tool",
 				Name: "unsupported",
 				Args: &mockUnsupportedTool{id: "unsupported_tool"},
