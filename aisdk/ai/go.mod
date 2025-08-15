@@ -9,7 +9,7 @@ require (
 	github.com/openai/openai-go/v2 v2.0.2
 	github.com/stretchr/testify v1.10.0
 	github.com/tidwall/gjson v1.18.0
-	go.jetify.com/pkg v0.0.0-20250813160509-523aa34a07bb
+	go.jetify.com/pkg v0.0.0-20250815201908-bd5afd342820
 	go.jetify.com/sse v0.1.0
 )
 
