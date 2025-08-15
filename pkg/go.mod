@@ -9,7 +9,7 @@ require (
 	github.com/codeclysm/extract/v4 v4.0.0
 	github.com/coreos/go-oidc/v3 v3.15.0
 	github.com/fatih/color v1.18.0
-	github.com/go-jose/go-jose/v4 v4.1.1
+	github.com/go-jose/go-jose/v4 v4.1.2
 	github.com/google/go-github/v74 v74.0.0
 	github.com/google/renameio/v2 v2.0.0
 	github.com/gosimple/slug v1.15.0
@@ -26,8 +26,8 @@ require (
 	github.com/tailscale/hujson v0.0.0-20250605163823-992244df8c5a
 	go.jetify.com/typeid/v2 v2.0.0-alpha.3
 	golang.org/x/oauth2 v0.30.0
-	golang.org/x/sys v0.34.0
-	google.golang.org/protobuf v1.36.6
+	golang.org/x/sys v0.35.0
+	google.golang.org/protobuf v1.36.7
 	gopkg.in/dnaeon/go-vcr.v4 v4.0.4
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -49,6 +49,5 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.7 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
-	golang.org/x/crypto v0.40.0 // indirect
-	golang.org/x/net v0.42.0 // indirect
+	golang.org/x/crypto v0.41.0 // indirect
 )
