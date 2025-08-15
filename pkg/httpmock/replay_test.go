@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"testing"
 
