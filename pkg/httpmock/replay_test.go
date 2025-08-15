@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -24,7 +23,7 @@ func TestNewReplayServer(t *testing.T) {
 			name: "valid configuration",
 			config: ReplayConfig{
 				Host:     "https://jsonplaceholder.typicode.com",
-				Cassette: filepath.Join("testdata", "valid"),
+				Cassette: "testdata/server_valid",
 			},
 			wantErr: false,
 		},
@@ -32,7 +31,7 @@ func TestNewReplayServer(t *testing.T) {
 			name: "invalid host URL",
 			config: ReplayConfig{
 				Host:     "://invalid-url",
-				Cassette: filepath.Join("testdata", "invalid"),
+				Cassette: "testdata/invalid",
 			},
 			wantErr:     true,
 			errContains: "invalid Host",
@@ -41,7 +40,7 @@ func TestNewReplayServer(t *testing.T) {
 			name: "empty host",
 			config: ReplayConfig{
 				Host:     "",
-				Cassette: filepath.Join("testdata", "empty"),
+				Cassette: "testdata/empty",
 			},
 			wantErr:     true,
 			errContains: "invalid Host",
@@ -125,7 +124,7 @@ func TestReplayServerHandler(t *testing.T) {
 			// Create a server with a normal request and response
 			server, err := NewReplayServer(mockTester, ReplayConfig{
 				Host:     "https://httpbin.org",
-				Cassette: "testdata/" + test.name,
+				Cassette: "testdata/server_" + test.name,
 			})
 			require.NoError(t, err)
 			defer func() { _ = server.Close() }()
@@ -304,7 +303,7 @@ func TestReplayServerFailures(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "method mismatch",
-			cassette:      "successful_get",
+			cassette:      "server_successful_get",
 		},
 		{
 			name: "mismatched_path",
@@ -317,7 +316,7 @@ func TestReplayServerFailures(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "URL mismatch",
-			cassette:      "successful_get",
+			cassette:      "server_successful_get",
 		},
 		{
 			name: "mismatched_body",
@@ -332,7 +331,7 @@ func TestReplayServerFailures(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "body mismatch",
-			cassette:      "post_with_body",
+			cassette:      "server_post_with_body",
 		},
 	}
 
@@ -393,7 +392,7 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "expected 2 requests, received 0. Next expected: [GET https://httpbin.org/get]",
-			cassette:      "multiple_interactions",
+			cassette:      "server_multiple_interactions",
 			checkCloseErr: true,
 		},
 		{
@@ -416,7 +415,7 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "requested interaction not found",
-			cassette:      "successful_get",
+			cassette:      "server_successful_get",
 			checkCloseErr: false,
 		},
 	}

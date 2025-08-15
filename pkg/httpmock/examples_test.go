@@ -196,7 +196,7 @@ func ExampleReplayServer_basic() {
 	// Create a new replay server that will record interactions with httpbin.org
 	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
 		Host:     "https://httpbin.org",
-		Cassette: "testdata/successful_get",
+		Cassette: "testdata/server_successful_get",
 	})
 	require.NoError(mockT, err)
 	defer func() { _ = replayServer.Close() }()
@@ -233,7 +233,7 @@ func ExampleReplayServer_headers() {
 
 	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
 		Host:     "https://httpbin.org",
-		Cassette: "testdata/get_with_header",
+		Cassette: "testdata/server_get_with_header",
 	})
 	require.NoError(mockT, err)
 	defer func() { _ = replayServer.Close() }()
@@ -263,7 +263,7 @@ func ExampleReplayServer_jsonRequest() {
 
 	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
 		Host:     "https://httpbin.org",
-		Cassette: "testdata/post_with_body",
+		Cassette: "testdata/server_post_with_body",
 	})
 	require.NoError(mockT, err)
 	defer func() { _ = replayServer.Close() }()
