@@ -10,7 +10,7 @@ import (
 var defaultLanguageModel atomic.Value
 
 func init() {
-	model := anthropic.NewLanguageModel(anthropic.ModelClaude37Sonnet20250219)
+	model := anthropic.NewLanguageModel(anthropic.ModelClaudeSonnet4_0)
 	defaultLanguageModel.Store(model)
 }
 
