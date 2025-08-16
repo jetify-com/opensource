@@ -13,48 +13,15 @@ import (
 )
 
 func TestNewReplayTransport(t *testing.T) {
-	tests := []struct {
-		name        string
-		config      ReplayConfig
-		wantErr     bool
-		errContains string
-	}{
-		{
-			name: "valid configuration",
-			config: ReplayConfig{
-				Cassette: "testdata/transport_valid",
-			},
-			wantErr: false,
-		},
-		{
-			name: "empty cassette name",
-			config: ReplayConfig{
-				Cassette: "",
-			},
-			wantErr:     true,
-			errContains: "cassette",
-		},
-	}
+	// Test valid configuration
+	transport := NewReplayTransport(t, ReplayConfig{
+		Cassette: "testdata/transport_valid",
+	})
+	require.NotNil(t, transport, "transport should not be nil")
+	assert.Equal(t, "testdata/transport_valid", transport.cassetteName)
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			transport, err := NewReplayTransport(t, test.config)
-			if test.wantErr {
-				assert.Error(t, err)
-				if test.errContains != "" {
-					assert.Contains(t, err.Error(), test.errContains)
-				}
-				assert.Nil(t, transport)
-				return
-			}
-			require.NotNil(t, transport, "transport should not be nil")
-			assert.Equal(t, test.config.Cassette, transport.cassetteName)
-
-			// Test cleanup
-			err = transport.Close()
-			assert.NoError(t, err)
-		})
-	}
+	// Test cleanup
+	transport.Close()
 }
 
 func TestReplayTransportRoundTrip(t *testing.T) {
@@ -111,11 +78,10 @@ func TestReplayTransportRoundTrip(t *testing.T) {
 			mockTester := &mockT{}
 
 			// Create a transport
-			transport, err := NewReplayTransport(mockTester, ReplayConfig{
+			transport := NewReplayTransport(mockTester, ReplayConfig{
 				Cassette: "testdata/transport_" + test.name,
 			})
-			require.NoError(t, err)
-			defer func() { _ = transport.Close() }()
+			defer transport.Close()
 
 			// Create HTTP client with our transport
 			client := &http.Client{Transport: transport}
@@ -139,8 +105,7 @@ func TestReplayTransportRoundTrip(t *testing.T) {
 			assert.Contains(t, string(body), test.expectedBody)
 
 			// Close the transport to ensure the cassette is saved
-			err = transport.Close()
-			require.NoError(t, err)
+			transport.Close()
 		})
 	}
 }
@@ -150,11 +115,10 @@ func TestReplayTransportMultipleHosts(t *testing.T) {
 	mockTester := &mockT{}
 
 	// Create a transport that can handle multiple hosts
-	transport, err := NewReplayTransport(mockTester, ReplayConfig{
+	transport := NewReplayTransport(mockTester, ReplayConfig{
 		Cassette: "testdata/transport_multi_host",
 	})
-	require.NoError(t, err)
-	defer func() { _ = transport.Close() }()
+	defer transport.Close()
 
 	// Create HTTP client with our transport
 	client := &http.Client{Transport: transport}
@@ -196,8 +160,7 @@ func TestReplayTransportMultipleHosts(t *testing.T) {
 	}
 
 	// Close the transport
-	err = transport.Close()
-	require.NoError(t, err)
+	transport.Close()
 }
 
 func TestReplayTransportFailures(t *testing.T) {
@@ -242,11 +205,10 @@ func TestReplayTransportFailures(t *testing.T) {
 			mockTester := &mockT{}
 
 			// Create a transport
-			transport, err := NewReplayTransport(mockTester, ReplayConfig{
+			transport := NewReplayTransport(mockTester, ReplayConfig{
 				Cassette: "testdata/" + test.cassette,
 			})
-			require.NoError(t, err)
-			defer func() { _ = transport.Close() }()
+			defer transport.Close()
 
 			// Create HTTP client with our transport
 			client := &http.Client{Transport: transport}
@@ -321,11 +283,10 @@ func TestReplayTransportInteractionCounts(t *testing.T) {
 			mockTester := &mockT{}
 
 			// Create a transport
-			transport, err := NewReplayTransport(mockTester, ReplayConfig{
+			transport := NewReplayTransport(mockTester, ReplayConfig{
 				Cassette: "testdata/" + test.cassette,
 			})
-			require.NoError(t, err)
-			defer func() { _ = transport.Close() }()
+			defer transport.Close()
 
 			// Create HTTP client with our transport
 			client := &http.Client{Transport: transport}
@@ -340,19 +301,14 @@ func TestReplayTransportInteractionCounts(t *testing.T) {
 			}
 
 			// Close the transport and check for errors
-			err = transport.Close()
+			transport.Close()
 
 			// Verify the test failed as expected
 			if test.expectedError {
-				if test.checkCloseErr {
-					assert.Contains(t, err.Error(), test.errorContains, "expected error message not found")
-				} else {
-					assert.True(t, mockTester.failed, "test should have failed")
-					assert.Contains(t, strings.Join(mockTester.errors, "\n"), test.errorContains, "expected error message not found")
-				}
+				assert.True(t, mockTester.failed, "test should have failed")
+				assert.Contains(t, strings.Join(mockTester.errors, "\n"), test.errorContains, "expected error message not found")
 			} else {
 				assert.False(t, mockTester.failed, "test should not have failed")
-				assert.NoError(t, err)
 			}
 		})
 	}
@@ -390,64 +346,29 @@ func buildRequestForHost(baseURL string, req Request) (*http.Request, error) {
 }
 
 func TestNewReplayClient(t *testing.T) {
-	tests := []struct {
-		name        string
-		config      ReplayConfig
-		wantErr     bool
-		errContains string
-	}{
-		{
-			name: "valid configuration",
-			config: ReplayConfig{
-				Cassette: "testdata/transport_client_test",
-			},
-			wantErr: false,
-		},
-		{
-			name: "empty cassette name",
-			config: ReplayConfig{
-				Cassette: "",
-			},
-			wantErr:     true,
-			errContains: "cassette",
-		},
-	}
+	// Test valid configuration
+	client, close := NewReplayClient(t, ReplayConfig{
+		Cassette: "testdata/transport_client_test",
+	})
+	require.NotNil(t, client, "client should not be nil")
+	require.NotNil(t, close, "close function should not be nil")
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			client, close, err := NewReplayClient(t, test.config)
-			if test.wantErr {
-				assert.Error(t, err)
-				if test.errContains != "" {
-					assert.Contains(t, err.Error(), test.errContains)
-				}
-				assert.Nil(t, client)
-				assert.Nil(t, close)
-				return
-			}
-			require.NotNil(t, client, "client should not be nil")
-			require.NotNil(t, close, "close function should not be nil")
+	// Test that we can use the client
+	resp, err := client.Get("https://httpbin.org/get")
+	require.NoError(t, err)
+	defer func() { _ = resp.Body.Close() }()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-			// Test that we can use the client
-			resp, err := client.Get("https://httpbin.org/get")
-			require.NoError(t, err)
-			defer func() { _ = resp.Body.Close() }()
-			assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-			// Test cleanup
-			err = close()
-			assert.NoError(t, err)
-		})
-	}
+	// Test cleanup
+	close()
 }
 
 func TestReplayClientMultipleHosts(t *testing.T) {
 	// Create a client that can handle multiple hosts
-	client, close, err := NewReplayClient(t, ReplayConfig{
+	client, close := NewReplayClient(t, ReplayConfig{
 		Cassette: "testdata/transport_client_multi_host",
 	})
-	require.NoError(t, err)
-	defer func() { _ = close() }()
+	defer close()
 
 	// Make requests to different hosts using the same client
 	hosts := []string{
@@ -474,6 +395,5 @@ func TestReplayClientMultipleHosts(t *testing.T) {
 	}
 
 	// Close the client
-	err = close()
-	require.NoError(t, err)
+	close()
 }

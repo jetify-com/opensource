@@ -194,12 +194,11 @@ func ExampleReplayServer_basic() {
 	mockT := &t{} // In a real test, this would be the actual testing.T instance
 
 	// Create a new replay server that will record interactions with httpbin.org
-	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
+	replayServer := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
 		Host:     "https://httpbin.org",
 		Cassette: "testdata/server_successful_get",
 	})
-	require.NoError(mockT, err)
-	defer func() { _ = replayServer.Close() }()
+	defer replayServer.Close()
 
 	// Make a request that will be recorded or replayed
 	req, err := http.NewRequest(http.MethodGet, replayServer.URL()+"/get", nil)
@@ -231,12 +230,11 @@ func ExampleReplayServer_basic() {
 func ExampleReplayServer_headers() {
 	mockT := &t{} // In a real test, this would be the actual testing.T instance
 
-	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
+	replayServer := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
 		Host:     "https://httpbin.org",
 		Cassette: "testdata/server_get_with_header",
 	})
-	require.NoError(mockT, err)
-	defer func() { _ = replayServer.Close() }()
+	defer replayServer.Close()
 
 	// Create a request with custom headers
 	req, err := http.NewRequest(http.MethodGet, replayServer.URL()+"/headers", nil)
@@ -261,12 +259,11 @@ func ExampleReplayServer_headers() {
 func ExampleReplayServer_jsonRequest() {
 	mockT := &t{} // In a real test, this would be the actual testing.T instance
 
-	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
+	replayServer := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
 		Host:     "https://httpbin.org",
 		Cassette: "testdata/server_post_with_body",
 	})
-	require.NoError(mockT, err)
-	defer func() { _ = replayServer.Close() }()
+	defer replayServer.Close()
 
 	// Create a JSON request
 	jsonData := `{"test": "data"}`

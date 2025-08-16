@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sync/atomic"
 
+	"github.com/stretchr/testify/require"
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
@@ -32,31 +33,26 @@ type ReplayTransport struct {
 //
 // Example usage:
 //
-//	transport, err := httpmock.NewReplayTransport(t, httpmock.ReplayConfig{
+//	transport := httpmock.NewReplayTransport(t, httpmock.ReplayConfig{
 //		Cassette: "my_test_cassette",
 //		Mode:     httpmock.ModeUnitTest,
 //	})
-//	if err != nil {
-//		t.Fatal(err)
-//	}
 //	defer transport.Close()
 //
 //	client := &http.Client{Transport: transport}
 //	// Now use client for requests to any hosts - they'll be recorded/replayed
-func NewReplayTransport(tester T, config ReplayConfig) (*ReplayTransport, error) {
+func NewReplayTransport(tester T, config ReplayConfig) *ReplayTransport {
 	tester.Helper()
 
 	// Create the recorder
 	rec, err := createRecorder(tester, config)
-	if err != nil {
-		return nil, err
-	}
+	require.NoError(tester, err, "failed to create recorder")
 
 	return &ReplayTransport{
 		rec:          rec,
 		t:            tester,
 		cassetteName: config.Cassette,
-	}, nil
+	}
 }
 
 // RoundTrip implements http.RoundTripper. It either replays the request from
@@ -77,15 +73,9 @@ func (rt *ReplayTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	return resp, nil
 }
 
-// Close stops the ReplayTransport and verifies that all recorded interactions
-// were used. This should be called when the test is complete, typically in
-// a defer statement.
-func (rt *ReplayTransport) Close() error {
-	// Stop the recorder
-	if err := rt.rec.Stop(); err != nil {
-		return err
-	}
-
+// Assert verifies that all recorded interactions were used. This can be called
+// separately from Close() to perform assertions without stopping the recorder.
+func (rt *ReplayTransport) assert() error {
 	// Get the cassette to check if all interactions were used
 	cassette, err := cassette.Load(rt.cassetteName)
 	if err != nil {
@@ -109,30 +99,37 @@ func (rt *ReplayTransport) Close() error {
 	return nil
 }
 
+// Close stops the ReplayTransport and verifies that all recorded interactions
+// were used. This should be called when the test is complete, typically in
+// a defer statement.
+func (rt *ReplayTransport) Close() {
+	// Stop the recorder
+	err := rt.rec.Stop()
+	require.NoError(rt.t, err, "failed to stop recorder")
+
+	// Verify that all recorded interactions were used
+	err = rt.assert()
+	require.NoError(rt.t, err, "not all recorded interactions were used")
+}
+
 // NewReplayClient creates a pre-configured http.Client that records and replays
 // HTTP interactions. This is a convenience function that creates a ReplayTransport
 // and wraps it in an http.Client.
 //
 // Example usage:
 //
-//	client, close, err := httpmock.NewReplayClient(t, httpmock.ReplayConfig{
+//	client, close := httpmock.NewReplayClient(t, httpmock.ReplayConfig{
 //		Cassette: "my_test_cassette",
 //	})
-//	if err != nil {
-//		t.Fatal(err)
-//	}
 //	defer close()
 //
 //	// Use client for requests to any hosts - they'll be recorded/replayed
 //	resp, err := client.Get("https://api.example.com/users")
-func NewReplayClient(tester T, config ReplayConfig) (*http.Client, func() error, error) {
+func NewReplayClient(tester T, config ReplayConfig) (*http.Client, func()) {
 	tester.Helper()
 
-	transport, err := NewReplayTransport(tester, config)
-	if err != nil {
-		return nil, nil, err
-	}
+	transport := NewReplayTransport(tester, config)
 
 	client := &http.Client{Transport: transport}
-	return client, transport.Close, nil
+	return client, transport.Close
 }

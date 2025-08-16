@@ -55,9 +55,5 @@
 //	server := httpmock.NewServer(t, []httpmock.Exchange{...})
 //	defer server.Close() // will fail the test if not all expectations were met
 //
-// You can also verify expectations explicitly at any point using VerifyComplete:
-//
-//	if err := server.VerifyComplete(); err != nil {
-//		t.Error("not all expected requests were made")
-//	}
+// The server will automatically verify all expectations when Close() is called.
 package httpmock

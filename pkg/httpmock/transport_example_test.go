@@ -15,11 +15,10 @@ func ExampleReplayTransport() {
 	mockT := &t{} // In a real test, this would be the actual testing.T instance
 
 	// Create a ReplayTransport that can record/replay requests to any host
-	transport, err := httpmock.NewReplayTransport(mockT, httpmock.ReplayConfig{
+	transport := httpmock.NewReplayTransport(mockT, httpmock.ReplayConfig{
 		Cassette: "testdata/transport_multi_host_example",
 	})
-	require.NoError(mockT, err)
-	defer func() { _ = transport.Close() }()
+	defer transport.Close()
 
 	// Create an HTTP client that uses our transport
 	client := &http.Client{Transport: transport}
@@ -51,11 +50,10 @@ func ExampleNewReplayClient() {
 	mockT := &t{} // In a real test, this would be the actual testing.T instance
 
 	// Create a pre-configured HTTP client - one line!
-	client, close, err := httpmock.NewReplayClient(mockT, httpmock.ReplayConfig{
+	client, close := httpmock.NewReplayClient(mockT, httpmock.ReplayConfig{
 		Cassette: "testdata/transport_client_example",
 	})
-	require.NoError(mockT, err)
-	defer func() { _ = close() }()
+	defer close()
 
 	// Use the client directly - no transport configuration needed
 	resp, err := client.Get("https://httpbin.org/get")
