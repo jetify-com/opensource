@@ -242,7 +242,6 @@ func TestReplayTransportInteractionCounts(t *testing.T) {
 		expectedError bool
 		errorContains string
 		cassette      string
-		checkCloseErr bool // indicates whether to check error from Close() or mockT
 	}{
 		{
 			name: "too_few_requests",
@@ -258,7 +257,6 @@ func TestReplayTransportInteractionCounts(t *testing.T) {
 			expectedError: true,
 			errorContains: "expected 2 requests, received 1. Next expected: [GET https://httpbin.org/status/200]",
 			cassette:      "server_multiple_interactions",
-			checkCloseErr: true,
 		},
 		{
 			name: "correct_number_of_requests",
@@ -273,7 +271,6 @@ func TestReplayTransportInteractionCounts(t *testing.T) {
 			},
 			expectedError: false,
 			cassette:      "transport_successful_get",
-			checkCloseErr: false,
 		},
 	}
 
