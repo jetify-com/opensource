@@ -60,17 +60,13 @@ const (
 )
 
 // NewReplayServer creates a new ReplayServer.
-func NewReplayServer(tester T, config ReplayConfig) (*ReplayServer, error) {
+func NewReplayServer(tester T, config ReplayConfig) *ReplayServer {
 	tester.Helper()
 
 	// Parse and validate the real endpoint we'll proxy to in record mode
 	realURL, err := url.Parse(config.Host)
-	if err != nil {
-		return nil, fmt.Errorf("invalid Host: %w", err)
-	}
-	if realURL.Scheme == "" || realURL.Host == "" {
-		return nil, fmt.Errorf("invalid Host: URL must have scheme and host")
-	}
+	require.NoError(tester, err, "invalid Host URL: %s", config.Host)
+	require.True(tester, realURL.Scheme != "" && realURL.Host != "", "Host URL must have scheme and host, got: %s", config.Host)
 
 	// Create ReplayServer first
 	replayServer := &ReplayServer{
@@ -81,14 +77,12 @@ func NewReplayServer(tester T, config ReplayConfig) (*ReplayServer, error) {
 
 	// Create the recorder
 	rec, err := createRecorder(tester, config)
-	if err != nil {
-		return nil, err
-	}
+	require.NoError(tester, err, "failed to create recorder")
 
 	replayServer.rec = rec
 	replayServer.server = httptest.NewServer(http.HandlerFunc(replayServer.handler))
 
-	return replayServer, nil
+	return replayServer
 }
 
 // handler processes incoming requests by either replaying them from the cassette
@@ -130,17 +124,9 @@ func (rs *ReplayServer) handler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// Close stops the ReplayServer and verifies that all recorded interactions
-// were used.
-func (rs *ReplayServer) Close() error {
-	// Stop the HTTP server first
-	rs.server.Close()
-
-	// Verify that all recorded interactions were used
-	if err := rs.rec.Stop(); err != nil {
-		return err
-	}
-
+// Assert verifies that all recorded interactions were used. This can be called
+// separately from Close() to perform assertions without stopping the server.
+func (rs *ReplayServer) assert() error {
 	// Get the cassette to check if all interactions were used
 	cassette, err := cassette.Load(rs.cassetteName)
 	if err != nil {
@@ -162,6 +148,21 @@ func (rs *ReplayServer) Close() error {
 	}
 
 	return nil
+}
+
+// Close stops the ReplayServer and verifies that all recorded interactions
+// were used.
+func (rs *ReplayServer) Close() {
+	// Stop the HTTP server first
+	rs.server.Close()
+
+	// Verify that all recorded interactions were used
+	err := rs.rec.Stop()
+	require.NoError(rs.t, err, "failed to stop recorder")
+
+	// Verify that all recorded interactions were used
+	err = rs.assert()
+	require.NoError(rs.t, err, "not all recorded interactions were used")
 }
 
 // URL returns the base URL of the replay server.

@@ -14,59 +14,16 @@ import (
 )
 
 func TestNewReplayServer(t *testing.T) {
-	tests := []struct {
-		name        string
-		config      ReplayConfig
-		wantErr     bool
-		errContains string
-	}{
-		{
-			name: "valid configuration",
-			config: ReplayConfig{
-				Host:     "https://jsonplaceholder.typicode.com",
-				Cassette: filepath.Join("testdata", "valid"),
-			},
-			wantErr: false,
-		},
-		{
-			name: "invalid host URL",
-			config: ReplayConfig{
-				Host:     "://invalid-url",
-				Cassette: filepath.Join("testdata", "invalid"),
-			},
-			wantErr:     true,
-			errContains: "invalid Host",
-		},
-		{
-			name: "empty host",
-			config: ReplayConfig{
-				Host:     "",
-				Cassette: filepath.Join("testdata", "empty"),
-			},
-			wantErr:     true,
-			errContains: "invalid Host",
-		},
-	}
+	// Test valid configuration
+	replayServer := NewReplayServer(t, ReplayConfig{
+		Host:     "https://jsonplaceholder.typicode.com",
+		Cassette: "testdata/server_valid",
+	})
+	require.NotNil(t, replayServer, "replay server should not be nil")
+	assert.Equal(t, "https://jsonplaceholder.typicode.com", replayServer.realURL.String())
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			replayServer, err := NewReplayServer(t, test.config)
-			if test.wantErr {
-				assert.Error(t, err)
-				if test.errContains != "" {
-					assert.Contains(t, err.Error(), test.errContains)
-				}
-				assert.Nil(t, replayServer)
-				return
-			}
-			require.NotNil(t, replayServer, "replay server should not be nil")
-			assert.Equal(t, test.config.Host, replayServer.realURL.String())
-
-			// Test cleanup
-			err = replayServer.Close()
-			assert.NoError(t, err)
-		})
-	}
+	// Test cleanup
+	replayServer.Close()
 }
 
 func TestReplayServerHandler(t *testing.T) {
@@ -123,12 +80,11 @@ func TestReplayServerHandler(t *testing.T) {
 			mockTester := &mockT{}
 
 			// Create a server with a normal request and response
-			server, err := NewReplayServer(mockTester, ReplayConfig{
+			server := NewReplayServer(mockTester, ReplayConfig{
 				Host:     "https://httpbin.org",
-				Cassette: "testdata/" + test.name,
+				Cassette: "testdata/server_" + test.name,
 			})
-			require.NoError(t, err)
-			defer func() { _ = server.Close() }()
+			defer server.Close()
 
 			// Build the request using the declarative Request struct
 			req, err := buildRequest(server.URL(), test.request)
@@ -148,8 +104,7 @@ func TestReplayServerHandler(t *testing.T) {
 			assert.Contains(t, string(body), test.expectedBody)
 
 			// Close the server to ensure the cassette is saved
-			err = server.Close()
-			require.NoError(t, err)
+			server.Close()
 		})
 	}
 }
@@ -304,7 +259,7 @@ func TestReplayServerFailures(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "method mismatch",
-			cassette:      "successful_get",
+			cassette:      "server_successful_get",
 		},
 		{
 			name: "mismatched_path",
@@ -317,7 +272,7 @@ func TestReplayServerFailures(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "URL mismatch",
-			cassette:      "successful_get",
+			cassette:      "server_successful_get",
 		},
 		{
 			name: "mismatched_body",
@@ -332,7 +287,7 @@ func TestReplayServerFailures(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "body mismatch",
-			cassette:      "post_with_body",
+			cassette:      "server_post_with_body",
 		},
 	}
 
@@ -342,12 +297,11 @@ func TestReplayServerFailures(t *testing.T) {
 			mockTester := &mockT{}
 
 			// Create a server with a normal request and response
-			replayServer, err := NewReplayServer(mockTester, ReplayConfig{
+			replayServer := NewReplayServer(mockTester, ReplayConfig{
 				Host:     "https://httpbin.org",
 				Cassette: filepath.Join("testdata", test.cassette),
 			})
-			require.NoError(t, err)
-			defer func() { _ = replayServer.Close() }()
+			defer replayServer.Close()
 
 			// Build the request using the declarative Request struct
 			req, err := buildRequest(replayServer.URL(), test.request)
@@ -393,7 +347,7 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "expected 2 requests, received 0. Next expected: [GET https://httpbin.org/get]",
-			cassette:      "multiple_interactions",
+			cassette:      "server_multiple_interactions",
 			checkCloseErr: true,
 		},
 		{
@@ -416,7 +370,7 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "requested interaction not found",
-			cassette:      "successful_get",
+			cassette:      "server_successful_get",
 			checkCloseErr: false,
 		},
 	}
@@ -427,12 +381,11 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 			mockTester := &mockT{}
 
 			// Create a server with a normal request and response
-			replayServer, err := NewReplayServer(mockTester, ReplayConfig{
+			replayServer := NewReplayServer(mockTester, ReplayConfig{
 				Host:     "https://httpbin.org",
 				Cassette: filepath.Join("testdata", test.cassette),
 			})
-			require.NoError(t, err)
-			defer func() { _ = replayServer.Close() }()
+			defer replayServer.Close()
 
 			// Make all the requests
 			for _, request := range test.requests {
@@ -444,19 +397,14 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 			}
 
 			// Close the server and check for errors
-			err = replayServer.Close()
+			replayServer.Close()
 
 			// Verify the test failed as expected
 			if test.expectedError {
-				if test.checkCloseErr {
-					assert.Contains(t, err.Error(), test.errorContains, "expected error message not found")
-				} else {
-					assert.True(t, mockTester.failed, "test should have failed")
-					assert.Contains(t, strings.Join(mockTester.errors, "\n"), test.errorContains, "expected error message not found")
-				}
+				assert.True(t, mockTester.failed, "test should have failed")
+				assert.Contains(t, strings.Join(mockTester.errors, "\n"), test.errorContains, "expected error message not found")
 			} else {
 				assert.False(t, mockTester.failed, "test should not have failed")
-				assert.NoError(t, err)
 			}
 		})
 	}

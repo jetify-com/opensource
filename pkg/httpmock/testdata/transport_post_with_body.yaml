@@ -1,0 +1,38 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 16
+        host: httpbin.org
+        body: '{"test": "data"}'
+        headers:
+            Content-Type:
+                - application/json
+            Host:
+                - httpbin.org
+        url: https://httpbin.org/post
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 447
+        body: "{\n  \"args\": {}, \n  \"data\": \"{\\\"test\\\": \\\"data\\\"}\", \n  \"files\": {}, \n  \"form\": {}, \n  \"headers\": {\n    \"Accept-Encoding\": \"gzip\", \n    \"Content-Length\": \"16\", \n    \"Content-Type\": \"application/json\", \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\": \"Go-http-client/2.0\", \n    \"X-Amzn-Trace-Id\": \"Root=1-689f9a3f-5e8128bb3f3852ed22605f78\"\n  }, \n  \"json\": {\n    \"test\": \"data\"\n  }, \n  \"origin\": \"173.172.24.115\", \n  \"url\": \"https://httpbin.org/post\"\n}\n"
+        headers:
+            Access-Control-Allow-Credentials:
+                - "true"
+            Access-Control-Allow-Origin:
+                - '*'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 15 Aug 2025 20:36:15 GMT
+            Server:
+                - gunicorn/19.9.0
+        status: 200 OK
+        code: 200
+        duration: 98.329791ms
