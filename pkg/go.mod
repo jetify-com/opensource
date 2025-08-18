@@ -28,13 +28,14 @@ require (
 	golang.org/x/oauth2 v0.30.0
 	golang.org/x/sys v0.35.0
 	google.golang.org/protobuf v1.36.7
-	gopkg.in/dnaeon/go-vcr.v4 v4.0.4
+	gopkg.in/dnaeon/go-vcr.v4 v4.0.5
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	github.com/arduino/go-paths-helper v1.13.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/gofrs/uuid/v5 v5.3.2 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
