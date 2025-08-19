@@ -3,9 +3,9 @@
 // Example usage:
 //
 //	mock := mock.NewGenerateModel([]mock.MockResult{
-//		{Response: api.Response{Text: "Hello"}},
+//		{Response: &api.Response{Content: []api.ContentBlock{&api.TextBlock{Text: "Hello"}}}},
 //		{Error: errors.New("rate limit exceeded")},
-//		{Response: api.Response{Text: "World"}},
+//		{Response: &api.Response{Content: []api.ContentBlock{&api.TextBlock{Text: "World"}}}},
 //	})
 //
 //	// First call returns success
