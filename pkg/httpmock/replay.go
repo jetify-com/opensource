@@ -215,6 +215,7 @@ func createRecorder(tester T, config ReplayConfig) (*recorder.Recorder, error) {
 		config.Cassette,
 		recorder.WithMode(recorderMode),
 		recorder.WithHook(removeIgnored, recorder.AfterCaptureHook),
+		recorder.WithHook(decompressGzip, recorder.BeforeSaveHook),
 		recorder.WithMatcher(func(request *http.Request, cassetteRequest cassette.Request) bool {
 			return requireCassetteRequest(tester, cassetteRequest, request)
 		}),
