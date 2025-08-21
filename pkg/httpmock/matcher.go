@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/stretchr/testify/assert"
@@ -32,7 +33,8 @@ func checkBasicProperties(tester T, expected cassette.Request, actual *http.Requ
 			}
 		}
 		if expected.URL != "" {
-			if !assert.Equal(tester, expected.URL, actual.URL.String(), "URL mismatch") {
+			if !urlsMatch(expected.URL, actual.URL.String()) {
+				assert.Equal(tester, expected.URL, actual.URL.String(), "URL mismatch")
 				return false
 			}
 		}
@@ -155,7 +157,8 @@ func checkMetadata(tester T, expected cassette.Request, actual *http.Request) bo
 			}
 		}
 		if expected.Host != "" {
-			if !assert.Equal(tester, expected.Host, actual.Host, "host mismatch") {
+			if !hostsMatch(expected.Host, actual.Host) {
+				assert.Equal(tester, expected.Host, actual.Host, "host mismatch")
 				return false
 			}
 		}
@@ -195,4 +198,36 @@ func checkTrailers(tester T, expected, actual http.Header) bool {
 		}
 		return true
 	})
+}
+
+// urlsMatch compares two URLs, ignoring ports for localhost addresses
+func urlsMatch(expected, actual string) bool {
+	expectedURL, err1 := url.Parse(expected)
+	actualURL, err2 := url.Parse(actual)
+
+	if err1 != nil || err2 != nil {
+		// If we can't parse, fall back to string comparison
+		return expected == actual
+	}
+
+	// Check if both are localhost addresses
+	isExpectedLocal := expectedURL.Hostname() == "127.0.0.1" || expectedURL.Hostname() == "localhost"
+	isActualLocal := actualURL.Hostname() == "127.0.0.1" || actualURL.Hostname() == "localhost"
+
+	if isExpectedLocal && isActualLocal {
+		// For localhost addresses, ignore the port and just compare scheme + path + query
+		return expectedURL.Scheme == actualURL.Scheme &&
+			expectedURL.Path == actualURL.Path &&
+			expectedURL.RawQuery == actualURL.RawQuery
+	}
+
+	// For non-localhost addresses, require exact match
+	return expected == actual
+}
+
+// hostsMatch compares two host strings, ignoring ports for localhost addresses
+func hostsMatch(expected, actual string) bool {
+	// Convert hosts to URLs with same path and use urlsMatch
+	// This reuses the localhost detection and port-ignoring logic
+	return urlsMatch("https://"+expected+"/", "https://"+actual+"/")
 }

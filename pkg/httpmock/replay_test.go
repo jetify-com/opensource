@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -160,14 +161,191 @@ func TestFormatRequestBody(t *testing.T) {
 	}
 }
 
-func TestRemoveIgnored(t *testing.T) {
+// toHTTPHeader converts a simple string map to http.Header format
+func toHTTPHeader(headers map[string]string) http.Header {
+	h := make(http.Header)
+	for k, v := range headers {
+		h.Set(k, v)
+	}
+	return h
+}
+
+// verifyRequestHeaders checks that the cassette contains exactly the expected request headers
+func verifyRequestHeaders(t *testing.T, interaction *cassette.Interaction, expectedHeaders map[string]string) {
+	expected := toHTTPHeader(expectedHeaders)
+	actual := interaction.Request.Headers
+
+	// Check that all expected headers are present with correct values
+	for header, values := range expected {
+		assert.Equal(t, values, actual[header],
+			"request header %q should match", header)
+	}
+
+	// Check that no unexpected headers are present
+	for header := range actual {
+		if _, exists := expected[header]; !exists {
+			assert.Empty(t, actual[header],
+				"unexpected request header %q found in cassette", header)
+		}
+	}
+}
+
+// verifyResponseHeaders checks that the cassette contains exactly the expected response headers
+func verifyResponseHeaders(t *testing.T, interaction *cassette.Interaction, expectedHeaders map[string]string) {
+	expected := toHTTPHeader(expectedHeaders)
+	actual := interaction.Response.Headers
+
+	// Check that all expected headers are present with correct values
+	for header, values := range expected {
+		assert.Equal(t, values, actual[header],
+			"response header %q should match", header)
+	}
+
+	// Check that no unexpected headers are present (except auto-generated ones)
+	for header := range actual {
+		if _, exists := expected[header]; !exists {
+			// Allow certain headers that are automatically added by Go's HTTP server
+			if header == "Date" {
+				continue
+			}
+			assert.Empty(t, actual[header],
+				"unexpected response header %q found in cassette", header)
+		}
+	}
+}
+
+func TestReplayServerAdditionalIgnoredHeaders(t *testing.T) {
 	tests := []struct {
-		name        string
-		interaction *cassette.Interaction
-		wantHeaders http.Header
+		name                     string
+		additionalIgnoredHeaders []string
+		requestHeaders           map[string]string
+		responseHeaders          map[string]string
+		expectedInCassette       struct {
+			requestHeaders  map[string]string
+			responseHeaders map[string]string
+		}
 	}{
 		{
-			name: "removes all ignored headers",
+			name: "additional_ignored_headers",
+			additionalIgnoredHeaders: []string{
+				"X-Request-ID",
+				"X-Trace-ID",
+				"X-Response-ID",
+			},
+			requestHeaders: map[string]string{
+				"Authorization": "Bearer token123",  // Default ignored
+				"X-Request-ID":  "req-123",          // Additional ignored
+				"X-Trace-ID":    "trace-456",        // Additional ignored
+				"Content-Type":  "application/json", // Should be preserved
+			},
+			responseHeaders: map[string]string{
+				"Set-Cookie":    "session=abc123", // Default ignored
+				"X-Response-ID": "resp-789",       // Additional ignored
+				"Server":        "test-server",    // Should be preserved
+			},
+			expectedInCassette: struct {
+				requestHeaders  map[string]string
+				responseHeaders map[string]string
+			}{
+				requestHeaders: map[string]string{
+					"Content-Type": "application/json",
+				},
+				responseHeaders: map[string]string{
+					"Server":       "test-server",
+					"Content-Type": "text/plain; charset=utf-8", // Auto-added by Go HTTP server
+					// Note: Date header is also auto-added but varies, so we'll handle it separately
+				},
+			},
+		},
+		{
+			name:                     "no_additional_ignored_headers",
+			additionalIgnoredHeaders: []string{}, // No additional headers
+			requestHeaders: map[string]string{
+				"Authorization": "Bearer token123",  // Default ignored
+				"X-Custom":      "custom-value",     // Should be preserved
+				"Content-Type":  "application/json", // Should be preserved
+			},
+			responseHeaders: map[string]string{
+				"Set-Cookie": "session=abc123", // Default ignored
+				"X-Custom":   "response-value", // Should be preserved
+			},
+			expectedInCassette: struct {
+				requestHeaders  map[string]string
+				responseHeaders map[string]string
+			}{
+				requestHeaders: map[string]string{
+					"X-Custom":     "custom-value",
+					"Content-Type": "application/json",
+				},
+				responseHeaders: map[string]string{
+					"X-Custom":     "response-value",
+					"Content-Type": "text/plain; charset=utf-8", // Auto-added by Go HTTP server
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Create a test server that returns the configured response headers
+			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				for header, value := range test.responseHeaders {
+					w.Header().Set(header, value)
+				}
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{"status": "ok"}`))
+			}))
+			defer testServer.Close()
+
+			cassetteName := "testdata/server_" + test.name
+
+			// Create replay server with additional ignored headers
+			replayServer := NewReplayServer(t, ReplayConfig{
+				Host:                     testServer.URL,
+				Cassette:                 cassetteName,
+				AdditionalIgnoredHeaders: test.additionalIgnoredHeaders,
+			})
+
+			// Make request with the configured headers
+			req, err := buildRequest(replayServer.URL(), Request{
+				Method:  http.MethodGet,
+				Path:    "/test",
+				Headers: test.requestHeaders,
+			})
+			require.NoError(t, err)
+
+			// Make the request
+			resp, err := http.DefaultClient.Do(req)
+			require.NoError(t, err)
+			require.NoError(t, resp.Body.Close())
+
+			// Close server to ensure cassette is saved
+			replayServer.Close()
+
+			// Load and inspect the cassette
+			cassette, err := cassette.Load(cassetteName)
+			require.NoError(t, err)
+			require.Len(t, cassette.Interactions, 1, "should have exactly one interaction")
+
+			interaction := cassette.Interactions[0]
+
+			// Verify headers using helper functions
+			verifyRequestHeaders(t, interaction, test.expectedInCassette.requestHeaders)
+			verifyResponseHeaders(t, interaction, test.expectedInCassette.responseHeaders)
+		})
+	}
+}
+
+func TestRemoveIgnored(t *testing.T) {
+	tests := []struct {
+		name            string
+		interaction     *cassette.Interaction
+		headersToIgnore []string
+		wantHeaders     http.Header
+	}{
+		{
+			name:            "removes all ignored headers",
+			headersToIgnore: ignoredHeaders,
 			interaction: &cassette.Interaction{
 				Request: cassette.Request{
 					Headers: http.Header{
@@ -202,7 +380,8 @@ func TestRemoveIgnored(t *testing.T) {
 			},
 		},
 		{
-			name: "keeps non-ignored headers",
+			name:            "keeps non-ignored headers",
+			headersToIgnore: ignoredHeaders,
 			interaction: &cassette.Interaction{
 				Request: cassette.Request{
 					Headers: http.Header{
@@ -222,18 +401,45 @@ func TestRemoveIgnored(t *testing.T) {
 				"X-Custom":     {"value"},
 			},
 		},
+		{
+			name:            "removes default and additional ignored headers",
+			headersToIgnore: append([]string{"X-Request-ID", "X-Trace-ID"}, ignoredHeaders...),
+			interaction: &cassette.Interaction{
+				Request: cassette.Request{
+					Headers: http.Header{
+						"Authorization": []string{"Bearer token"},     // Default ignored
+						"X-Request-Id":  []string{"req-123"},          // Additional ignored (canonicalized)
+						"X-Trace-Id":    []string{"trace-456"},        // Additional ignored (canonicalized)
+						"Content-Type":  []string{"application/json"}, // Should be preserved
+						"X-Custom":      []string{"value"},            // Should be preserved
+					},
+				},
+				Response: cassette.Response{
+					Headers: http.Header{
+						"Set-Cookie":   []string{"session=123"}, // Default ignored
+						"X-Request-Id": []string{"req-789"},     // Additional ignored (canonicalized)
+						"Content-Type": []string{"application/json"},
+						"X-Custom":     []string{"response-value"},
+					},
+				},
+			},
+			wantHeaders: http.Header{
+				"Content-Type": {"application/json"},
+				"X-Custom":     {"value"},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := removeIgnored(test.interaction)
+			err := removeIgnoredHeaders(test.interaction, test.headersToIgnore)
 			assert.NoError(t, err)
 
 			// Check request headers
 			assert.Equal(t, test.wantHeaders, test.interaction.Request.Headers)
 
 			// Check response headers
-			for _, h := range ignoredHeaders {
+			for _, h := range test.headersToIgnore {
 				assert.Empty(t, test.interaction.Response.Headers[h], "ignored header %q should be removed from response", h)
 			}
 		})
