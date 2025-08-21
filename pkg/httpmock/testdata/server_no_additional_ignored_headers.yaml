@@ -1,0 +1,35 @@
+---
+version: 2
+interactions:
+- id: 0
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 4
+    host: 127.0.0.1:52758
+    request_uri: /test
+    body: "null"
+    headers:
+      Content-Type:
+      - application/json
+      X-Custom:
+      - custom-value
+    url: http://127.0.0.1:52758/test
+    method: GET
+  response:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 16
+    body: "{\"status\": \"ok\"}"
+    headers:
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Thu, 21 Aug 2025 19:41:40 GMT
+      X-Custom:
+      - response-value
+    status: 200 OK
+    code: 200
+    duration: 199.791µs

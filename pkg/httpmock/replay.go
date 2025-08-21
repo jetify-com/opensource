@@ -47,6 +47,10 @@ type ReplayConfig struct {
 	//
 	// Possible values are "unit" and "integration".
 	Mode TestMode
+	// AdditionalIgnoredHeaders specifies additional headers to ignore during recording and replay.
+	// These headers will be added to the default set of ignored headers.
+	// Header names are case-insensitive.
+	AdditionalIgnoredHeaders []string
 }
 
 // TestMode represents how the ReplayServer should handle HTTP interactions
@@ -211,10 +215,14 @@ func createRecorder(tester T, config ReplayConfig) (*recorder.Recorder, error) {
 		recorderMode = recorder.ModePassthrough
 	}
 
+	allIgnoredHeaders := append(ignoredHeaders, config.AdditionalIgnoredHeaders...)
+
 	rec, err := recorder.New(
 		config.Cassette,
 		recorder.WithMode(recorderMode),
-		recorder.WithHook(removeIgnored, recorder.AfterCaptureHook),
+		recorder.WithHook(func(i *cassette.Interaction) error {
+			return removeIgnoredHeaders(i, allIgnoredHeaders)
+		}, recorder.AfterCaptureHook),
 		recorder.WithHook(decompressGzip, recorder.BeforeSaveHook),
 		recorder.WithMatcher(func(request *http.Request, cassetteRequest cassette.Request) bool {
 			return requireCassetteRequest(tester, cassetteRequest, request)
@@ -242,15 +250,15 @@ func formatRequestBody(req *http.Request) string {
 	return string(bodyBytes)
 }
 
-// removeIgnored is a recorder hook that removes ignored headers and request fields
+// removeIgnoredHeaders is a recorder hook that removes ignored headers and request fields
 // before they are saved to the cassette.
-func removeIgnored(i *cassette.Interaction) error {
+func removeIgnoredHeaders(i *cassette.Interaction, headersToIgnore []string) error {
 	// Remove request headers
-	for _, header := range ignoredHeaders {
+	for _, header := range headersToIgnore {
 		i.Request.Headers.Del(header)
 	}
 	// Remove response headers
-	for _, header := range ignoredHeaders {
+	for _, header := range headersToIgnore {
 		i.Response.Headers.Del(header)
 	}
 	// Remove remote address from request
