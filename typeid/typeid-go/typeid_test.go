@@ -4,11 +4,11 @@ import (
 	_ "embed"
 	"testing"
 
+	"github.com/goccy/go-yaml"
 	"github.com/gofrs/uuid/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.jetify.com/typeid/v2"
-	"github.com/goccy/go-yaml"
 )
 
 // TestHasSuffix tests the HasSuffix method for various TypeID values
