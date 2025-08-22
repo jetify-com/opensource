@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/goccy/go-yaml"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/tailscale/hujson"
-	"gopkg.in/yaml.v3"
 )
 
 var ErrUnsupportedFormat = errors.New("unsupported file format")

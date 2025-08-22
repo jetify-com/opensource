@@ -10,6 +10,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.15.0
 	github.com/fatih/color v1.18.0
 	github.com/go-jose/go-jose/v4 v4.1.2
+	github.com/goccy/go-yaml v1.18.0
 	github.com/google/go-github/v74 v74.0.0
 	github.com/google/renameio/v2 v2.0.0
 	github.com/gosimple/slug v1.15.0
@@ -29,13 +30,11 @@ require (
 	golang.org/x/sys v0.35.0
 	google.golang.org/protobuf v1.36.7
 	gopkg.in/dnaeon/go-vcr.v4 v4.0.5
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	github.com/arduino/go-paths-helper v1.13.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/gofrs/uuid/v5 v5.3.2 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
@@ -51,4 +50,5 @@ require (
 	github.com/spf13/pflag v1.0.7 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
