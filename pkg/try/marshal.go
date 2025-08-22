@@ -57,3 +57,14 @@ func (r *Try[T]) UnmarshalJSON(data []byte) error {
 func (r Try[T]) MarshalYAML() (any, error) {
 	return r.toEncoding(), nil
 }
+
+// UnmarshalYAML deserializes from YAML into a Try. It expects either
+// value: ... or error: ...
+func (r *Try[T]) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var enc encodedTry[T]
+	if err := unmarshal(&enc); err != nil {
+		return err
+	}
+	*r = fromEncoding(enc)
+	return nil
+}
