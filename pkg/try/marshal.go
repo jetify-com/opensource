@@ -3,8 +3,6 @@ package try
 import (
 	"encoding/json"
 	"errors"
-
-	"gopkg.in/yaml.v3"
 )
 
 type encodedTry[T any] struct {
@@ -58,14 +56,4 @@ func (r *Try[T]) UnmarshalJSON(data []byte) error {
 // MarshalYAML serializes the Try into YAML.
 func (r Try[T]) MarshalYAML() (any, error) {
 	return r.toEncoding(), nil
-}
-
-// UnmarshalYAML deserializes from YAML into a Try.
-func (r *Try[T]) UnmarshalYAML(value *yaml.Node) error {
-	var enc encodedTry[T]
-	if err := value.Decode(&enc); err != nil {
-		return err
-	}
-	*r = fromEncoding(enc)
-	return nil
 }

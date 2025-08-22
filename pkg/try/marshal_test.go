@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 type encoder interface {
@@ -186,4 +186,6 @@ func (e *jsonEncoder) Unmarshal(data []byte, v any) error { return json.Unmarsha
 type yamlEncoder struct{}
 
 func (e *yamlEncoder) Marshal(v any) ([]byte, error)      { return yaml.Marshal(v) }
-func (e *yamlEncoder) Unmarshal(data []byte, v any) error { return yaml.Unmarshal(data, v) }
+func (e *yamlEncoder) Unmarshal(data []byte, v any) error { 
+	return yaml.UnmarshalWithOptions(data, v, yaml.UseJSONUnmarshaler())
+}

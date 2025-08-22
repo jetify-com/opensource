@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.jetify.com/typeid/v2"
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 //go:embed testdata/valid.yml
