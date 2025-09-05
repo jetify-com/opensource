@@ -11,7 +11,7 @@ import (
 func TestDefaultLanguageModel(t *testing.T) {
 	// Get current model and verify provider and model ID match expected values
 	originalModel := DefaultLanguageModel()
-	assert.Equal(t, "openai", originalModel.ProviderName())
+	assert.Equal(t, "openai.responses", originalModel.ProviderName())
 	assert.Equal(t, openai.ChatModelGPT5, originalModel.ModelID())
 
 	// Change model to different provider (Anthropic)
@@ -26,6 +26,6 @@ func TestDefaultLanguageModel(t *testing.T) {
 	SetDefaultLanguageModel(originalModel)
 
 	restoredModel := DefaultLanguageModel()
-	assert.Equal(t, "openai", restoredModel.ProviderName())
+	assert.Equal(t, "openai.responses", restoredModel.ProviderName())
 	assert.Equal(t, openai.ChatModelGPT5, restoredModel.ModelID())
 }

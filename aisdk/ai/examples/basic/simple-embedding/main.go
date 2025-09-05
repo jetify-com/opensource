@@ -15,14 +15,16 @@ func example() error {
 	provider := openai.NewProvider()
 
 	// Create a model
-	model := provider.NewLanguageModel("gpt-4o-mini")
+	model := provider.NewEmbeddingModel("text-embedding-3-small")
 
 	// Generate text
-	response, err := ai.GenerateTextStr(
+	response, err := ai.EmbedMany(
 		context.Background(),
-		"Explain what artificial intelligence is in simple terms",
-		ai.WithModel(model),
-		ai.WithMaxOutputTokens(100),
+		model,
+		[]string{
+			"Artificial intelligence is the simulation of human intelligence in machines.",
+			"Machine learning is a subset of AI that enables systems to learn from data.",
+		},
 	)
 	if err != nil {
 		return err
@@ -34,12 +36,10 @@ func example() error {
 	return nil
 }
 
-func printResponse(response *api.Response) {
-	response.ProviderMetadata = nil
-	response.Warnings = nil
+func printResponse(response api.EmbeddingResponse) {
 	printer := pp.New()
 	printer.SetOmitEmpty(true)
-	_, _ = printer.Print(response)
+	printer.Print(response)
 }
 
 func main() {
