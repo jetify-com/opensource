@@ -15,7 +15,8 @@ type modelWrapper struct {
 var defaultLanguageModel atomic.Value
 
 func init() {
-	model := openai.NewLanguageModel(openai.ChatModelGPT5)
+	provider := openai.NewProvider()
+	model := provider.NewLanguageModel(openai.ChatModelGPT5)
 	defaultLanguageModel.Store(&modelWrapper{model: model})
 }
 

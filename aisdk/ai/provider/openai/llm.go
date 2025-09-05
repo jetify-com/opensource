@@ -2,50 +2,36 @@ package openai
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/openai/openai-go/v2"
 	"go.jetify.com/ai/api"
 	"go.jetify.com/ai/provider/openai/internal/codec"
 )
 
-// ModelOption is a function type that modifies a LanguageModel.
-type ModelOption func(*LanguageModel)
-
-// WithClient returns a ModelOption that sets the client.
-func WithClient(client openai.Client) ModelOption {
-	// TODO: Instead of only supporting a single client, we can "flatten"
-	// the options supported by the OpenAI SDK.
-	return func(m *LanguageModel) {
-		m.client = client
-	}
-}
-
 // LanguageModel represents an OpenAI language model.
 type LanguageModel struct {
 	modelID string
-	client  openai.Client
+	pc      ProviderConfig
 }
 
 var _ api.LanguageModel = &LanguageModel{}
 
 // NewLanguageModel creates a new OpenAI language model.
-func NewLanguageModel(modelID string, opts ...ModelOption) *LanguageModel {
-	// Create model with default settings
+func (p *Provider) NewLanguageModel(modelID string) *LanguageModel {
+	// Create model with provider's client
 	model := &LanguageModel{
 		modelID: modelID,
-		client:  openai.NewClient(), // Default client
-	}
-
-	// Apply options
-	for _, opt := range opts {
-		opt(model)
+		pc: ProviderConfig{
+			providerName: fmt.Sprintf("%s.responses", p.name),
+			client:       p.client,
+		},
 	}
 
 	return model
 }
 
 func (m *LanguageModel) ProviderName() string {
-	return "openai"
+	return m.pc.providerName
 }
 
 func (m *LanguageModel) ModelID() string {
@@ -72,7 +58,7 @@ func (m *LanguageModel) Generate(
 		return nil, err
 	}
 
-	openaiResponse, err := m.client.Responses.New(ctx, params)
+	openaiResponse, err := m.pc.client.Responses.New(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +82,7 @@ func (m *LanguageModel) Stream(
 		return nil, err
 	}
 
-	stream := m.client.Responses.NewStreaming(ctx, params)
+	stream := m.pc.client.Responses.NewStreaming(ctx, params)
 	response, err := codec.DecodeStream(stream)
 	if err != nil {
 		return nil, err

@@ -91,7 +91,8 @@ import (
 
 func main() {
     // Set up your model
-    model := openai.NewLanguageModel("gpt-4o")
+	provider := openai.NewProvider()
+	model := provider.NewLanguageModel("gpt-4o-mini")
 
     // Generate text
     response, err := ai.GenerateTextStr(

@@ -2990,8 +2990,11 @@ func runGenerateTests(t *testing.T, tests []struct {
 			// Use custom model ID
 			modelID := testCase.modelID
 
-			// Create model with mocked client
-			model := NewLanguageModel(modelID, WithClient(client))
+			// instantiate the provider with the mocked client
+			provider := NewProvider(WithClient(client))
+
+			// Create model with the provider
+			model := provider.NewLanguageModel(modelID)
 
 			// Call Generate with the test's options (or empty if not specified)
 			resp, err := model.Generate(t.Context(), testCase.prompt, testCase.options)
@@ -3043,8 +3046,11 @@ func runStreamTests(t *testing.T, tests []struct {
 			// Use custom model ID
 			modelID := testCase.modelID
 
-			// Create model with mocked client
-			model := NewLanguageModel(modelID, WithClient(client))
+			// instantiate the provider with the mocked client
+			provider := NewProvider(WithClient(client))
+
+			// Create model with the provider
+			model := provider.NewLanguageModel(modelID)
 
 			// Call Stream with the test's options (or empty if not specified)
 			resp, err := model.Stream(t.Context(), testCase.prompt, testCase.options)
