@@ -524,6 +524,7 @@ type ToolCallBlock struct {
 	ToolCallID string `json:"tool_call_id"`
 
 	// ToolName is the name of the tool that is being called
+	// TODO: rename to ToolID (and change implementation in each provider)
 	ToolName string `json:"tool_name"`
 
 	// Args contains the arguments of the tool call as a JSON payload matching

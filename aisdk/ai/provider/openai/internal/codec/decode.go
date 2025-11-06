@@ -181,9 +181,9 @@ func decodeComputerCall(computerCall responses.ResponseComputerToolCall) (*api.T
 
 	// Create tool call block with provider metadata
 	return &api.ToolCallBlock{
-		ToolCallID:       computerCall.CallID, // TODO: what's ID vs CallID??
+		ToolCallID:       computerCall.ID, // TODO: use computerCall.CallID instead
 		ToolName:         ComputerUseToolID,
-		Args:             json.RawMessage(computerCall.Action.RawJSON()), // TODO: maybe rename Args to Action?
+		Args:             json.RawMessage(computerCall.RawJSON()), // TODO: pass the Action instead.
 		ProviderMetadata: api.NewProviderMetadata(map[string]any{ProviderName: metadata}),
 	}, nil
 }
