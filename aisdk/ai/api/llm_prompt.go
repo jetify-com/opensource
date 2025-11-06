@@ -335,8 +335,7 @@ const (
 // ContentBlock represents a block of content in a message
 type ContentBlock interface {
 	// Type returns the type of the content block.
-	// Valid types are: "text", "image", "file", "tool-call", "tool-result",
-	// "reasoning".
+	// Valid types are: "text", "image", "file", "tool-call", "tool-result", "reasoning".
 	Type() ContentBlockType
 	// ProviderMetadata returns the provider-specific metadata for the content block.
 	GetProviderMetadata() *ProviderMetadata
@@ -571,7 +570,8 @@ type ToolResultBlock struct {
 	// ToolCallID is the ID of the tool call that this result is associated with
 	ToolCallID string `json:"tool_call_id"`
 
-	// ToolName is the name of the tool that generated this result
+	// ToolName is the ID of the tool that generated this result
+	// TODO: rename to ToolID
 	ToolName string `json:"tool_name"`
 
 	// Result contains the result of the tool call. This is a JSON-serializable object.
