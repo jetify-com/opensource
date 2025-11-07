@@ -35,7 +35,7 @@ require (
 require (
 	github.com/arduino/go-paths-helper v1.13.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gofrs/uuid/v5 v5.3.2 // indirect
+	github.com/gofrs/uuid/v5 v5.4.0 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
