@@ -2,9 +2,7 @@ package openai
 
 import "go.jetify.com/ai/provider/openai/internal/codec"
 
-var (
-	ProviderName = codec.ProviderName
-)
+var ProviderName = codec.ProviderName
 
 // Models
 const (
