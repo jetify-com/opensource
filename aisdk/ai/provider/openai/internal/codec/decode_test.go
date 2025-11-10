@@ -646,16 +646,19 @@ func TestDecodeToolCalls(t *testing.T) {
 					{
 						"type": "computer_call",
 						"id": "comp1",
-						"command": "ls -la",
-						"working_directory": "/tmp"
+						"call_id": "call_123",
+						"action": {
+							"type": "screenshot"
+						},
+						"pending_safety_checks": []
 					}
 				]
 			}`,
 			want: []api.ContentBlock{
 				&api.ToolCallBlock{
-					ToolCallID: "comp1",
+					ToolCallID: "call_123",
 					ToolName:   "openai.computer_use_preview",
-					Args:       json.RawMessage(`{"command":"ls -la","working_directory":"/tmp","id":"comp1","type":"computer_call"}`),
+					Args:       json.RawMessage(`{"type":"screenshot"}`),
 					ProviderMetadata: api.NewProviderMetadata(map[string]any{
 						"openai": &Metadata{
 							ComputerSafetyChecks: []ComputerSafetyCheck{},
@@ -670,9 +673,10 @@ func TestDecodeToolCalls(t *testing.T) {
 				"output": [
 					{
 						"type": "computer_call",
-						"id": "comp2",
-						"command": "rm -rf /",
-						"working_directory": "/",
+						"call_id": "call_123",
+						"action": {
+							"type": "screenshot"
+						},
 						"pending_safety_checks": [
 							{
 								"id": "check1",
@@ -690,9 +694,9 @@ func TestDecodeToolCalls(t *testing.T) {
 			}`,
 			want: []api.ContentBlock{
 				&api.ToolCallBlock{
-					ToolCallID: "comp2",
+					ToolCallID: "call_123",
 					ToolName:   "openai.computer_use_preview",
-					Args:       json.RawMessage(`{"command":"rm -rf /","working_directory":"/","id":"comp2","type":"computer_call","pending_safety_checks":[{"id":"check1","code":"file_access","message":"File access requested"},{"id":"check2","code":"dangerous_command","message":"Potentially dangerous command detected"}]}`),
+					Args:       json.RawMessage(`{"type":"screenshot"}`),
 					ProviderMetadata: api.NewProviderMetadata(map[string]any{
 						"openai": &Metadata{
 							ComputerSafetyChecks: []ComputerSafetyCheck{
@@ -718,18 +722,19 @@ func TestDecodeToolCalls(t *testing.T) {
 				"output": [
 					{
 						"type": "computer_call",
-						"id": "comp3",
-						"command": "echo hello",
-						"working_directory": "/tmp",
+						"call_id": "call_123",
+						"action": {
+							"type": "screenshot"
+						},
 						"pending_safety_checks": []
 					}
 				]
 			}`,
 			want: []api.ContentBlock{
 				&api.ToolCallBlock{
-					ToolCallID: "comp3",
+					ToolCallID: "call_123",
 					ToolName:   "openai.computer_use_preview",
-					Args:       json.RawMessage(`{"command":"echo hello","working_directory":"/tmp","id":"comp3","type":"computer_call","pending_safety_checks":[]}`),
+					Args:       json.RawMessage(`{"type":"screenshot"}`),
 					ProviderMetadata: api.NewProviderMetadata(map[string]any{
 						"openai": &Metadata{
 							ComputerSafetyChecks: []ComputerSafetyCheck{},
