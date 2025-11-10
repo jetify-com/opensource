@@ -35,7 +35,7 @@ func DecodeResponse(msg *responses.Response) (*api.Response, error) {
 		ResponseInfo: &api.ResponseInfo{
 			ID:        msg.ID,
 			ModelID:   msg.Model,
-			Timestamp: time.Unix(int64(msg.CreatedAt), 0),
+			Timestamp: time.Unix(int64(msg.CreatedAt), 0).UTC(),
 		},
 		Content:          content.Content,
 		Usage:            decodeUsage(msg.Usage),
