@@ -77,7 +77,7 @@ func getModelConfig(modelID string) modelConfig {
 			SystemMessageMode:      "developer",
 			RequiredAutoTruncation: false,
 		}
-	} else if len(modelID) > 0 && strings.HasPrefix(modelID, "computer") {
+	} else if len(modelID) > 0 && strings.HasPrefix(modelID, "computer_use") {
 		return modelConfig{
 			IsReasoningModel:       true,
 			SystemMessageMode:      "developer",
