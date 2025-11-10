@@ -640,7 +640,7 @@ func TestDecodeToolCalls(t *testing.T) {
 			},
 		},
 		{
-			name: "computer call",
+			name: "computer call with no safety checks field",
 			response: `{
 				"output": [
 					{
@@ -650,7 +650,6 @@ func TestDecodeToolCalls(t *testing.T) {
 						"action": {
 							"type": "screenshot"
 						},
-						"pending_safety_checks": []
 					}
 				]
 			}`,
