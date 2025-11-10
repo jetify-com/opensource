@@ -649,7 +649,7 @@ func TestDecodeToolCalls(t *testing.T) {
 						"call_id": "call_123",
 						"action": {
 							"type": "screenshot"
-						},
+						}
 					}
 				]
 			}`,
