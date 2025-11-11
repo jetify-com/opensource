@@ -93,11 +93,21 @@ func encodeFunctionTool(tool api.FunctionTool) (*responses.ToolUnionParam, []api
 		return nil, nil, fmt.Errorf("failed to convert tool parameters: %w", err)
 	}
 
+	strict := true // Default to true
+	if tool.ProviderMetadata != nil {
+		fmt.Println("provider metadata: ", tool.ProviderMetadata)
+		if metadata, ok := tool.ProviderMetadata.Get(ProviderName); ok {
+			metadata := metadata.(Metadata)
+			if metadata.StrictSchemas != nil {
+				strict = *metadata.StrictSchemas
+			}
+		}
+	}
+
 	result := responses.ToolParamOfFunction(
 		name,
 		props,
-		// TODO: allow passing the strict flag to the function
-		true, // strict mode enabled
+		strict,
 	)
 
 	// Add description if provided
