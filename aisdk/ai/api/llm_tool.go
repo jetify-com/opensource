@@ -62,6 +62,9 @@ func (t *FunctionTool) Type() string { return "function" }
 // isToolDefinition is a marker method to satisfy the ToolDefinition interface
 func (t *FunctionTool) isToolDefinition() bool { return true }
 
+// GetProviderMetadata returns the provider-specific metadata for the function tool
+func (t FunctionTool) GetProviderMetadata() *ProviderMetadata { return t.ProviderMetadata }
+
 // FunctionTool JSON marshaling - automatically includes "type" field
 func (t *FunctionTool) MarshalJSON() ([]byte, error) {
 	type Alias FunctionTool

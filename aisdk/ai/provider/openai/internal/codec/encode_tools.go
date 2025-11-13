@@ -94,14 +94,9 @@ func encodeFunctionTool(tool api.FunctionTool) (*responses.ToolUnionParam, []api
 	}
 
 	strict := true // Default to true
-	if tool.ProviderMetadata != nil {
-		fmt.Println("provider metadata: ", tool.ProviderMetadata)
-		if metadata, ok := tool.ProviderMetadata.Get(ProviderName); ok {
-			metadata := metadata.(Metadata)
-			if metadata.StrictSchemas != nil {
-				strict = *metadata.StrictSchemas
-			}
-		}
+	md := GetMetadata(tool)
+	if md != nil && md.StrictSchemas != nil {
+		strict = *md.StrictSchemas
 	}
 
 	result := responses.ToolParamOfFunction(
