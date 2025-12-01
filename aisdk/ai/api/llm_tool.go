@@ -16,6 +16,7 @@ type ToolChoice struct {
 	Type string `json:"type"`
 
 	// ToolName specifies which tool to use when Type is "tool"
+	// TODO: rename to ToolID (and change implementation)
 	ToolName string `json:"tool_name,omitzero"`
 }
 
@@ -29,7 +30,7 @@ type ToolDefinition interface {
 }
 
 // For the equivalent of ToolDefinition in MCP, see the Tool struct in:
-// https://github.com/modelcontextprotocol/go-sdk/blob/main/mcp/protocol.go#L854
+// https://github.com/modelcontextprotocol/go-sdk/blob/main/mcp/protocol.go#L901
 
 // FunctionTool represents a tool that has a name, description, and set of input arguments.
 // Note: this is not the user-facing tool definition. The AI SDK methods will
@@ -46,6 +47,11 @@ type FunctionTool struct {
 	// the tool's input requirements and provide matching suggestions.
 	// InputSchema should be defined using a JSON schema.
 	InputSchema *jsonschema.Schema `json:"input_schema,omitzero"`
+
+	// ProviderMetadata contains additional provider-specific metadata.
+	// They are passed through to the provider from the AI SDK and enable
+	// provider-specific functionality that can be fully encapsulated in the provider.
+	ProviderMetadata *ProviderMetadata `json:"provider_metadata,omitzero"`
 }
 
 var _ ToolDefinition = &FunctionTool{}
@@ -55,6 +61,9 @@ func (t *FunctionTool) Type() string { return "function" }
 
 // isToolDefinition is a marker method to satisfy the ToolDefinition interface
 func (t *FunctionTool) isToolDefinition() bool { return true }
+
+// GetProviderMetadata returns the provider-specific metadata for the function tool
+func (t FunctionTool) GetProviderMetadata() *ProviderMetadata { return t.ProviderMetadata }
 
 // FunctionTool JSON marshaling - automatically includes "type" field
 func (t *FunctionTool) MarshalJSON() ([]byte, error) {

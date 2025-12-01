@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/openai/openai-go/v2/responses"
 	"go.jetify.com/ai/api"
@@ -31,6 +32,11 @@ func DecodeResponse(msg *responses.Response) (*api.Response, error) {
 
 	// Create the response with the extracted fields
 	resp := &api.Response{
+		ResponseInfo: &api.ResponseInfo{
+			ID:        msg.ID,
+			ModelID:   msg.Model,
+			Timestamp: time.Unix(int64(msg.CreatedAt), 0).UTC(),
+		},
 		Content:          content.Content,
 		Usage:            decodeUsage(msg.Usage),
 		ProviderMetadata: decodeProviderMetadata(msg),
@@ -104,9 +110,6 @@ func decodeReasoning(item responses.ResponseOutputItemUnion) (*api.ReasoningBloc
 	}
 
 	reasoningItem := item.AsReasoning()
-	if len(reasoningItem.Summary) == 0 {
-		return nil, fmt.Errorf("reasoning item has no summary")
-	}
 
 	// For now, we'll concatenate all summary texts with newlines if there are multiple
 	// Another option would be to return a slice of ReasoningBlocks.
@@ -119,9 +122,9 @@ func decodeReasoning(item responses.ResponseOutputItemUnion) (*api.ReasoningBloc
 		texts = append(texts, summary.Text)
 	}
 
-	if len(texts) == 0 {
-		return nil, fmt.Errorf("no valid text found in reasoning summaries")
-	}
+	// NOTE: we don't check that the text is non-empty because sometimes the model returns an empty
+	// reasoning block. That behavior is technically against the API spec, but it's been observed in practice.
+	// Consider omitting the ReasoningBlock and adding a warning instead.
 
 	return &api.ReasoningBlock{
 		Text: strings.Join(texts, "\n"),
@@ -148,7 +151,7 @@ func decodeFunctionCall(functionCall responses.ResponseFunctionToolCall) (*api.T
 func decodeFileSearchCall(fileSearch responses.ResponseFileSearchToolCall) (*api.ToolCallBlock, error) {
 	return &api.ToolCallBlock{
 		ToolCallID: fileSearch.ID,
-		ToolName:   "openai.file_search",
+		ToolName:   FileSearchToolID,
 		Args:       json.RawMessage(fileSearch.RawJSON()),
 	}, nil
 }
@@ -157,7 +160,7 @@ func decodeFileSearchCall(fileSearch responses.ResponseFileSearchToolCall) (*api
 func decodeWebSearchCall(webSearch responses.ResponseFunctionWebSearch) (*api.ToolCallBlock, error) {
 	return &api.ToolCallBlock{
 		ToolCallID: webSearch.ID,
-		ToolName:   "openai.web_search_preview",
+		ToolName:   WebSearchToolID,
 		Args:       json.RawMessage(webSearch.RawJSON()),
 	}, nil
 }
@@ -181,10 +184,12 @@ func decodeComputerCall(computerCall responses.ResponseComputerToolCall) (*api.T
 
 	// Create tool call block with provider metadata
 	return &api.ToolCallBlock{
-		ToolCallID:       computerCall.ID,
-		ToolName:         "openai.computer_use_preview",
-		Args:             json.RawMessage(computerCall.RawJSON()),
-		ProviderMetadata: api.NewProviderMetadata(map[string]any{"openai": metadata}),
+		// The CallID is what's needed to respond to the tool call, not the "ID" field.
+		// https://platform.openai.com/docs/api-reference/responses/object#responses-object-output-computer_tool_call
+		ToolCallID:       computerCall.CallID,
+		ToolName:         ComputerUseToolID,
+		Args:             json.RawMessage(computerCall.Action.RawJSON()), // The Action is the only argument to the computer call.
+		ProviderMetadata: api.NewProviderMetadata(map[string]any{ProviderName: metadata}),
 	}, nil
 }
 
@@ -263,7 +268,7 @@ func decodeFinishReason(incompleteReason string, hasToolCalls bool) api.FinishRe
 // decodeProviderMetadata extracts OpenAI-specific metadata
 func decodeProviderMetadata(msg *responses.Response) *api.ProviderMetadata {
 	return api.NewProviderMetadata(map[string]any{
-		"openai": &Metadata{
+		ProviderName: &Metadata{
 			ResponseID: msg.ID,
 			Usage: Usage{
 				InputTokens:           int(msg.Usage.InputTokens),

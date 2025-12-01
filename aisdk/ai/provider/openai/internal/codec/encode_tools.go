@@ -93,11 +93,16 @@ func encodeFunctionTool(tool api.FunctionTool) (*responses.ToolUnionParam, []api
 		return nil, nil, fmt.Errorf("failed to convert tool parameters: %w", err)
 	}
 
+	strict := true // Default to true
+	md := GetMetadata(tool)
+	if md != nil && md.StrictSchemas != nil {
+		strict = *md.StrictSchemas
+	}
+
 	result := responses.ToolParamOfFunction(
 		name,
 		props,
-		// TODO: allow passing the strict flag to the function
-		true, // strict mode enabled
+		strict,
 	)
 
 	// Add description if provided
@@ -302,7 +307,7 @@ func encodeToolChoice(toolChoice *api.ToolChoice) (responses.ResponseNewParamsTo
 	case "tool":
 		// Check if it's a provider-defined tool or a function tool
 		switch toolChoice.ToolName {
-		case "file_search", "web_search_preview", "computer_use_preview":
+		case FileSearchToolName, WebSearchToolName, ComputerUseToolName:
 			// It's a provider-defined tool (hosted tool in OpenAI's terminology)
 			result = responses.ResponseNewParamsToolChoiceUnion{
 				OfHostedTool: &responses.ToolChoiceTypesParam{

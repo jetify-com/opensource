@@ -21,7 +21,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.51.0
 	github.com/spf13/cobra v1.9.1
-	go.jetify.com/pkg v0.0.0-20250904024813-5ec17279258b
+	go.jetify.com/pkg v0.0.0-20251107190536-8bfcb265d745
 	golang.org/x/text v0.28.0
 )
 
@@ -46,7 +46,7 @@ require (
 	github.com/creack/pty v1.1.24 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.2 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
-	github.com/gofrs/uuid/v5 v5.3.2 // indirect
+	github.com/gofrs/uuid/v5 v5.4.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/renameio/v2 v2.0.0 // indirect
 	github.com/gosimple/slug v1.15.0 // indirect
