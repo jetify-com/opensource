@@ -13,11 +13,16 @@ type ToolChoice struct {
 	// - "none": no tool must be selected
 	// - "required": one of the available tools must be selected
 	// - "tool": a specific tool must be selected
+	// - "allowed": one of the allowed tools must be selected
 	Type string `json:"type"`
 
 	// ToolName specifies which tool to use when Type is "tool"
 	// TODO: rename to ToolID (and change implementation)
 	ToolName string `json:"tool_name,omitzero"`
+
+	// Similar to Type, but only applies to the AllowedTools and when Type is "allowed"
+	AllowedToolsMode string   `json:"allowed_tools_mode,omitempty"`
+	AllowedTools     []string `json:"allowed_tools,omitempty"`
 }
 
 // ToolDefinition represents a tool that can be used in a language model call.

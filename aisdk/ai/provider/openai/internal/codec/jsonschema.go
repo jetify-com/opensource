@@ -83,3 +83,44 @@ func normalizeSchemaMap(schemaMap map[string]any) {
 		}
 	}
 }
+
+// ensureObjectProperties ensures that object schemas have "properties": {} if missing.
+// A schema is considered an object schema if it has "type": "object" or already has
+// object-specific keywords like "properties", "required", or "additionalProperties".
+func ensureObjectProperties(m map[string]any) {
+	// Check if this is an object schema
+	isObject := false
+	if t, ok := m["type"].(string); ok && t == "object" {
+		isObject = true
+	} else if _, hasProps := m["properties"]; hasProps {
+		// Already has properties field, so it's definitely an object schema
+		isObject = true
+	} else if _, hasRequired := m["required"]; hasRequired {
+		// Has required field, so it's an object schema
+		isObject = true
+	} else if additionalProps, hasAdditionalProps := m["additionalProperties"]; hasAdditionalProps {
+		// Has additionalProperties - this only makes sense for object schemas.
+		// Check if it's a boolean (false) or a map that will become false ({"not": {}})
+		if _, isBool := additionalProps.(bool); isBool {
+			// Boolean value (false) indicates it's part of an object schema definition
+			isObject = true
+		} else if additionalPropsMap, isMap := additionalProps.(map[string]any); isMap {
+			// Check if this is the {"not": {}} pattern that will be normalized to false
+			if len(additionalPropsMap) == 1 {
+				if notVal, hasNot := additionalPropsMap["not"]; hasNot {
+					if notMap, notIsMap := notVal.(map[string]any); notIsMap && len(notMap) == 0 {
+						// This is {"not": {}} which will become false - treat as object schema
+						isObject = true
+					}
+				}
+			}
+		}
+	}
+
+	if isObject {
+		// Ensure properties field exists (even if empty)
+		if _, ok := m["properties"]; !ok {
+			m["properties"] = map[string]any{}
+		}
+	}
+}

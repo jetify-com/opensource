@@ -3,6 +3,7 @@ package codec
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	"github.com/openai/openai-go/v2"
 	"github.com/openai/openai-go/v2/packages/param"
@@ -57,11 +58,13 @@ func EncodeTools(tools []api.ToolDefinition, toolChoice *api.ToolChoice, opts ap
 	}
 
 	// Process tool choice
+	fmt.Printf("about to encode tool choice\n")
 	if toolChoice != nil {
 		choice, err := encodeToolChoice(toolChoice)
 		if err != nil {
 			return OpenAITools{}, err
 		}
+		fmt.Printf("after encode tool choice: %+v\n", choice)
 		result.ToolChoice = choice
 	}
 
@@ -321,6 +324,36 @@ func encodeToolChoice(toolChoice *api.ToolChoice) (responses.ResponseNewParamsTo
 					Name: toolChoice.ToolName,
 				},
 			}
+		}
+	case "allowed":
+		var mode responses.ToolChoiceAllowedMode
+		switch toolChoice.AllowedToolsMode {
+		case "auto":
+			mode = responses.ToolChoiceAllowedModeAuto
+		case "required":
+			mode = responses.ToolChoiceAllowedModeRequired
+		default:
+			return result, fmt.Errorf("allowed tools mode should be set to \"required\" or \"auto\" when using \"allowed\" tool choice, got %s", toolChoice.AllowedToolsMode)
+		}
+
+		tools := []map[string]any{}
+		for _, toolName := range toolChoice.AllowedTools {
+			if slices.Contains(ProviderDefinedTools, toolName) {
+				tools = append(tools, map[string]any{
+					"type": toolName, // For "built-in" tools, set the tool name as the "type"
+				})
+			} else { // Assume function tool
+				tools = append(tools, map[string]any{
+					"type": "function",
+					"name": toolName,
+				})
+			}
+		}
+		result = responses.ResponseNewParamsToolChoiceUnion{
+			OfAllowedTools: &responses.ToolChoiceAllowedParam{
+				Mode:  mode,
+				Tools: tools,
+			},
 		}
 	default:
 		return responses.ResponseNewParamsToolChoiceUnion{}, fmt.Errorf("unsupported tool choice type: %s", toolChoice.Type)

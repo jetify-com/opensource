@@ -17,6 +17,8 @@ var (
 
 	WebSearchToolName = "web_search_preview"
 	WebSearchToolID   = fmt.Sprintf("%s.%s", ProviderName, WebSearchToolName)
+
+	ProviderDefinedTools = []string{FileSearchToolName, ComputerUseToolName, WebSearchToolName}
 )
 
 // FileSearchToolArgs is a built-in tool that searches for relevant content from uploaded files.

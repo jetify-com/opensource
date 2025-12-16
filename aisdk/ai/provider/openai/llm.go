@@ -2,6 +2,8 @@ package openai
 
 import (
 	"context"
+	"encoding/json"
+	"os"
 
 	"github.com/openai/openai-go/v2"
 	"go.jetify.com/ai/api"
@@ -64,6 +66,18 @@ func (m *LanguageModel) SupportedUrls() []api.SupportedURL {
 	}
 }
 
+func writeToFile(data string, filename string) {
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		// Fail silently
+		return
+	}
+	defer f.Close()
+
+	_, _ = f.WriteString("\n------------\n")
+	_, _ = f.WriteString(data)
+}
+
 func (m *LanguageModel) Generate(
 	ctx context.Context, prompt []api.Message, opts api.CallOptions,
 ) (*api.Response, error) {
@@ -71,6 +85,8 @@ func (m *LanguageModel) Generate(
 	if err != nil {
 		return nil, err
 	}
+	jsonParams, _ := json.MarshalIndent(params, "", "  ")
+	writeToFile(string(jsonParams), "requests-aisdk.json")
 
 	openaiResponse, err := m.client.Responses.New(ctx, params)
 	if err != nil {

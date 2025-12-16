@@ -459,15 +459,32 @@ func EncodeToolResultBlock(result *api.ToolResultBlock) (responses.ResponseInput
 
 	// Handle computer use tool output
 	if result.ToolName == ComputerUseToolID {
+		fmt.Printf("going to encode computer use tool result...")
 		return encodeComputerToolResult(result)
 	}
 
-	// Handle regular function tool output
-	resultJSON, err := json.Marshal(result.Result)
-	if err != nil {
-		return responses.ResponseInputItemUnionParam{}, fmt.Errorf("failed to marshal tool result: %w", err)
+	// Assume function call tool, which requires text output.
+	fmt.Printf("=== encoding ToolMessage with %d contents ===\n", len(result.Content))
+	output := ""
+	if len(result.Content) > 0 {
+		for _, content := range result.Content {
+			if content.Type() == api.ContentBlockTypeText {
+				textBlock := content.(*api.TextBlock)
+				output += textBlock.Text + "\n"
+			} else {
+				fmt.Printf("WARNING: non-Text content in result block: %s\n", content.Type())
+			}
+		}
+	} else {
+		// Handle regular function tool output
+		resultJSON, err := json.Marshal(result.Result)
+		if err != nil {
+			return responses.ResponseInputItemUnionParam{}, fmt.Errorf("failed to marshal tool result: %w", err)
+		}
+		output = string(resultJSON)
 	}
-	output := string(resultJSON)
+
+	fmt.Printf("==== sending tool result block: %s\n", output)
 
 	// Create a function call output item
 	return responses.ResponseInputItemParamOfFunctionCallOutput(
