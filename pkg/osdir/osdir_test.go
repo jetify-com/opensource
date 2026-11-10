@@ -245,6 +245,55 @@ func TestDirTypeReadFile(t *testing.T) {
 		checkReadFile(t, dt, want)
 	})
 
+	t.Run("SubEnvList", func(t *testing.T) {
+		skipIfSystemUser(t)
+
+		// With a two-directory env value, Sub must apply the subdirectory to
+		// both entries: the first dir's "app" file wins over the second's,
+		// and a file outside "app" in the first dir must not be found.
+		searchDir1 := t.TempDir()
+		searchDir2 := t.TempDir()
+		t.Setenv("TEST_XDG_CONFIG_DIRS", searchDir1+string(filepath.ListSeparator)+searchDir2)
+		dt := DirType{
+			System: t.TempDir(),
+			User:   t.TempDir(),
+			Search: "$TEST_XDG_CONFIG_DIRS",
+		}.Sub("app")
+
+		writeTestFile(t, searchDir1, []byte("other app's file"))
+		if err := os.Mkdir(filepath.Join(searchDir1, "app"), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Mkdir(filepath.Join(searchDir2, "app"), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		want := []byte("first dir app file")
+		writeTestFile(t, filepath.Join(searchDir1, "app"), want)
+		writeTestFile(t, filepath.Join(searchDir2, "app"), []byte("second dir app file"))
+		checkReadFile(t, dt, want)
+	})
+
+	t.Run("SubDefaultList", func(t *testing.T) {
+		skipIfSystemUser(t)
+		t.Setenv("TEST_XDG_CONFIG_DIRS", "")
+
+		searchDir1 := t.TempDir()
+		searchDir2 := t.TempDir()
+		dt := DirType{
+			System:        t.TempDir(),
+			User:          t.TempDir(),
+			Search:        "$TEST_XDG_CONFIG_DIRS",
+			SearchDefault: searchDir1 + string(filepath.ListSeparator) + searchDir2,
+		}.Sub("app").Sub("nested")
+
+		if err := os.MkdirAll(filepath.Join(searchDir1, "app", "nested"), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		want := []byte("first default dir nested file")
+		writeTestFile(t, filepath.Join(searchDir1, "app", "nested"), want)
+		checkReadFile(t, dt, want)
+	})
+
 	t.Run("RejectsTraversal", func(t *testing.T) {
 		skipIfSystemUser(t)
 

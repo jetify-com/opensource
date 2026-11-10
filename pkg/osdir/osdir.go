@@ -97,6 +97,12 @@ type DirType struct {
 	// is empty or contains environment variables that resolve to an empty
 	// string.
 	SearchDefault string
+
+	// searchSub is a subdirectory added by [DirType.Sub]. It's joined onto
+	// each search directory after Search or SearchDefault is expanded and
+	// split, because an environment variable such as $XDG_CONFIG_DIRS can
+	// itself expand to a list of directories.
+	searchSub string
 }
 
 // Sub returns a DirType whose paths are subdirectories of d. For example, the
@@ -108,8 +114,7 @@ func (d DirType) Sub(dir string) DirType {
 	d.System = filepath.Join(d.System, dir)
 	d.User = filepath.Join(d.User, dir)
 	d.UserDefault = filepath.Join(d.UserDefault, dir)
-	d.Search = filepath.Join(d.Search, dir)
-	d.SearchDefault = filepath.Join(d.SearchDefault, dir)
+	d.searchSub = filepath.Join(d.searchSub, dir)
 	return d
 }
 
@@ -161,9 +166,9 @@ func (d DirType) JoinSearchPath(path string) ([]string, error) {
 
 	// Expand Search before deciding whether to fall back to SearchDefault so
 	// that an unset variable (such as $XDG_CONFIG_DIRS) uses the default.
-	search := searchDirs(d.Search)
+	search := searchDirs(d.Search, d.searchSub)
 	if len(search) == 0 {
-		search = searchDirs(d.SearchDefault)
+		search = searchDirs(d.SearchDefault, d.searchSub)
 	}
 	for _, basepath := range search {
 		joined = append(joined, filepath.Join(basepath, path))
@@ -261,14 +266,15 @@ func expand(path string) string {
 }
 
 // searchDirs splits a list of directories, expands each one with [expand], and
-// returns the ones that are absolute paths. An entry that expands to a list
-// itself (such as $XDG_CONFIG_DIRS) is split again after expansion.
-func searchDirs(list string) []string {
+// returns the ones that are absolute paths, each joined with sub. An entry that
+// expands to a list itself (such as $XDG_CONFIG_DIRS) is split again after
+// expansion.
+func searchDirs(list, sub string) []string {
 	var dirs []string
 	for _, entry := range filepath.SplitList(list) {
 		for _, dir := range filepath.SplitList(expand(entry)) {
 			if filepath.IsAbs(dir) {
-				dirs = append(dirs, dir)
+				dirs = append(dirs, filepath.Join(dir, sub))
 			}
 		}
 	}
