@@ -14,7 +14,7 @@ type CallbackServer struct {
 	server   *http.Server
 	redirect string
 
-	respCh chan (Response)
+	respCh chan Response
 }
 
 type Response struct {
