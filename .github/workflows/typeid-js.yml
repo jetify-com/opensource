@@ -20,10 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Monorepo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install devbox
-        uses: jetify-com/devbox-install-action@v0.13.0
+        uses: jetify-com/devbox-install-action@v0.16.0
         with:
           enable-cache: true
           project-path: "./typeid/typeid-js"
