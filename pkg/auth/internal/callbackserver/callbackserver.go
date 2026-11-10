@@ -28,7 +28,7 @@ func New(redirect string) *CallbackServer {
 		addr:     "127.0.0.1:4446",
 		path:     "/callback",
 		redirect: redirect,
-		respCh:   make(chan (Response)),
+		respCh:   make(chan Response),
 	}
 }
 
