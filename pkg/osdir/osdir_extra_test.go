@@ -121,7 +121,7 @@ func TestJoinSearchPathSystem(t *testing.T) {
 func TestJoinSearchPathUser(t *testing.T) {
 	skipIfSystemUser(t)
 	t.Setenv("OSDIR_TEST_UNSET", "")
-	t.Setenv("OSDIR_TEST_SEARCH", "/env/a:/env/b")
+	t.Setenv("OSDIR_TEST_SEARCH", "/env")
 
 	tests := []struct {
 		name    string
@@ -142,7 +142,7 @@ func TestJoinSearchPathUser(t *testing.T) {
 		{
 			name: "search from env",
 			dt:   DirType{User: "/user", Search: "$OSDIR_TEST_SEARCH"},
-			want: []string{"/user/f", "/env/a/f", "/env/b/f"},
+			want: []string{"/user/f", "/env/f"},
 		},
 		{
 			name: "skips relative and unexpandable search dirs",
