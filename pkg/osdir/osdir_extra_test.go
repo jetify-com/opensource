@@ -27,11 +27,15 @@ func TestSub(t *testing.T) {
 	}
 	got := dt.Sub("app")
 	want := DirType{
-		System:        "/sys/app",
-		User:          "/user/app",
-		UserDefault:   "/userdef/app",
-		Search:        "/search/app",
-		SearchDefault: "/searchdef/app",
+		System:      "/sys/app",
+		User:        "/user/app",
+		UserDefault: "/userdef/app",
+		// Search and SearchDefault are lists that may contain environment
+		// variables, so the subdirectory is joined onto each search
+		// directory later instead of onto the raw values.
+		Search:        "/search",
+		SearchDefault: "/searchdef",
+		sub:           "app",
 	}
 	if got != want {
 		t.Errorf("Sub() = %+v, want %+v", got, want)
