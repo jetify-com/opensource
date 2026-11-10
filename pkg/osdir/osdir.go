@@ -139,6 +139,12 @@ func (d DirType) JoinPath(path string) (string, error) {
 // base directory and search directories of d. The path must be relative and
 // cannot contain any ".." elements.
 func (d DirType) JoinSearchPath(path string) ([]string, error) {
+	// Validate up front: a JoinPath error for a missing user directory is
+	// tolerated below, but an invalid path must never reach the search dirs.
+	if err := validPath(path); err != nil {
+		return nil, err
+	}
+
 	firstPath, err := d.JoinPath(path)
 	if isSystemUser() {
 		// No searching for system paths.
@@ -169,14 +175,15 @@ func (d DirType) JoinSearchPath(path string) ([]string, error) {
 }
 
 // OpenFile calls [DirType.JoinPath] with the given filename and opens the
-// resulting path. When flag is read-only (neither [os.O_WRONLY] nor [os.O_RDWR]
-// is set), OpenFile calls [DirType.JoinSearchPath] and tries opening each path
-// until it succeeds. When flag has the [os.O_CREATE] bit set, OpenFile will
+// resulting path. When flag is read-only (none of [os.O_WRONLY], [os.O_RDWR],
+// [os.O_APPEND], [os.O_CREATE] or [os.O_TRUNC] is set), OpenFile calls
+// [DirType.JoinSearchPath] and tries opening each path until it succeeds. When flag has the [os.O_CREATE] bit set, OpenFile will
 // create any necessary directories if they don't already exist.
 func (d DirType) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
-	// Don't use search paths when writing.
-	// os.O_RDONLY is 0, so check for the write bits instead.
-	if flag&(os.O_WRONLY|os.O_RDWR) != 0 {
+	// Don't use search paths for any flag that can create or modify a file.
+	// os.O_RDONLY is 0, so check for those bits instead.
+	const modifyFlags = os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_CREATE | os.O_TRUNC
+	if flag&modifyFlags != 0 {
 		absPath, err := d.JoinPath(name)
 		if err != nil {
 			return nil, err
@@ -254,13 +261,15 @@ func expand(path string) string {
 }
 
 // searchDirs splits a list of directories, expands each one with [expand], and
-// returns the ones that are absolute paths.
+// returns the ones that are absolute paths. An entry that expands to a list
+// itself (such as $XDG_CONFIG_DIRS) is split again after expansion.
 func searchDirs(list string) []string {
 	var dirs []string
-	for _, dir := range filepath.SplitList(list) {
-		dir = expand(dir)
-		if filepath.IsAbs(dir) {
-			dirs = append(dirs, dir)
+	for _, entry := range filepath.SplitList(list) {
+		for _, dir := range filepath.SplitList(expand(entry)) {
+			if filepath.IsAbs(dir) {
+				dirs = append(dirs, dir)
+			}
 		}
 	}
 	return dirs

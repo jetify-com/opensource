@@ -227,6 +227,74 @@ func TestDirTypeReadFile(t *testing.T) {
 		checkReadFile(t, dt, want)
 	})
 
+	t.Run("SearchEnvList", func(t *testing.T) {
+		skipIfSystemUser(t)
+
+		searchDir1 := t.TempDir()
+		searchDir2 := t.TempDir()
+		t.Setenv("TEST_XDG_CONFIG_DIRS", searchDir1+string(filepath.ListSeparator)+searchDir2)
+		dt := DirType{
+			System:        t.TempDir(),
+			User:          t.TempDir(),
+			Search:        "$TEST_XDG_CONFIG_DIRS",
+			SearchDefault: t.TempDir(),
+		}
+
+		want := []byte("from second dir in env list")
+		writeTestFile(t, searchDir2, want)
+		checkReadFile(t, dt, want)
+	})
+
+	t.Run("RejectsTraversal", func(t *testing.T) {
+		skipIfSystemUser(t)
+
+		// Put a file one level above the search dir so that an unvalidated
+		// "../" path would find it.
+		parent := t.TempDir()
+		searchDir := filepath.Join(parent, "search")
+		if err := os.Mkdir(searchDir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		writeTestFile(t, parent, []byte("outside"))
+		dt := DirType{
+			System: t.TempDir(),
+			User:   t.TempDir(),
+			Search: searchDir,
+		}
+
+		for _, name := range []string{"../" + testFileName, "/" + testFileName} {
+			if _, err := dt.ReadFile(name); err == nil {
+				t.Errorf("ReadFile(%q) error = nil, want invalid path error", name)
+			}
+		}
+	})
+
+	t.Run("CreateIgnoresSearch", func(t *testing.T) {
+		skipIfSystemUser(t)
+
+		// Make the user directory unusable (it's a regular file) so that a
+		// create that fell through to the search dirs would succeed there.
+		userDir := filepath.Join(t.TempDir(), "user")
+		if err := os.WriteFile(userDir, nil, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		searchDir := t.TempDir()
+		dt := DirType{
+			System: t.TempDir(),
+			User:   userDir,
+			Search: searchDir,
+		}
+
+		f, err := dt.OpenFile(testFileName, os.O_RDONLY|os.O_CREATE, 0o600)
+		if err == nil {
+			_ = f.Close()
+			t.Errorf("OpenFile(%q, O_RDONLY|O_CREATE) error = nil, want error for unusable user dir", testFileName)
+		}
+		if _, err := os.Stat(filepath.Join(searchDir, testFileName)); !errors.Is(err, fs.ErrNotExist) {
+			t.Errorf("file created in search dir: stat error = %v", err)
+		}
+	})
+
 	t.Run("UserWins", func(t *testing.T) {
 		skipIfSystemUser(t)
 
