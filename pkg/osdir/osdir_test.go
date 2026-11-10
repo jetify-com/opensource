@@ -1,6 +1,8 @@
 package osdir
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
@@ -332,5 +334,95 @@ func TestDirTypeOpenFileCreateSkipsSearch(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(search, "new.txt")); err == nil {
 		t.Errorf("OpenFile created %q in a search directory", "new.txt")
+	}
+}
+
+// testFileName is the file name used by the TestDirTypeReadFile tests.
+const testFileName = "test.txt"
+
+func TestDirTypeReadFile(t *testing.T) {
+	t.Run("SearchDefaultFallback", func(t *testing.T) {
+		skipIfSystemUser(t)
+		t.Setenv("TEST_XDG_CONFIG_DIRS", "")
+
+		// Search is set but expands to nothing (like an unset
+		// $XDG_CONFIG_DIRS), so SearchDefault must be used.
+		searchDir := t.TempDir()
+		dt := DirType{
+			System:        t.TempDir(),
+			User:          t.TempDir(),
+			Search:        "$TEST_XDG_CONFIG_DIRS",
+			SearchDefault: searchDir,
+		}
+
+		want := []byte("from search default")
+		writeTestFile(t, filepath.Join(searchDir, testFileName), want)
+		checkReadFile(t, dt, want)
+	})
+
+	t.Run("UserWins", func(t *testing.T) {
+		skipIfSystemUser(t)
+
+		userDir := t.TempDir()
+		searchDir := t.TempDir()
+		dt := DirType{
+			System: t.TempDir(),
+			User:   userDir,
+			Search: searchDir,
+		}
+
+		want := []byte("from user dir")
+		writeTestFile(t, filepath.Join(userDir, testFileName), want)
+		writeTestFile(t, filepath.Join(searchDir, testFileName), []byte("from search dir"))
+		checkReadFile(t, dt, want)
+	})
+
+	t.Run("NotFound", func(t *testing.T) {
+		skipIfSystemUser(t)
+
+		dt := DirType{
+			System: t.TempDir(),
+			User:   t.TempDir(),
+			Search: t.TempDir(),
+		}
+		checkReadFileNotExist(t, dt)
+	})
+
+	t.Run("SystemIgnoresSearch", func(t *testing.T) {
+		forceSystemUser = true
+		t.Cleanup(func() { forceSystemUser = false })
+
+		systemDir := t.TempDir()
+		searchDir := t.TempDir()
+		dt := DirType{
+			System: systemDir,
+			User:   t.TempDir(),
+			Search: searchDir,
+		}
+		writeTestFile(t, filepath.Join(searchDir, testFileName), []byte("from search dir"))
+		checkReadFileNotExist(t, dt)
+
+		want := []byte("from system dir")
+		writeTestFile(t, filepath.Join(systemDir, testFileName), want)
+		checkReadFile(t, dt, want)
+	})
+}
+
+func checkReadFile(t *testing.T, dt DirType, want []byte) {
+	t.Helper()
+	got, err := dt.ReadFile(testFileName)
+	if err != nil {
+		t.Fatalf("ReadFile(%q) error = %v", testFileName, err)
+	}
+	if string(got) != string(want) {
+		t.Errorf("ReadFile(%q) = %q, want %q", testFileName, got, want)
+	}
+}
+
+func checkReadFileNotExist(t *testing.T, dt DirType) {
+	t.Helper()
+	_, err := dt.ReadFile(testFileName)
+	if !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("ReadFile(%q) error = %v, want %v", testFileName, err, fs.ErrNotExist)
 	}
 }
