@@ -29,7 +29,7 @@ func fetchCachedJSON[T any](abspath string, fetchFunc func() (T, error)) (T, err
 	}
 
 	// Otherwise, fetch it:
-	results, fetchErr := fetchFunc()
+	fetched, fetchErr := fetchFunc()
 	// TODO: we could use something like `singleflight` to ensure that if there are
 	// concurrent calls to `fetchFunc` in the same process that only one of them runs.
 
@@ -38,6 +38,7 @@ func fetchCachedJSON[T any](abspath string, fetchFunc func() (T, error)) (T, err
 	if fetchErr != nil && loadErr == nil {
 		return results, nil
 	}
+	results = fetched
 
 	// We failed to fetch it and don't have a local copy:
 	if fetchErr != nil {
