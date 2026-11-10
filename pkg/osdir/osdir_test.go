@@ -261,3 +261,76 @@ func TestDirTypeSubSearch(t *testing.T) {
 		testSub(t, dt, first, second)
 	})
 }
+
+func TestDirTypeSubSearchEnv(t *testing.T) {
+	skipIfSystemUser(t)
+
+	search := t.TempDir()
+	user := t.TempDir()
+	t.Setenv("TEST_APP", "app")
+	dt := DirType{
+		System:        t.TempDir(),
+		User:          user,
+		SearchDefault: search,
+	}.Sub("$TEST_APP")
+
+	got, err := dt.JoinSearchPath("config.json")
+	if err != nil {
+		t.Fatalf("JoinSearchPath(%q) error = %v", "config.json", err)
+	}
+	want := []string{
+		filepath.Join(user, "app", "config.json"),
+		filepath.Join(search, "app", "config.json"),
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("JoinSearchPath(%q) = %q, want %q", "config.json", got, want)
+	}
+}
+
+func TestDirTypeReadFileInvalidPath(t *testing.T) {
+	skipIfSystemUser(t)
+	t.Setenv("TEST_EMPTY_USER", "")
+
+	// The secret file is outside the search directory, and the user
+	// directory is unavailable so that only the search directory is used.
+	root := t.TempDir()
+	writeTestFile(t, filepath.Join(root, "secret"), []byte("secret"))
+	dt := DirType{
+		User:          "$TEST_EMPTY_USER",
+		SearchDefault: filepath.Join(root, "search"),
+	}
+	if err := os.Mkdir(dt.SearchDefault, 0o700); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, name := range []string{"../secret", "/etc/passwd", ""} {
+		if got, err := dt.ReadFile(name); err == nil {
+			t.Errorf("ReadFile(%q) = %q, want error", name, got)
+		}
+		if got, err := dt.JoinSearchPath(name); err == nil {
+			t.Errorf("JoinSearchPath(%q) = %q, want error", name, got)
+		}
+	}
+}
+
+func TestDirTypeOpenFileCreateSkipsSearch(t *testing.T) {
+	skipIfSystemUser(t)
+	t.Setenv("TEST_EMPTY_USER", "")
+
+	search := t.TempDir()
+	dt := DirType{
+		User:          "$TEST_EMPTY_USER",
+		SearchDefault: search,
+	}
+
+	// With no usable user directory, O_CREATE must fail instead of
+	// creating the file in a search directory.
+	f, err := dt.OpenFile("new.txt", os.O_RDONLY|os.O_CREATE, 0o600)
+	if err == nil {
+		_ = f.Close()
+		t.Errorf("OpenFile(%q, O_RDONLY|O_CREATE) succeeded, want error", "new.txt")
+	}
+	if _, err := os.Stat(filepath.Join(search, "new.txt")); err == nil {
+		t.Errorf("OpenFile created %q in a search directory", "new.txt")
+	}
+}

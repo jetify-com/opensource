@@ -145,6 +145,11 @@ func (d DirType) JoinPath(path string) (string, error) {
 // base directory and search directories of d. The path must be relative and
 // cannot contain any ".." elements.
 func (d DirType) JoinSearchPath(path string) ([]string, error) {
+	// Validate up front because a JoinPath error is otherwise ignored when
+	// only the user directory is unavailable.
+	if err := validPath(path); err != nil {
+		return nil, err
+	}
 	firstPath, err := d.JoinPath(path)
 	if isSystemUser() {
 		// No searching for system paths.
@@ -159,8 +164,13 @@ func (d DirType) JoinSearchPath(path string) ([]string, error) {
 		joined = append(joined, firstPath)
 	}
 
-	for _, basepath := range d.searchDirs() {
-		joined = append(joined, filepath.Join(basepath, d.sub, path))
+	// Expand the subdirectory the same way User and System are expanded.
+	// If it references an empty variable, there are no search directories.
+	sub := expand(d.sub)
+	if d.sub == "" || sub != "" {
+		for _, basepath := range d.searchDirs() {
+			joined = append(joined, filepath.Join(basepath, sub, path))
+		}
 	}
 	if len(joined) == 0 {
 		return nil, fmt.Errorf("no suitable directory")
@@ -190,15 +200,16 @@ func (d DirType) searchDirs() []string {
 }
 
 // OpenFile calls [DirType.JoinPath] with the given filename and opens the
-// resulting path. When flag opens the file read-only ([os.O_RDONLY]), OpenFile
-// calls [DirType.JoinSearchPath] and tries opening each path until it succeeds.
-// When
+// resulting path. When flag opens the file read-only ([os.O_RDONLY] without
+// any flags that write or create files), OpenFile calls
+// [DirType.JoinSearchPath] and tries opening each path until it succeeds. When
 // flag has the [os.O_CREATE] bit set, OpenFile will create any necessary
 // directories if they don't already exist.
 func (d DirType) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
-	// Don't use search paths when writing. O_RDONLY is 0 on most
-	// platforms, so check for the absence of the write flags instead.
-	if flag&(os.O_WRONLY|os.O_RDWR) != 0 {
+	// Don't use search paths when writing or creating files. O_RDONLY is 0
+	// on most platforms, so check for the absence of these flags instead.
+	const writeFlags = os.O_WRONLY | os.O_RDWR | os.O_CREATE | os.O_TRUNC | os.O_APPEND
+	if flag&writeFlags != 0 {
 		absPath, err := d.JoinPath(name)
 		if err != nil {
 			return nil, err
