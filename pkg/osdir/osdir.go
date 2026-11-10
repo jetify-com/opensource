@@ -97,6 +97,13 @@ type DirType struct {
 	// is empty or contains environment variables that resolve to an empty
 	// string.
 	SearchDefault string
+
+	// sub is a relative subdirectory, set by [DirType.Sub], that is joined
+	// onto each search directory after expanding Search or SearchDefault.
+	// Search and SearchDefault are lists that may contain environment
+	// variables that expand to lists, so the subdirectory can't be joined
+	// onto them directly.
+	sub string
 }
 
 // Sub returns a DirType whose paths are subdirectories of d. For example, the
@@ -108,8 +115,7 @@ func (d DirType) Sub(dir string) DirType {
 	d.System = filepath.Join(d.System, dir)
 	d.User = filepath.Join(d.User, dir)
 	d.UserDefault = filepath.Join(d.UserDefault, dir)
-	d.Search = filepath.Join(d.Search, dir)
-	d.SearchDefault = filepath.Join(d.SearchDefault, dir)
+	d.sub = filepath.Join(d.sub, dir)
 	return d
 }
 
@@ -153,12 +159,8 @@ func (d DirType) JoinSearchPath(path string) ([]string, error) {
 		joined = append(joined, firstPath)
 	}
 
-	search := filepath.SplitList(cmp.Or(d.Search, d.SearchDefault))
-	for _, basepath := range search {
-		basepath = expand(basepath)
-		if filepath.IsAbs(basepath) {
-			joined = append(joined, filepath.Join(basepath, path))
-		}
+	for _, basepath := range d.searchDirs() {
+		joined = append(joined, filepath.Join(basepath, d.sub, path))
 	}
 	if len(joined) == 0 {
 		return nil, fmt.Errorf("no suitable directory")
@@ -166,14 +168,37 @@ func (d DirType) JoinSearchPath(path string) ([]string, error) {
 	return joined, nil
 }
 
+// searchDirs returns the absolute search directories of d after expanding
+// environment variables. It returns the directories in Search, or
+// SearchDefault if Search is empty or expands to an empty string. Entries
+// may contain environment variables that expand to lists of directories.
+func (d DirType) searchDirs() []string {
+	var dirs []string
+	for _, list := range [...]string{d.Search, d.SearchDefault} {
+		for _, entry := range filepath.SplitList(list) {
+			for _, dir := range filepath.SplitList(expand(entry)) {
+				if filepath.IsAbs(dir) {
+					dirs = append(dirs, dir)
+				}
+			}
+		}
+		if len(dirs) > 0 {
+			break
+		}
+	}
+	return dirs
+}
+
 // OpenFile calls [DirType.JoinPath] with the given filename and opens the
-// resulting path. When flag has the [os.O_RDONLY] bit set, OpenFile calls
-// [DirType.JoinSearchPath] and tries opening each path until it succeeds. When
+// resulting path. When flag opens the file read-only ([os.O_RDONLY]), OpenFile
+// calls [DirType.JoinSearchPath] and tries opening each path until it succeeds.
+// When
 // flag has the [os.O_CREATE] bit set, OpenFile will create any necessary
 // directories if they don't already exist.
 func (d DirType) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
-	// Don't use search paths when writing.
-	if flag&os.O_RDONLY == 0 {
+	// Don't use search paths when writing. O_RDONLY is 0 on most
+	// platforms, so check for the absence of the write flags instead.
+	if flag&(os.O_WRONLY|os.O_RDWR) != 0 {
 		absPath, err := d.JoinPath(name)
 		if err != nil {
 			return nil, err
@@ -189,8 +214,8 @@ func (d DirType) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, er
 	}
 
 	var errs []error
-	for _, dir := range search {
-		f, err := mkdirOpenFile(filepath.Join(dir, name), flag, perm)
+	for _, path := range search {
+		f, err := mkdirOpenFile(path, flag, perm)
 		if err == nil {
 			return f, nil
 		}
