@@ -27,14 +27,14 @@ runs:
       run: gh auth setup-git
 
     - name: Authenticate with GCP (via Workload Federation)
-      uses: google-github-actions/auth@v2
+      uses: google-github-actions/auth@v3
       with:
         workload_identity_provider: projects/744310309265/locations/global/workloadIdentityPools/gha-oidc-pool/providers/gha-oidc-provider
         service_account: ext-gha-opensource@${{ inputs.gcp_project }}.iam.gserviceaccount.com
         token_format: access_token
 
     - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
+      uses: google-github-actions/setup-gcloud@v3
       with:
         project_id: ${{ inputs.gcp_project }}
 
@@ -43,7 +43,7 @@ runs:
       run: gcloud auth configure-docker ${{ inputs.registry }}
 
     - name: Install Devbox
-      uses: jetify-com/devbox-install-action@v0.13.0
+      uses: jetify-com/devbox-install-action@v0.16.0
       with:
         enable-cache: true
         project-path: ${{ inputs.template }}
