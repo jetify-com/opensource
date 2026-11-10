@@ -44,6 +44,7 @@ require (
 	github.com/klauspost/compress v1.20.4 // indirect
 	github.com/mattn/go-colorable v0.1.16 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
+	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/spf13/pflag v1.1.0 // indirect
 	github.com/ulikunitz/xz v0.5.17 // indirect
 	go.yaml.in/yaml/v3 v3.0.6 // indirect
