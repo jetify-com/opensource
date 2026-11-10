@@ -8,6 +8,7 @@ import (
 
 func TestDirTypeJoinPath(t *testing.T) {
 	t.Run("User", func(t *testing.T) {
+		skipIfSystemUser(t)
 		dt := DirType{
 			System:      "/var/cache",
 			User:        "/home/user/custom",
@@ -27,6 +28,7 @@ func TestDirTypeJoinPath(t *testing.T) {
 	})
 
 	t.Run("UserDefault", func(t *testing.T) {
+		skipIfSystemUser(t)
 		t.Setenv("TEST_XDG_CACHE_HOME", "")
 
 		dt := DirType{
@@ -72,6 +74,7 @@ func TestDirTypeJoinPath(t *testing.T) {
 
 func TestDirTypeWriteFile(t *testing.T) {
 	t.Run("User", func(t *testing.T) {
+		skipIfSystemUser(t)
 		systemDir := t.TempDir()
 		userDir := t.TempDir()
 		userDefaultDir := t.TempDir()
@@ -102,6 +105,7 @@ func TestDirTypeWriteFile(t *testing.T) {
 	})
 
 	t.Run("UserDefault", func(t *testing.T) {
+		skipIfSystemUser(t)
 		t.Setenv("TEST_XDG_CACHE_HOME", "")
 
 		systemDir := t.TempDir()
@@ -164,4 +168,14 @@ func TestDirTypeWriteFile(t *testing.T) {
 			t.Errorf("ReadFile(%q) = %q, want %q", fullPath, got, data)
 		}
 	})
+}
+
+// skipIfSystemUser skips tests that exercise the non-system-user code paths
+// when the test process itself is running as a system user (for example, as
+// root inside a container).
+func skipIfSystemUser(t *testing.T) {
+	t.Helper()
+	if isSystemUser() {
+		t.Skip("test requires running as a non-system user")
+	}
 }
