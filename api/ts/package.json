@@ -34,12 +34,13 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@typescript-eslint/parser": "^8.72.2",
-    "eslint": "^9.39.5",
-    "eslint-config-prettier": "^9.1.2",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.10",
-    "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "tsup": "^9.0.0",
+    "typescript": "^6.0.3"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^1.10.1",
