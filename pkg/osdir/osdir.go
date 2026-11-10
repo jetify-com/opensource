@@ -153,12 +153,14 @@ func (d DirType) JoinSearchPath(path string) ([]string, error) {
 		joined = append(joined, firstPath)
 	}
 
-	search := filepath.SplitList(cmp.Or(d.Search, d.SearchDefault))
+	// Expand Search before deciding whether to fall back to SearchDefault so
+	// that an unset variable (such as $XDG_CONFIG_DIRS) uses the default.
+	search := searchDirs(d.Search)
+	if len(search) == 0 {
+		search = searchDirs(d.SearchDefault)
+	}
 	for _, basepath := range search {
-		basepath = expand(basepath)
-		if filepath.IsAbs(basepath) {
-			joined = append(joined, filepath.Join(basepath, path))
-		}
+		joined = append(joined, filepath.Join(basepath, path))
 	}
 	if len(joined) == 0 {
 		return nil, fmt.Errorf("no suitable directory")
@@ -167,13 +169,14 @@ func (d DirType) JoinSearchPath(path string) ([]string, error) {
 }
 
 // OpenFile calls [DirType.JoinPath] with the given filename and opens the
-// resulting path. When flag has the [os.O_RDONLY] bit set, OpenFile calls
-// [DirType.JoinSearchPath] and tries opening each path until it succeeds. When
-// flag has the [os.O_CREATE] bit set, OpenFile will create any necessary
-// directories if they don't already exist.
+// resulting path. When flag is read-only (neither [os.O_WRONLY] nor [os.O_RDWR]
+// is set), OpenFile calls [DirType.JoinSearchPath] and tries opening each path
+// until it succeeds. When flag has the [os.O_CREATE] bit set, OpenFile will
+// create any necessary directories if they don't already exist.
 func (d DirType) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
 	// Don't use search paths when writing.
-	if flag&os.O_RDONLY == 0 {
+	// os.O_RDONLY is 0, so check for the write bits instead.
+	if flag&(os.O_WRONLY|os.O_RDWR) != 0 {
 		absPath, err := d.JoinPath(name)
 		if err != nil {
 			return nil, err
@@ -189,8 +192,8 @@ func (d DirType) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, er
 	}
 
 	var errs []error
-	for _, dir := range search {
-		f, err := mkdirOpenFile(filepath.Join(dir, name), flag, perm)
+	for _, path := range search {
+		f, err := mkdirOpenFile(path, flag, perm)
 		if err == nil {
 			return f, nil
 		}
@@ -248,6 +251,19 @@ func expand(path string) string {
 		return ""
 	}
 	return expanded
+}
+
+// searchDirs splits a list of directories, expands each one with [expand], and
+// returns the ones that are absolute paths.
+func searchDirs(list string) []string {
+	var dirs []string
+	for _, dir := range filepath.SplitList(list) {
+		dir = expand(dir)
+		if filepath.IsAbs(dir) {
+			dirs = append(dirs, dir)
+		}
+	}
+	return dirs
 }
 
 // mkdirOpenFile opens a file and creates any missing parent directories if flag
