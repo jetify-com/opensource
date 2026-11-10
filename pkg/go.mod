@@ -1,54 +1,51 @@
 module go.jetify.com/pkg
 
-go 1.25.0
+go 1.26.0
 
 require (
-	connectrpc.com/connect v1.19.1
-	github.com/bmatcuk/doublestar/v4 v4.9.1
+	connectrpc.com/connect v1.21.1
+	github.com/bmatcuk/doublestar/v4 v4.10.4
 	github.com/cavaliergopher/grab/v3 v3.0.1
-	github.com/codeclysm/extract/v4 v4.0.0
-	github.com/coreos/go-oidc/v3 v3.17.0
-	github.com/fatih/color v1.18.0
-	github.com/go-jose/go-jose/v4 v4.1.6
-	github.com/goccy/go-yaml v1.19.0
+	github.com/codeclysm/extract/v4 v4.0.2
+	github.com/coreos/go-oidc/v3 v3.21.0
+	github.com/fatih/color v1.19.0
+	github.com/go-jose/go-jose/v4 v4.1.9
+	github.com/goccy/go-yaml v1.19.2
 	github.com/google/go-github/v74 v74.0.0
-	github.com/google/renameio/v2 v2.0.1
+	github.com/google/renameio/v2 v2.0.2
 	github.com/gosimple/slug v1.15.0
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
 	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f
 	github.com/k0kubun/pp v3.0.1+incompatible
-	github.com/lmittmann/tint v1.1.2
-	github.com/mattn/go-isatty v0.0.20
-	github.com/pelletier/go-toml/v2 v2.2.4
+	github.com/lmittmann/tint v1.2.1
+	github.com/mattn/go-isatty v0.0.24
+	github.com/pelletier/go-toml/v2 v2.4.3
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.10.1
-	github.com/stretchr/testify v1.11.1
-	github.com/tailscale/hujson v0.0.0-20250605163823-992244df8c5a
+	github.com/spf13/cobra v1.10.2
+	github.com/stretchr/testify v1.12.1
+	github.com/tailscale/hujson v0.0.0-20260727124030-b80ff77dac4f
 	go.jetify.com/typeid/v2 v2.0.0-alpha.3
-	golang.org/x/oauth2 v0.33.0
-	golang.org/x/sys v0.47.0
-	google.golang.org/protobuf v1.36.10
-	gopkg.in/dnaeon/go-vcr.v4 v4.0.6
+	golang.org/x/oauth2 v0.38.0
+	golang.org/x/sys v0.50.0
+	google.golang.org/protobuf v1.36.12
+	gopkg.in/dnaeon/go-vcr.v4 v4.0.7
 )
 
 require (
-	github.com/arduino/go-paths-helper v1.13.1 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gofrs/uuid/v5 v5.4.0 // indirect
+	github.com/gofrs/uuid/v5 v5.5.1 // indirect
 	github.com/google/btree v1.1.3 // indirect
-	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/juju/errors v1.0.0 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
-	github.com/klauspost/compress v1.20.2 // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/klauspost/compress v1.20.4 // indirect
+	github.com/mattn/go-colorable v0.1.16 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/ulikunitz/xz v0.5.15 // indirect
-	go.yaml.in/yaml/v4 v4.0.0-rc.3 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	github.com/spf13/pflag v1.1.0 // indirect
+	github.com/ulikunitz/xz v0.5.17 // indirect
+	go.yaml.in/yaml/v3 v3.0.6 // indirect
+	go.yaml.in/yaml/v4 v4.0.0 // indirect
 )
