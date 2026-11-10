@@ -8,6 +8,9 @@ import (
 	"testing"
 )
 
+// testFileName is the file name used by the ReadFile tests.
+const testFileName = "test.txt"
+
 // skipIfSystemUser skips tests that exercise the non-system user directories,
 // which are never used when the test process is running as the system user
 // (for example, as root).
@@ -187,8 +190,6 @@ func TestDirTypeWriteFile(t *testing.T) {
 }
 
 func TestDirTypeReadFile(t *testing.T) {
-	const name = "test.txt"
-
 	t.Run("SearchFallback", func(t *testing.T) {
 		skipIfSystemUser(t)
 
@@ -201,17 +202,9 @@ func TestDirTypeReadFile(t *testing.T) {
 		}
 
 		want := []byte("from search dir")
-		if err := os.WriteFile(filepath.Join(searchDir, name), want, 0o600); err != nil {
-			t.Fatal(err)
-		}
+		writeTestFile(t, searchDir, want)
 
-		got, err := dt.ReadFile(name)
-		if err != nil {
-			t.Fatalf("ReadFile(%q) error = %v", name, err)
-		}
-		if string(got) != string(want) {
-			t.Errorf("ReadFile(%q) = %q, want %q", name, got, want)
-		}
+		checkReadFile(t, dt, want)
 	})
 
 	t.Run("SearchDefaultFallback", func(t *testing.T) {
@@ -229,17 +222,9 @@ func TestDirTypeReadFile(t *testing.T) {
 		}
 
 		want := []byte("from second search dir")
-		if err := os.WriteFile(filepath.Join(searchDir2, name), want, 0o600); err != nil {
-			t.Fatal(err)
-		}
+		writeTestFile(t, searchDir2, want)
 
-		got, err := dt.ReadFile(name)
-		if err != nil {
-			t.Fatalf("ReadFile(%q) error = %v", name, err)
-		}
-		if string(got) != string(want) {
-			t.Errorf("ReadFile(%q) = %q, want %q", name, got, want)
-		}
+		checkReadFile(t, dt, want)
 	})
 
 	t.Run("UserWins", func(t *testing.T) {
@@ -254,20 +239,10 @@ func TestDirTypeReadFile(t *testing.T) {
 		}
 
 		want := []byte("from user dir")
-		if err := os.WriteFile(filepath.Join(userDir, name), want, 0o600); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(filepath.Join(searchDir, name), []byte("from search dir"), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		writeTestFile(t, userDir, want)
+		writeTestFile(t, searchDir, []byte("from search dir"))
 
-		got, err := dt.ReadFile(name)
-		if err != nil {
-			t.Fatalf("ReadFile(%q) error = %v", name, err)
-		}
-		if string(got) != string(want) {
-			t.Errorf("ReadFile(%q) = %q, want %q", name, got, want)
-		}
+		checkReadFile(t, dt, want)
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
@@ -278,10 +253,7 @@ func TestDirTypeReadFile(t *testing.T) {
 			User:   t.TempDir(),
 			Search: t.TempDir(),
 		}
-		_, err := dt.ReadFile(name)
-		if !errors.Is(err, fs.ErrNotExist) {
-			t.Errorf("ReadFile(%q) error = %v, want %v", name, err, fs.ErrNotExist)
-		}
+		checkReadFileNotExist(t, dt)
 	})
 
 	t.Run("SystemIgnoresSearch", func(t *testing.T) {
@@ -295,25 +267,38 @@ func TestDirTypeReadFile(t *testing.T) {
 			User:   t.TempDir(),
 			Search: searchDir,
 		}
-		if err := os.WriteFile(filepath.Join(searchDir, name), []byte("from search dir"), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		writeTestFile(t, searchDir, []byte("from search dir"))
 
-		_, err := dt.ReadFile(name)
-		if !errors.Is(err, fs.ErrNotExist) {
-			t.Errorf("ReadFile(%q) error = %v, want %v", name, err, fs.ErrNotExist)
-		}
+		checkReadFileNotExist(t, dt)
 
 		want := []byte("from system dir")
-		if err := os.WriteFile(filepath.Join(systemDir, name), want, 0o600); err != nil {
-			t.Fatal(err)
-		}
-		got, err := dt.ReadFile(name)
-		if err != nil {
-			t.Fatalf("ReadFile(%q) error = %v", name, err)
-		}
-		if string(got) != string(want) {
-			t.Errorf("ReadFile(%q) = %q, want %q", name, got, want)
-		}
+		writeTestFile(t, systemDir, want)
+		checkReadFile(t, dt, want)
 	})
+}
+
+func writeTestFile(t *testing.T, dir string, data []byte) {
+	t.Helper()
+	if err := os.WriteFile(filepath.Join(dir, testFileName), data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func checkReadFile(t *testing.T, dt DirType, want []byte) {
+	t.Helper()
+	got, err := dt.ReadFile(testFileName)
+	if err != nil {
+		t.Fatalf("ReadFile(%q) error = %v", testFileName, err)
+	}
+	if string(got) != string(want) {
+		t.Errorf("ReadFile(%q) = %q, want %q", testFileName, got, want)
+	}
+}
+
+func checkReadFileNotExist(t *testing.T, dt DirType) {
+	t.Helper()
+	_, err := dt.ReadFile(testFileName)
+	if !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("ReadFile(%q) error = %v, want %v", testFileName, err, fs.ErrNotExist)
+	}
 }
