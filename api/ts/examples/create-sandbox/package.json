@@ -11,9 +11,9 @@
   "author": "Jetify Inc.",
   "license": "Apache-2.0",
   "dependencies": {
-    "@bufbuild/protobuf": "^1.10.0",
-    "@connectrpc/connect": "^1.4.0",
-    "@connectrpc/connect-web": "^1.4.0",
+    "@bufbuild/protobuf": "^1.10.1",
+    "@connectrpc/connect": "^1.7.0",
+    "@connectrpc/connect-web": "^1.7.0",
     "@jetify/client": "link:../../dist"
   }
 }
