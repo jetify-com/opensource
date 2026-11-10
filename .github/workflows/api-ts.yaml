@@ -5,6 +5,9 @@ on:
     paths:
       - "api/ts/**"
 
+permissions:
+  contents: read
+
 jobs:
   check-and-build:
     runs-on: ubuntu-latest

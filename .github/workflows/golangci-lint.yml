@@ -7,6 +7,9 @@ on:
       - main
       - master
 
+permissions:
+  contents: read
+
 env:
   GO_VERSION: stable
   GOLANGCI_LINT_VERSION: latest
