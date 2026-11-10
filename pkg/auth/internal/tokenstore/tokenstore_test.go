@@ -1,6 +1,7 @@
 package tokenstore
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -269,4 +270,92 @@ func TestIssuerSlug(t *testing.T) {
 			t.Errorf("issuerSlug(%q) = %q, want %q", in, got, want)
 		}
 	}
+}
+
+// writeRaw writes tokens directly to the store file, bypassing WriteToken's
+// validation, to simulate a store that already holds bad tokens.
+func writeRaw(t *testing.T, s *Store, tokens ...*session.Token) {
+	t.Helper()
+	path := s.path(testIssuer, testClientID)
+	if err := ensureDir(path); err != nil {
+		t.Fatal(err)
+	}
+	err := writeJSONFile(path, storeData{
+		Version: storeDataVersion,
+		Tokens:  tokens,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func assertStoredAccessTokens(t *testing.T, s *Store, want ...string) {
+	t.Helper()
+	toks, err := s.ReadTokens(testIssuer, testClientID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertAccessTokens(t, toks, want...)
+}
+
+func TestWriteTokenRejectsTokenWithoutClaims(t *testing.T) {
+	cases := map[string]*session.Token{
+		"no id token":   {Token: oauth2.Token{AccessToken: "x"}},
+		"malformed":     {Token: oauth2.Token{AccessToken: "x"}, IDToken: "not-a-jwt"},
+		"empty subject": newToken(t, "", "x"),
+	}
+	for name, tok := range cases {
+		for _, makeDefault := range []bool{true, false} {
+			t.Run(fmt.Sprintf("%s/makeDefault=%v", name, makeDefault), func(t *testing.T) {
+				s := newStore(t)
+				writeRaw(t, s, newToken(t, "alice", "a1"))
+
+				if err := s.WriteToken(testIssuer, testClientID, tok, makeDefault); err == nil {
+					t.Fatal("WriteToken succeeded, want error")
+				}
+				// The store is left untouched.
+				assertStoredAccessTokens(t, s, "a1")
+			})
+		}
+	}
+}
+
+func TestWriteTokenNoStoreFileRejectsTokenWithoutClaims(t *testing.T) {
+	s := newStore(t)
+	tok := &session.Token{Token: oauth2.Token{AccessToken: "x"}}
+	if err := s.WriteToken(testIssuer, testClientID, tok, true); err == nil {
+		t.Fatal("WriteToken succeeded, want error")
+	}
+	if _, err := os.Stat(s.path(testIssuer, testClientID)); !os.IsNotExist(err) {
+		t.Errorf("store file exists after rejected write: %v", err)
+	}
+}
+
+func TestWriteTokenDropsStoredTokensWithoutClaims(t *testing.T) {
+	stored := func(t *testing.T) []*session.Token {
+		return []*session.Token{
+			newToken(t, "alice", "a1"),
+			{Token: oauth2.Token{AccessToken: "no-id"}},
+			newToken(t, "bob", "b1"),
+			{Token: oauth2.Token{AccessToken: "bad-id"}, IDToken: "not-a-jwt"},
+		}
+	}
+
+	t.Run("make default", func(t *testing.T) {
+		s := newStore(t)
+		writeRaw(t, s, stored(t)...)
+		if err := s.WriteToken(testIssuer, testClientID, newToken(t, "bob", "b2"), true); err != nil {
+			t.Fatal(err)
+		}
+		assertStoredAccessTokens(t, s, "b2", "a1")
+	})
+
+	t.Run("replace", func(t *testing.T) {
+		s := newStore(t)
+		writeRaw(t, s, stored(t)...)
+		if err := s.WriteToken(testIssuer, testClientID, newToken(t, "bob", "b2"), false); err != nil {
+			t.Fatal(err)
+		}
+		assertStoredAccessTokens(t, s, "a1", "b2")
+	})
 }

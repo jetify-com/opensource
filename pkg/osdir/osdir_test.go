@@ -5,19 +5,16 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 )
 
-// testFileName is the file name used by the ReadFile tests.
-const testFileName = "test.txt"
-
-// skipIfSystemUser skips tests that exercise the non-system user directories,
-// which are never used when the test process is running as the system user
-// (for example, as root).
+// skipIfSystemUser skips tests that exercise the user or search directories,
+// which aren't used when running as the system user (such as root).
 func skipIfSystemUser(t *testing.T) {
 	t.Helper()
 	if isSystemUser() {
-		t.Skip("skipping user directory test when running as the system user")
+		t.Skip("skipping test of user directories when running as the system user")
 	}
 }
 
@@ -189,159 +186,178 @@ func TestDirTypeWriteFile(t *testing.T) {
 	})
 }
 
-func TestDirTypeReadFile(t *testing.T) {
-	t.Run("SearchFallback", func(t *testing.T) {
-		skipIfSystemUser(t)
+// writeTestFile creates the file at path, including any parent directories.
+func writeTestFile(t *testing.T, path string, data []byte) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
 
-		userDir := t.TempDir()
-		searchDir := t.TempDir()
-		dt := DirType{
-			System: t.TempDir(),
-			User:   userDir,
-			Search: searchDir,
+func TestDirTypeSubSearch(t *testing.T) {
+	// testSub checks that a file existing only under the first search
+	// directory's subdirectory is found with both Sub and a joined path.
+	testSub := func(t *testing.T, dt DirType, first, second string) {
+		t.Helper()
+
+		data := []byte("hello world")
+		writeTestFile(t, filepath.Join(first, "app", "config.json"), data)
+
+		sub := dt.Sub("app")
+		got, err := sub.ReadFile("config.json")
+		if err != nil {
+			t.Fatalf("Sub(%q).ReadFile(%q) error = %v", "app", "config.json", err)
+		}
+		if string(got) != string(data) {
+			t.Errorf("Sub(%q).ReadFile(%q) = %q, want %q", "app", "config.json", got, data)
 		}
 
-		want := []byte("from search dir")
-		writeTestFile(t, searchDir, want)
+		got, err = dt.ReadFile("app/config.json")
+		if err != nil {
+			t.Fatalf("ReadFile(%q) error = %v", "app/config.json", err)
+		}
+		if string(got) != string(data) {
+			t.Errorf("ReadFile(%q) = %q, want %q", "app/config.json", got, data)
+		}
 
-		checkReadFile(t, dt, want)
-	})
+		paths, err := sub.JoinSearchPath("config.json")
+		if err != nil {
+			t.Fatalf("Sub(%q).JoinSearchPath(%q) error = %v", "app", "config.json", err)
+		}
+		want := []string{
+			filepath.Join(dt.User, "app", "config.json"),
+			filepath.Join(first, "app", "config.json"),
+			filepath.Join(second, "app", "config.json"),
+		}
+		if !slices.Equal(paths, want) {
+			t.Errorf("Sub(%q).JoinSearchPath(%q) = %q, want %q", "app", "config.json", paths, want)
+		}
+	}
 
-	t.Run("SearchDefaultFallback", func(t *testing.T) {
+	t.Run("SearchDefault", func(t *testing.T) {
 		skipIfSystemUser(t)
-		t.Setenv("TEST_XDG_CONFIG_DIRS", "")
 
-		userDir := t.TempDir()
-		searchDir1 := t.TempDir()
-		searchDir2 := t.TempDir()
+		first, second := t.TempDir(), t.TempDir()
 		dt := DirType{
 			System:        t.TempDir(),
-			User:          userDir,
-			Search:        "$TEST_XDG_CONFIG_DIRS",
-			SearchDefault: searchDir1 + string(filepath.ListSeparator) + searchDir2,
+			User:          t.TempDir(),
+			SearchDefault: first + string(filepath.ListSeparator) + second,
 		}
-
-		want := []byte("from second search dir")
-		writeTestFile(t, searchDir2, want)
-
-		checkReadFile(t, dt, want)
+		testSub(t, dt, first, second)
 	})
 
 	t.Run("SearchEnvList", func(t *testing.T) {
 		skipIfSystemUser(t)
 
-		searchDir1 := t.TempDir()
-		searchDir2 := t.TempDir()
-		t.Setenv("TEST_XDG_CONFIG_DIRS", searchDir1+string(filepath.ListSeparator)+searchDir2)
+		first, second := t.TempDir(), t.TempDir()
+		t.Setenv("TEST_XDG_CONFIG_DIRS", first+string(filepath.ListSeparator)+second)
 		dt := DirType{
 			System:        t.TempDir(),
 			User:          t.TempDir(),
 			Search:        "$TEST_XDG_CONFIG_DIRS",
 			SearchDefault: t.TempDir(),
 		}
-
-		want := []byte("from second dir in env list")
-		writeTestFile(t, searchDir2, want)
-		checkReadFile(t, dt, want)
+		testSub(t, dt, first, second)
 	})
+}
 
-	t.Run("SubEnvList", func(t *testing.T) {
-		skipIfSystemUser(t)
+func TestDirTypeSubSearchEnv(t *testing.T) {
+	skipIfSystemUser(t)
 
-		// With a two-directory env value, Sub must apply the subdirectory to
-		// both entries: the first dir's "app" file wins over the second's,
-		// and a file outside "app" in the first dir must not be found.
-		searchDir1 := t.TempDir()
-		searchDir2 := t.TempDir()
-		t.Setenv("TEST_XDG_CONFIG_DIRS", searchDir1+string(filepath.ListSeparator)+searchDir2)
-		dt := DirType{
-			System: t.TempDir(),
-			User:   t.TempDir(),
-			Search: "$TEST_XDG_CONFIG_DIRS",
-		}.Sub("app")
+	search := t.TempDir()
+	user := t.TempDir()
+	t.Setenv("TEST_APP", "app")
+	dt := DirType{
+		System:        t.TempDir(),
+		User:          user,
+		SearchDefault: search,
+	}.Sub("$TEST_APP")
 
-		writeTestFile(t, searchDir1, []byte("other app's file"))
-		if err := os.Mkdir(filepath.Join(searchDir1, "app"), 0o700); err != nil {
-			t.Fatal(err)
+	got, err := dt.JoinSearchPath("config.json")
+	if err != nil {
+		t.Fatalf("JoinSearchPath(%q) error = %v", "config.json", err)
+	}
+	want := []string{
+		filepath.Join(user, "app", "config.json"),
+		filepath.Join(search, "app", "config.json"),
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("JoinSearchPath(%q) = %q, want %q", "config.json", got, want)
+	}
+}
+
+func TestDirTypeReadFileInvalidPath(t *testing.T) {
+	skipIfSystemUser(t)
+	t.Setenv("TEST_EMPTY_USER", "")
+
+	// The secret file is outside the search directory, and the user
+	// directory is unavailable so that only the search directory is used.
+	root := t.TempDir()
+	writeTestFile(t, filepath.Join(root, "secret"), []byte("secret"))
+	dt := DirType{
+		User:          "$TEST_EMPTY_USER",
+		SearchDefault: filepath.Join(root, "search"),
+	}
+	if err := os.Mkdir(dt.SearchDefault, 0o700); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, name := range []string{"../secret", "/etc/passwd", ""} {
+		if got, err := dt.ReadFile(name); err == nil {
+			t.Errorf("ReadFile(%q) = %q, want error", name, got)
 		}
-		if err := os.Mkdir(filepath.Join(searchDir2, "app"), 0o700); err != nil {
-			t.Fatal(err)
+		if got, err := dt.JoinSearchPath(name); err == nil {
+			t.Errorf("JoinSearchPath(%q) = %q, want error", name, got)
 		}
-		want := []byte("first dir app file")
-		writeTestFile(t, filepath.Join(searchDir1, "app"), want)
-		writeTestFile(t, filepath.Join(searchDir2, "app"), []byte("second dir app file"))
-		checkReadFile(t, dt, want)
-	})
+	}
+}
 
-	t.Run("SubDefaultList", func(t *testing.T) {
+func TestDirTypeOpenFileCreateSkipsSearch(t *testing.T) {
+	skipIfSystemUser(t)
+	t.Setenv("TEST_EMPTY_USER", "")
+
+	search := t.TempDir()
+	dt := DirType{
+		User:          "$TEST_EMPTY_USER",
+		SearchDefault: search,
+	}
+
+	// With no usable user directory, O_CREATE must fail instead of
+	// creating the file in a search directory.
+	f, err := dt.OpenFile("new.txt", os.O_RDONLY|os.O_CREATE, 0o600)
+	if err == nil {
+		_ = f.Close()
+		t.Errorf("OpenFile(%q, O_RDONLY|O_CREATE) succeeded, want error", "new.txt")
+	}
+	if _, err := os.Stat(filepath.Join(search, "new.txt")); err == nil {
+		t.Errorf("OpenFile created %q in a search directory", "new.txt")
+	}
+}
+
+// testFileName is the file name used by the TestDirTypeReadFile tests.
+const testFileName = "test.txt"
+
+func TestDirTypeReadFile(t *testing.T) {
+	t.Run("SearchDefaultFallback", func(t *testing.T) {
 		skipIfSystemUser(t)
 		t.Setenv("TEST_XDG_CONFIG_DIRS", "")
 
-		searchDir1 := t.TempDir()
-		searchDir2 := t.TempDir()
+		// Search is set but expands to nothing (like an unset
+		// $XDG_CONFIG_DIRS), so SearchDefault must be used.
+		searchDir := t.TempDir()
 		dt := DirType{
 			System:        t.TempDir(),
 			User:          t.TempDir(),
 			Search:        "$TEST_XDG_CONFIG_DIRS",
-			SearchDefault: searchDir1 + string(filepath.ListSeparator) + searchDir2,
-		}.Sub("app").Sub("nested")
-
-		if err := os.MkdirAll(filepath.Join(searchDir1, "app", "nested"), 0o700); err != nil {
-			t.Fatal(err)
+			SearchDefault: searchDir,
 		}
-		want := []byte("first default dir nested file")
-		writeTestFile(t, filepath.Join(searchDir1, "app", "nested"), want)
+
+		want := []byte("from search default")
+		writeTestFile(t, filepath.Join(searchDir, testFileName), want)
 		checkReadFile(t, dt, want)
-	})
-
-	t.Run("RejectsTraversal", func(t *testing.T) {
-		skipIfSystemUser(t)
-
-		// Put a file one level above the search dir so that an unvalidated
-		// "../" path would find it.
-		parent := t.TempDir()
-		searchDir := filepath.Join(parent, "search")
-		if err := os.Mkdir(searchDir, 0o700); err != nil {
-			t.Fatal(err)
-		}
-		writeTestFile(t, parent, []byte("outside"))
-		dt := DirType{
-			System: t.TempDir(),
-			User:   t.TempDir(),
-			Search: searchDir,
-		}
-
-		for _, name := range []string{"../" + testFileName, "/" + testFileName} {
-			if _, err := dt.ReadFile(name); err == nil {
-				t.Errorf("ReadFile(%q) error = nil, want invalid path error", name)
-			}
-		}
-	})
-
-	t.Run("CreateIgnoresSearch", func(t *testing.T) {
-		skipIfSystemUser(t)
-
-		// Make the user directory unusable (it's a regular file) so that a
-		// create that fell through to the search dirs would succeed there.
-		userDir := filepath.Join(t.TempDir(), "user")
-		if err := os.WriteFile(userDir, nil, 0o600); err != nil {
-			t.Fatal(err)
-		}
-		searchDir := t.TempDir()
-		dt := DirType{
-			System: t.TempDir(),
-			User:   userDir,
-			Search: searchDir,
-		}
-
-		f, err := dt.OpenFile(testFileName, os.O_RDONLY|os.O_CREATE, 0o600)
-		if err == nil {
-			_ = f.Close()
-			t.Errorf("OpenFile(%q, O_RDONLY|O_CREATE) error = nil, want error for unusable user dir", testFileName)
-		}
-		if _, err := os.Stat(filepath.Join(searchDir, testFileName)); !errors.Is(err, fs.ErrNotExist) {
-			t.Errorf("file created in search dir: stat error = %v", err)
-		}
 	})
 
 	t.Run("UserWins", func(t *testing.T) {
@@ -356,9 +372,8 @@ func TestDirTypeReadFile(t *testing.T) {
 		}
 
 		want := []byte("from user dir")
-		writeTestFile(t, userDir, want)
-		writeTestFile(t, searchDir, []byte("from search dir"))
-
+		writeTestFile(t, filepath.Join(userDir, testFileName), want)
+		writeTestFile(t, filepath.Join(searchDir, testFileName), []byte("from search dir"))
 		checkReadFile(t, dt, want)
 	})
 
@@ -384,21 +399,13 @@ func TestDirTypeReadFile(t *testing.T) {
 			User:   t.TempDir(),
 			Search: searchDir,
 		}
-		writeTestFile(t, searchDir, []byte("from search dir"))
-
+		writeTestFile(t, filepath.Join(searchDir, testFileName), []byte("from search dir"))
 		checkReadFileNotExist(t, dt)
 
 		want := []byte("from system dir")
-		writeTestFile(t, systemDir, want)
+		writeTestFile(t, filepath.Join(systemDir, testFileName), want)
 		checkReadFile(t, dt, want)
 	})
-}
-
-func writeTestFile(t *testing.T, dir string, data []byte) {
-	t.Helper()
-	if err := os.WriteFile(filepath.Join(dir, testFileName), data, 0o600); err != nil {
-		t.Fatal(err)
-	}
 }
 
 func checkReadFile(t *testing.T, dt DirType, want []byte) {

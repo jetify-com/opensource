@@ -98,11 +98,12 @@ type DirType struct {
 	// string.
 	SearchDefault string
 
-	// searchSub is a subdirectory added by [DirType.Sub]. It's joined onto
-	// each search directory after Search or SearchDefault is expanded and
-	// split, because an environment variable such as $XDG_CONFIG_DIRS can
-	// itself expand to a list of directories.
-	searchSub string
+	// sub is a relative subdirectory, set by [DirType.Sub], that is joined
+	// onto each search directory after expanding Search or SearchDefault.
+	// Search and SearchDefault are lists that may contain environment
+	// variables that expand to lists, so the subdirectory can't be joined
+	// onto them directly.
+	sub string
 }
 
 // Sub returns a DirType whose paths are subdirectories of d. For example, the
@@ -114,7 +115,7 @@ func (d DirType) Sub(dir string) DirType {
 	d.System = filepath.Join(d.System, dir)
 	d.User = filepath.Join(d.User, dir)
 	d.UserDefault = filepath.Join(d.UserDefault, dir)
-	d.searchSub = filepath.Join(d.searchSub, dir)
+	d.sub = filepath.Join(d.sub, dir)
 	return d
 }
 
@@ -144,12 +145,11 @@ func (d DirType) JoinPath(path string) (string, error) {
 // base directory and search directories of d. The path must be relative and
 // cannot contain any ".." elements.
 func (d DirType) JoinSearchPath(path string) ([]string, error) {
-	// Validate up front: a JoinPath error for a missing user directory is
-	// tolerated below, but an invalid path must never reach the search dirs.
+	// Validate up front because a JoinPath error is otherwise ignored when
+	// only the user directory is unavailable.
 	if err := validPath(path); err != nil {
 		return nil, err
 	}
-
 	firstPath, err := d.JoinPath(path)
 	if isSystemUser() {
 		// No searching for system paths.
@@ -164,14 +164,13 @@ func (d DirType) JoinSearchPath(path string) ([]string, error) {
 		joined = append(joined, firstPath)
 	}
 
-	// Expand Search before deciding whether to fall back to SearchDefault so
-	// that an unset variable (such as $XDG_CONFIG_DIRS) uses the default.
-	search := searchDirs(d.Search, d.searchSub)
-	if len(search) == 0 {
-		search = searchDirs(d.SearchDefault, d.searchSub)
-	}
-	for _, basepath := range search {
-		joined = append(joined, filepath.Join(basepath, path))
+	// Expand the subdirectory the same way User and System are expanded.
+	// If it references an empty variable, there are no search directories.
+	sub := expand(d.sub)
+	if d.sub == "" || sub != "" {
+		for _, basepath := range d.searchDirs() {
+			joined = append(joined, filepath.Join(basepath, sub, path))
+		}
 	}
 	if len(joined) == 0 {
 		return nil, fmt.Errorf("no suitable directory")
@@ -179,16 +178,38 @@ func (d DirType) JoinSearchPath(path string) ([]string, error) {
 	return joined, nil
 }
 
+// searchDirs returns the absolute search directories of d after expanding
+// environment variables. It returns the directories in Search, or
+// SearchDefault if Search is empty or expands to an empty string. Entries
+// may contain environment variables that expand to lists of directories.
+func (d DirType) searchDirs() []string {
+	var dirs []string
+	for _, list := range [...]string{d.Search, d.SearchDefault} {
+		for _, entry := range filepath.SplitList(list) {
+			for _, dir := range filepath.SplitList(expand(entry)) {
+				if filepath.IsAbs(dir) {
+					dirs = append(dirs, dir)
+				}
+			}
+		}
+		if len(dirs) > 0 {
+			break
+		}
+	}
+	return dirs
+}
+
 // OpenFile calls [DirType.JoinPath] with the given filename and opens the
-// resulting path. When flag is read-only (none of [os.O_WRONLY], [os.O_RDWR],
-// [os.O_APPEND], [os.O_CREATE] or [os.O_TRUNC] is set), OpenFile calls
-// [DirType.JoinSearchPath] and tries opening each path until it succeeds. When flag has the [os.O_CREATE] bit set, OpenFile will
-// create any necessary directories if they don't already exist.
+// resulting path. When flag opens the file read-only ([os.O_RDONLY] without
+// any flags that write or create files), OpenFile calls
+// [DirType.JoinSearchPath] and tries opening each path until it succeeds. When
+// flag has the [os.O_CREATE] bit set, OpenFile will create any necessary
+// directories if they don't already exist.
 func (d DirType) OpenFile(name string, flag int, perm fs.FileMode) (*os.File, error) {
-	// Don't use search paths for any flag that can create or modify a file.
-	// os.O_RDONLY is 0, so check for those bits instead.
-	const modifyFlags = os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_CREATE | os.O_TRUNC
-	if flag&modifyFlags != 0 {
+	// Don't use search paths when writing or creating files. O_RDONLY is 0
+	// on most platforms, so check for the absence of these flags instead.
+	const writeFlags = os.O_WRONLY | os.O_RDWR | os.O_CREATE | os.O_TRUNC | os.O_APPEND
+	if flag&writeFlags != 0 {
 		absPath, err := d.JoinPath(name)
 		if err != nil {
 			return nil, err
@@ -263,22 +284,6 @@ func expand(path string) string {
 		return ""
 	}
 	return expanded
-}
-
-// searchDirs splits a list of directories, expands each one with [expand], and
-// returns the ones that are absolute paths, each joined with sub. An entry that
-// expands to a list itself (such as $XDG_CONFIG_DIRS) is split again after
-// expansion.
-func searchDirs(list, sub string) []string {
-	var dirs []string
-	for _, entry := range filepath.SplitList(list) {
-		for _, dir := range filepath.SplitList(expand(entry)) {
-			if filepath.IsAbs(dir) {
-				dirs = append(dirs, filepath.Join(dir, sub))
-			}
-		}
-	}
-	return dirs
 }
 
 // mkdirOpenFile opens a file and creates any missing parent directories if flag

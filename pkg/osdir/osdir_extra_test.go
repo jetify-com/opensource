@@ -30,11 +30,12 @@ func TestSub(t *testing.T) {
 		System:      "/sys/app",
 		User:        "/user/app",
 		UserDefault: "/userdef/app",
-		// Search lists are expanded before the subdirectory is applied to
-		// each entry, so Sub records it separately.
+		// Search and SearchDefault are lists that may contain environment
+		// variables, so the subdirectory is joined onto each search
+		// directory later instead of onto the raw values.
 		Search:        "/search",
 		SearchDefault: "/searchdef",
-		searchSub:     "app",
+		sub:           "app",
 	}
 	if got != want {
 		t.Errorf("Sub() = %+v, want %+v", got, want)
