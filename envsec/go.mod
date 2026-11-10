@@ -50,7 +50,7 @@ require (
 	github.com/creack/pty v1.1.24 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.6 // indirect
 	github.com/goccy/go-yaml v1.19.0 // indirect
-	github.com/gofrs/uuid/v5 v5.4.0 // indirect
+	github.com/gofrs/uuid/v5 v5.5.1 // indirect
 	github.com/google/renameio/v2 v2.0.1 // indirect
 	github.com/gosimple/slug v1.15.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
