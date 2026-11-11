@@ -57,7 +57,7 @@ func (c *Cache[T]) Set(key string, val T, dur time.Duration) error {
 		return errors.WithStack(err)
 	}
 
-	return errors.WithStack(os.WriteFile(c.filename(key), d, 0o644))
+	return writeFile(c.filename(key), d)
 }
 
 // SetWithTime is like Set but it allows the caller to specify the expiration
@@ -68,7 +68,7 @@ func (c *Cache[T]) SetWithTime(key string, val T, t time.Time) error {
 		return errors.WithStack(err)
 	}
 
-	return errors.WithStack(os.WriteFile(c.filename(key), d, 0o644))
+	return writeFile(c.filename(key), d)
 }
 
 // Get retrieves a value from the cache with the given key.
@@ -144,6 +144,6 @@ func IsCacheMiss(err error) bool {
 
 func (c *Cache[T]) filename(key string) string {
 	dir := filepath.Join(c.cacheDir, c.domain)
-	_ = os.MkdirAll(dir, 0o755)
+	_ = os.MkdirAll(dir, 0o700)
 	return filepath.Join(dir, cachehash.Slug(key))
 }

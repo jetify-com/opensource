@@ -296,3 +296,39 @@ func TestIsCacheMiss(t *testing.T) {
 		t.Error("IsCacheMiss(other) = true")
 	}
 }
+
+func TestSetWritesPrivateFiles(t *testing.T) {
+	c := newTestCache[string](t)
+	path := c.filename("secret")
+
+	// Simulate a cache file left behind by an older version with loose perms.
+	if err := os.WriteFile(path, []byte(`{}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := c.Set("secret", "value", time.Hour); err != nil {
+		t.Fatalf("Set() error = %v", err)
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if perm := info.Mode().Perm(); perm != 0o600 {
+		t.Errorf("cache file perm = %o, want 600", perm)
+	}
+
+	dirInfo, err := os.Stat(filepath.Dir(path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if perm := dirInfo.Mode().Perm(); perm != 0o700 {
+		t.Errorf("cache dir perm = %o, want 700", perm)
+	}
+
+	entries, err := os.ReadDir(filepath.Dir(path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 {
+		t.Errorf("cache dir has %d entries, want 1 (temp file leaked?)", len(entries))
+	}
+}
