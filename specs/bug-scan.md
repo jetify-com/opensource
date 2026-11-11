@@ -93,6 +93,7 @@ This is a static review of the code. Every finding was re-read in the source, an
 
 1. **envsec secrets hygiene (#1–3, #6):** add `$` to the name regex, write secret and credential files `0600`, and fix the `--format` default. Each is a one-line fix with high payoff.
 2. **Auth panics (#4, #5):** use a comma-ok assertion for `id_token` and nil-check `IDClaims()` everywhere. Together these unblock token refresh for every Jetify CLI.
+   - ✅ **Fixed** #4, #5 in [jetify-com/opensource#615](https://github.com/jetify-com/opensource/pull/615) (the tokenstore part of #5 was already fixed in [jetify-com/opensource#603](https://github.com/jetify-com/opensource/pull/603)).
 3. **aisdk OpenAI/Anthropic correctness (#7–11):** these break basic tool calling, no-arg tools, and multi-turn reasoning.
 4. **`pkg/osdir` and `runx` (#12–18):** small, contained fixes, each of which should get a regression test.
 5. **SSE hardening (#21, #23–25)**, then the remaining P2 and P3 items.
