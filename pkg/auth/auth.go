@@ -86,7 +86,7 @@ func (c *Client) LoginFlowIfNeededForOrg(
 		return nil, err
 	}
 	for _, session := range sessions {
-		if session.Peek().IDClaims().OrgID == orgID {
+		if claims := session.Peek().IDClaims(); claims != nil && claims.OrgID == orgID {
 			return session.Token(ctx)
 		}
 	}
@@ -173,7 +173,11 @@ func (c *Client) refresh(
 
 	if newToken.AccessToken != tok.AccessToken {
 		tok.Token = *newToken
-		tok.IDToken = newToken.Extra("id_token").(string)
+		// Per OIDC, a refresh response may omit the id_token. In that case
+		// keep the existing one so the session's identity claims survive.
+		if idToken, _ := newToken.Extra("id_token").(string); idToken != "" {
+			tok.IDToken = idToken
+		}
 		err = c.store.WriteToken(c.issuer, c.clientID, tok, false /*makeDefault*/)
 		if err != nil {
 			return tok, err

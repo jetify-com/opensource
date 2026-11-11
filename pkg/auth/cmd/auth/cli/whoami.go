@@ -26,7 +26,11 @@ func WhoAmICmd() *cobra.Command {
 
 			for _, session := range sessions {
 				tok := session.Peek()
-				fmt.Printf("* %s\n", tok.IDClaims().Subject)
+				subject := "<unknown>"
+				if claims := tok.IDClaims(); claims != nil {
+					subject = claims.Subject
+				}
+				fmt.Printf("* %s\n", subject)
 			}
 
 			return nil
