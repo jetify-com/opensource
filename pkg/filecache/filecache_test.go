@@ -332,3 +332,41 @@ func TestSetWritesPrivateFiles(t *testing.T) {
 		t.Errorf("cache dir has %d entries, want 1 (temp file leaked?)", len(entries))
 	}
 }
+
+func TestGetTightensLegacyPermissions(t *testing.T) {
+	c := newTestCache[string](t)
+	if err := c.Set("creds", "secret", time.Hour); err != nil {
+		t.Fatal(err)
+	}
+	path := c.filename("creds")
+	dir := filepath.Dir(path)
+
+	// Simulate a cache written by an older version: 0755 dir, 0644 file.
+	if err := os.Chmod(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(path, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// A valid cache hit must not leave the old permissions in place.
+	val, err := c.Get("creds")
+	if err != nil || val != "secret" {
+		t.Fatalf("Get() = %q, %v; want %q, nil", val, err, "secret")
+	}
+
+	info, err := os.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if perm := info.Mode().Perm(); perm != 0o600 {
+		t.Errorf("cache file perm = %o, want 600", perm)
+	}
+	dirInfo, err := os.Stat(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if perm := dirInfo.Mode().Perm(); perm != 0o700 {
+		t.Errorf("cache dir perm = %o, want 700", perm)
+	}
+}

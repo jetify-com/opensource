@@ -95,11 +95,18 @@ func encodeToDotEnv(m map[string]string) ([]byte, error) {
 // read it. If the file already exists, its permissions are tightened to 0600
 // since it is about to hold secrets.
 func writeSecretFile(path string, contents []byte) error {
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
+	// Don't truncate on open: tighten permissions first so that if Chmod
+	// fails (e.g. the file belongs to another user) the existing contents
+	// are left untouched.
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0o600)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	if err := f.Chmod(0o600); err != nil {
+		_ = f.Close()
+		return errors.WithStack(err)
+	}
+	if err := f.Truncate(0); err != nil {
 		_ = f.Close()
 		return errors.WithStack(err)
 	}

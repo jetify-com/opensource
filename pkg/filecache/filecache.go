@@ -76,8 +76,16 @@ func (c *Cache[T]) Get(key string) (T, error) {
 	path := c.filename(key)
 	resultData := data[T]{}
 
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+	info, err := os.Stat(path)
+	if errors.Is(err, os.ErrNotExist) {
 		return resultData.Val, NotFound
+	}
+	if err == nil && info.Mode().Perm()&0o077 != 0 {
+		// Files written by older versions were 0644. Tighten them on read so
+		// that cached credentials don't stay readable by other users until
+		// they expire and get rewritten. Best effort: if this fails (e.g. the
+		// file belongs to another user) the read below behaves as before.
+		_ = os.Chmod(path, 0o600)
 	}
 
 	content, err := os.ReadFile(path)
@@ -145,5 +153,8 @@ func IsCacheMiss(err error) bool {
 func (c *Cache[T]) filename(key string) string {
 	dir := filepath.Join(c.cacheDir, c.domain)
 	_ = os.MkdirAll(dir, 0o700)
+	// MkdirAll doesn't change an existing directory, and older versions
+	// created it 0755. Tighten it so other users can't reach the files inside.
+	_ = os.Chmod(dir, 0o700)
 	return filepath.Join(dir, cachehash.Slug(key))
 }
