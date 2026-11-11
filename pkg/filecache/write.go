@@ -18,7 +18,7 @@ func writeFile(path string, data []byte) error {
 		return errors.WithStack(err)
 	}
 	tmpName := tmp.Name()
-	defer os.Remove(tmpName) // no-op after a successful rename
+	defer func() { _ = os.Remove(tmpName) }() // no-op after a successful rename
 
 	// CreateTemp already uses 0600, but be explicit.
 	if err := tmp.Chmod(0o600); err != nil {
