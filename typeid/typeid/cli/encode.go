@@ -2,7 +2,7 @@ package cli
 
 import (
 	"github.com/spf13/cobra"
-	"go.jetify.com/typeid"
+	"go.jetify.com/typeid/v2"
 )
 
 func EncodeCmd() *cobra.Command {
@@ -27,7 +27,7 @@ func encodeCmd(cmd *cobra.Command, args []string) error {
 		prefix = args[0]
 		uuid = args[1]
 	}
-	tid, err := typeid.FromUUIDWithPrefix(prefix, uuid)
+	tid, err := typeid.FromUUID(prefix, uuid)
 	if err != nil {
 		return err
 	}

@@ -33,6 +33,6 @@ func resolveCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	pp.Println(registry.ResolveVersion(ref))
+	_, _ = pp.Println(registry.ResolveVersion(ref))
 	return nil
 }

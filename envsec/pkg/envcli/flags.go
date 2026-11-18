@@ -10,12 +10,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"go.jetify.com/envsec/internal/build"
+	"go.jetify.com/envsec/internal/claims"
 	"go.jetify.com/envsec/pkg/envsec"
 	"go.jetify.com/envsec/pkg/stores/jetstore"
 	"go.jetify.com/envsec/pkg/stores/ssmstore"
 	"go.jetify.com/pkg/envvar"
-	"go.jetify.com/pkg/id"
-	"go.jetify.com/typeid"
+	"go.jetify.com/pkg/ids"
 )
 
 // to be composed into xyzCmdFlags structs
@@ -48,7 +48,7 @@ func (f *configFlags) register(cmd *cobra.Command) {
 	)
 }
 
-func (f *configFlags) validateProjectID(orgID id.OrgID) (string, error) {
+func (f *configFlags) validateProjectID(orgID ids.OrgID) (string, error) {
 	if f.projectID != "" {
 		return f.projectID, nil
 	}
@@ -108,10 +108,14 @@ func (f *configFlags) genConfig(cmd *cobra.Command) (*CmdConfig, error) {
 	}
 
 	if tok != nil && f.orgID == "" {
-		f.orgID = tok.IDClaims().OrgID
+		idClaims, err := claims.FromToken(tok)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		f.orgID = idClaims.OrgID
 	}
 
-	orgID, err := typeid.Parse[id.OrgID](f.orgID)
+	orgID, err := ids.ParseOrgID(f.orgID)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

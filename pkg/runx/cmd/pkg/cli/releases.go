@@ -33,6 +33,6 @@ func releasesCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	pp.Println(releases)
+	_, _ = pp.Println(releases)
 	return nil
 }

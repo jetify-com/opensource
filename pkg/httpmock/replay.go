@@ -47,6 +47,10 @@ type ReplayConfig struct {
 	//
 	// Possible values are "unit" and "integration".
 	Mode TestMode
+	// AdditionalIgnoredHeaders specifies additional headers to ignore during recording and replay.
+	// These headers will be added to the default set of ignored headers.
+	// Header names are case-insensitive.
+	AdditionalIgnoredHeaders []string
 }
 
 // TestMode represents how the ReplayServer should handle HTTP interactions
@@ -60,17 +64,13 @@ const (
 )
 
 // NewReplayServer creates a new ReplayServer.
-func NewReplayServer(tester T, config ReplayConfig) (*ReplayServer, error) {
+func NewReplayServer(tester T, config ReplayConfig) *ReplayServer {
 	tester.Helper()
 
 	// Parse and validate the real endpoint we'll proxy to in record mode
 	realURL, err := url.Parse(config.Host)
-	if err != nil {
-		return nil, fmt.Errorf("invalid Host: %v", err)
-	}
-	if realURL.Scheme == "" || realURL.Host == "" {
-		return nil, fmt.Errorf("invalid Host: URL must have scheme and host")
-	}
+	require.NoError(tester, err, "invalid Host URL: %s", config.Host)
+	require.True(tester, realURL.Scheme != "" && realURL.Host != "", "Host URL must have scheme and host, got: %s", config.Host)
 
 	// Create ReplayServer first
 	replayServer := &ReplayServer{
@@ -81,14 +81,12 @@ func NewReplayServer(tester T, config ReplayConfig) (*ReplayServer, error) {
 
 	// Create the recorder
 	rec, err := createRecorder(tester, config)
-	if err != nil {
-		return nil, err
-	}
+	require.NoError(tester, err, "failed to create recorder")
 
 	replayServer.rec = rec
 	replayServer.server = httptest.NewServer(http.HandlerFunc(replayServer.handler))
 
-	return replayServer, nil
+	return replayServer
 }
 
 // handler processes incoming requests by either replaying them from the cassette
@@ -111,7 +109,7 @@ func (rs *ReplayServer) handler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, fmt.Sprintf("request did not match cassette: %v", roundTripErr), http.StatusInternalServerError)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Increment the used interactions counter
 	rs.usedInteractions.Add(1)
@@ -130,21 +128,13 @@ func (rs *ReplayServer) handler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// Close stops the ReplayServer and verifies that all recorded interactions
-// were used.
-func (rs *ReplayServer) Close() error {
-	// Stop the HTTP server first
-	rs.server.Close()
-
-	// Verify that all recorded interactions were used
-	if err := rs.rec.Stop(); err != nil {
-		return err
-	}
-
+// Assert verifies that all recorded interactions were used. This can be called
+// separately from Close() to perform assertions without stopping the server.
+func (rs *ReplayServer) assert() error {
 	// Get the cassette to check if all interactions were used
 	cassette, err := cassette.Load(rs.cassetteName)
 	if err != nil {
-		return fmt.Errorf("failed to load cassette for verification: %v", err)
+		return fmt.Errorf("failed to load cassette for verification: %w", err)
 	}
 
 	// Check if any interactions were not used
@@ -164,6 +154,21 @@ func (rs *ReplayServer) Close() error {
 	return nil
 }
 
+// Close stops the ReplayServer and verifies that all recorded interactions
+// were used.
+func (rs *ReplayServer) Close() {
+	// Stop the HTTP server first
+	rs.server.Close()
+
+	// Verify that all recorded interactions were used
+	err := rs.rec.Stop()
+	require.NoError(rs.t, err, "failed to stop recorder")
+
+	// Verify that all recorded interactions were used
+	err = rs.assert()
+	require.NoError(rs.t, err, "not all recorded interactions were used")
+}
+
 // URL returns the base URL of the replay server.
 func (rs *ReplayServer) URL() string {
 	return rs.server.URL
@@ -171,19 +176,45 @@ func (rs *ReplayServer) URL() string {
 
 var ignoredHeaders = []string{
 	// Sensitive headers:
+	"_csrf",
+	"_csrf_token",
+	"_session",
+	"_xsrf",
+	"Api-Key",
+	"Apikey",
+	"Auth",
 	"Authorization",
-	"Proxy-Authorization",
-	"WWW-Authenticate",
-	"Proxy-Authenticate",
 	"Cookie",
+	"Credentials",
+	"Csrf",
+	"Csrf-Token",
+	"Csrftoken",
+	"Ip-Address",
+	"Passwd",
+	"Password",
+	"Private-Key",
+	"Privatekey",
+	"Proxy-Authorization",
+	"Proxy-Authenticate",
+	"Remote-Addr",
+	"Secret",
+	"Session",
+	"Sessionid",
 	"Set-Cookie",
+	"Token",
+	"User-Session",
+	"WWW-Authenticate",
+	"X-Api-Key",
 	"X-API-Key",
 	"X-Auth-Token",
+	"X-Client-IP",
 	"X-CSRF-Token",
-	"X-Requested-With",
+	"X-Csrftoken",
 	"X-Forwarded-For",
 	"X-Real-IP",
-	"X-Client-IP",
+	"X-Real-Ip",
+	"X-Requested-With",
+	"XSRF-TOKEN",
 
 	// Other headers:
 	"User-Agent",
@@ -210,16 +241,21 @@ func createRecorder(tester T, config ReplayConfig) (*recorder.Recorder, error) {
 		recorderMode = recorder.ModePassthrough
 	}
 
+	allIgnoredHeaders := append(ignoredHeaders, config.AdditionalIgnoredHeaders...)
+
 	rec, err := recorder.New(
 		config.Cassette,
 		recorder.WithMode(recorderMode),
-		recorder.WithHook(removeIgnored, recorder.AfterCaptureHook),
+		recorder.WithHook(func(i *cassette.Interaction) error {
+			return removeIgnoredHeaders(i, allIgnoredHeaders)
+		}, recorder.AfterCaptureHook),
+		recorder.WithHook(decompressGzip, recorder.BeforeSaveHook),
 		recorder.WithMatcher(func(request *http.Request, cassetteRequest cassette.Request) bool {
 			return requireCassetteRequest(tester, cassetteRequest, request)
 		}),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create recorder: %v", err)
+		return nil, fmt.Errorf("failed to create recorder: %w", err)
 	}
 	return rec, nil
 }
@@ -240,15 +276,15 @@ func formatRequestBody(req *http.Request) string {
 	return string(bodyBytes)
 }
 
-// removeIgnored is a recorder hook that removes ignored headers and request fields
+// removeIgnoredHeaders is a recorder hook that removes ignored headers and request fields
 // before they are saved to the cassette.
-func removeIgnored(i *cassette.Interaction) error {
+func removeIgnoredHeaders(i *cassette.Interaction, headersToIgnore []string) error {
 	// Remove request headers
-	for _, header := range ignoredHeaders {
+	for _, header := range headersToIgnore {
 		i.Request.Headers.Del(header)
 	}
 	// Remove response headers
-	for _, header := range ignoredHeaders {
+	for _, header := range headersToIgnore {
 		i.Response.Headers.Del(header)
 	}
 	// Remove remote address from request

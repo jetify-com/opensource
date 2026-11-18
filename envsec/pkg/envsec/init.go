@@ -7,11 +7,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"go.jetify.com/envsec/internal/claims"
 	"go.jetify.com/envsec/internal/flow"
 	"go.jetify.com/envsec/internal/git"
 	"go.jetify.com/pkg/api"
-	"go.jetify.com/pkg/id"
-	"go.jetify.com/typeid"
+	"go.jetify.com/pkg/ids"
 )
 
 var (
@@ -26,8 +26,8 @@ const (
 )
 
 type projectConfig struct {
-	ProjectID id.ProjectID `json:"project_id"`
-	OrgID     id.OrgID     `json:"org_id"`
+	ProjectID ids.ProjectID `json:"project_id"`
+	OrgID     ids.OrgID     `json:"org_id"`
 }
 
 func (e *Envsec) NewProject(ctx context.Context, force bool) error {
@@ -62,7 +62,11 @@ func (e *Envsec) NewProject(ctx context.Context, force bool) error {
 		return err
 	}
 
-	orgID, err := typeid.Parse[id.OrgID](tok.IDClaims().OrgID)
+	idClaims, err := claims.FromToken(tok)
+	if err != nil {
+		return err
+	}
+	orgID, err := ids.ParseOrgID(idClaims.OrgID)
 	if err != nil {
 		return err
 	}
@@ -94,7 +98,7 @@ func (e *Envsec) configName() string {
 	return configName
 }
 
-func (e *Envsec) saveConfig(projectID id.ProjectID, orgID id.OrgID) error {
+func (e *Envsec) saveConfig(projectID ids.ProjectID, orgID ids.OrgID) error {
 	cfg := projectConfig{ProjectID: projectID, OrgID: orgID}
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {

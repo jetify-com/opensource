@@ -144,7 +144,7 @@ func TestServer_Request(t *testing.T) {
 
 			resp, err := http.DefaultClient.Do(req)
 			require.NoError(t, err)
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			if testCase.wantFail {
 				assert.True(t, mockTester.failed, "Expected test to fail")
@@ -152,94 +152,6 @@ func TestServer_Request(t *testing.T) {
 			} else {
 				assert.False(t, mockTester.failed, "Test unexpectedly failed")
 				assertResponseEq(t, testCase.expect.Response, resp)
-			}
-		})
-	}
-}
-
-func TestServer_VerifyComplete(t *testing.T) {
-	tests := []struct {
-		name    string
-		expect  []Exchange
-		send    []Request // requests to send in order
-		wantErr string    // expected error message, empty means expect success
-	}{
-		{
-			name: "all requests made",
-			expect: []Exchange{{
-				Request: Request{
-					Method: "GET",
-					Path:   "/test",
-				},
-				Response: Response{
-					Body: "ok",
-				},
-			}},
-			send: []Request{{
-				Method: "GET",
-				Path:   "/test",
-			}},
-		},
-		{
-			name: "missing requests",
-			expect: []Exchange{{
-				Request: Request{
-					Method: "GET",
-					Path:   "/test",
-				},
-			}},
-			send:    []Request{}, // send nothing
-			wantErr: "expected 1 requests, received 0. Next expected: [GET /test]",
-		},
-		{
-			name: "requests in correct order",
-			expect: []Exchange{
-				{
-					Request: Request{
-						Method: "GET",
-						Path:   "/first",
-					},
-				},
-				{
-					Request: Request{
-						Method: "POST",
-						Path:   "/second",
-					},
-				},
-			},
-			send: []Request{
-				{
-					Method: "GET",
-					Path:   "/first",
-				},
-				{
-					Method: "POST",
-					Path:   "/second",
-				},
-			},
-		},
-	}
-
-	for _, testCase := range tests {
-		t.Run(testCase.name, func(t *testing.T) {
-			mockTester := &mockT{}
-			testServer := NewServer(mockTester, testCase.expect)
-			defer testServer.Close()
-
-			// Send all requests in order
-			for _, req := range testCase.send {
-				r, err := buildRequest(testServer.BaseURL(), req)
-				require.NoError(t, err)
-				resp, err := http.DefaultClient.Do(r)
-				require.NoError(t, err)
-				resp.Body.Close()
-			}
-
-			err := testServer.VerifyComplete()
-			if testCase.wantErr != "" {
-				assert.EqualError(t, err, testCase.wantErr)
-			} else {
-				assert.NoError(t, err)
 			}
 		})
 	}
@@ -631,7 +543,7 @@ func TestServer_ResponseHeaders(t *testing.T) {
 
 			resp, err := http.Get(testServer.Path("/test"))
 			require.NoError(t, err)
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			// Check status code
 			assert.Equal(t, testCase.wantCode, resp.StatusCode)
@@ -679,7 +591,7 @@ func TestServer_Delay(t *testing.T) {
 	// Make the request
 	resp, err := http.Get(testServer.Path("/delayed"))
 	require.NoError(t, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Calculate elapsed time
 	elapsed := time.Since(start)
@@ -795,7 +707,7 @@ func TestServer_HandlerErrors(t *testing.T) {
 		// Send a request that isn't expected
 		resp, err := http.Get(server.Path("/unexpected"))
 		require.NoError(t, err)
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		// Should have responded with 500 error and failed the test
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)

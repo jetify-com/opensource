@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"go.jetify.com/envsec/internal/claims"
 	"go.jetify.com/pkg/api"
 	"go.jetify.com/pkg/auth"
 )
@@ -34,36 +35,39 @@ func (e *Envsec) WhoAmI(
 		return err
 	}
 
-	idClaims := tok.IDClaims()
-
-	fmt.Fprintf(w, "Logged in\n")
-	fmt.Fprintf(w, "User ID: %s\n", idClaims.Subject)
-
-	if idClaims.OrgID != "" {
-		fmt.Fprintf(w, "Org ID: %s\n", idClaims.OrgID)
-	}
-
-	if idClaims.Email != "" {
-		fmt.Fprintf(w, "Email: %s\n", idClaims.Email)
-	}
-
-	if idClaims.Name != "" {
-		fmt.Fprintf(w, "Name: %s\n", idClaims.Name)
-	}
-
-	apiClient := api.NewClient(ctx, e.APIHost, tok)
-
-	member, err := apiClient.GetMember(ctx, tok.IDClaims().Subject)
+	idClaims, err := claims.FromToken(tok)
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(w, "Org name: %s\n", member.Organization.Name)
+	_, _ = fmt.Fprintf(w, "Logged in\n")
+	_, _ = fmt.Fprintf(w, "User ID: %s\n", idClaims.Subject)
+
+	if idClaims.OrgID != "" {
+		_, _ = fmt.Fprintf(w, "Org ID: %s\n", idClaims.OrgID)
+	}
+
+	if idClaims.Email != "" {
+		_, _ = fmt.Fprintf(w, "Email: %s\n", idClaims.Email)
+	}
+
+	if idClaims.Name != "" {
+		_, _ = fmt.Fprintf(w, "Name: %s\n", idClaims.Name)
+	}
+
+	apiClient := api.NewClient(ctx, e.APIHost, tok)
+
+	member, err := apiClient.GetMember(ctx, idClaims.Subject)
+	if err != nil {
+		return err
+	}
+
+	_, _ = fmt.Fprintf(w, "Org name: %s\n", member.Organization.Name)
 
 	if showTokens {
-		fmt.Fprintf(w, "Access Token: %s\n", tok.AccessToken)
-		fmt.Fprintf(w, "ID Token: %s\n", tok.IDToken)
-		fmt.Fprintf(w, "Refresh Token: %s\n", tok.RefreshToken)
+		_, _ = fmt.Fprintf(w, "Access Token: %s\n", tok.AccessToken)
+		_, _ = fmt.Fprintf(w, "ID Token: %s\n", tok.IDToken)
+		_, _ = fmt.Fprintf(w, "Refresh Token: %s\n", tok.RefreshToken)
 	}
 	return nil
 }

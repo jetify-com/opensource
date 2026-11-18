@@ -12,7 +12,7 @@ import (
 
 func Help() {
 	c := color.New(color.FgCyan).Add(color.Underline)
-	c.Println("runx")
+	_, _ = c.Println("runx")
 	fmt.Println()
 	fmt.Println(
 		"Usage: runx [+<org>/<repo>]... [<cmd>] [<args>]...",
@@ -36,7 +36,7 @@ func Execute(ctx context.Context, args []string) int {
 	if *install {
 		paths, err := runx.Install(ctx, args[1:]...)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err)
 			return 1
 		}
 		fmt.Println("Installed paths:")
@@ -45,7 +45,7 @@ func Execute(ctx context.Context, args []string) int {
 		}
 	} else {
 		if err := runx.Run(ctx, args...); err != nil {
-			fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err)
 			return 1
 		}
 	}

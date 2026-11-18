@@ -31,13 +31,13 @@ func TestIsBinary(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Could not create temp file: %v", err)
 			}
-			defer os.Remove(file.Name())
+			defer func() { _ = os.Remove(file.Name()) }()
 
 			_, err = file.Write(test.header)
 			if err != nil {
 				t.Fatalf("Could not write to temp file: %v", err)
 			}
-			file.Close()
+			_ = file.Close()
 
 			got := isExecutableBinary(file.Name())
 			if got != test.want {

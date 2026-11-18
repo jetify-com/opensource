@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *Store) path(issuer string, clientID string) string {
+func (s *Store) path(issuer, clientID string) string {
 	return filepath.Join(s.rootDir, issuerSlug(issuer), slug.Make(clientID)+".json")
 }
 

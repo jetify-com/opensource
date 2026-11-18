@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/goccy/go-yaml"
 	"github.com/pelletier/go-toml/v2"
 	"github.com/tailscale/hujson"
-	"gopkg.in/yaml.v3"
 )
 
 var ErrUnsupportedFormat = errors.New("unsupported file format")
@@ -25,7 +25,7 @@ func UnmarshalFile(path string, v any) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	return UnmarshalReader(f, v, filepath.Ext(path))
 }
@@ -60,7 +60,7 @@ func unmarshalPath[T any](fsys fs.FS, path string) (T, error) {
 	if err != nil {
 		return result, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	if err := UnmarshalReader(f, &result, filepath.Ext(path)); err != nil {
 		return result, err
@@ -108,7 +108,7 @@ func hujsonUnmarshal(data []byte, v any) error {
 }
 
 // FindFiles returns a list of files with the given extensions from the paths in the filesystem.
-func FindFiles(fsys fs.FS, paths []string, exts []string) ([]string, error) {
+func FindFiles(fsys fs.FS, paths, exts []string) ([]string, error) {
 	filePaths := []string{}
 
 	for _, path := range paths {

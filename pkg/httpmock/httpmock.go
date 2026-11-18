@@ -126,12 +126,12 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 // Close shuts down the underlying httptest.Server and verifies all expected exchanges were completed.
 func (s *Server) Close() {
 	defer s.server.Close()
-	err := s.VerifyComplete()
+	err := s.assertComplete()
 	require.NoError(s.t, err, "not all expectations were met")
 }
 
-// VerifyComplete checks that all expected exchanges were completed.
-func (s *Server) VerifyComplete() error {
+// assertComplete checks that all expected exchanges were completed.
+func (s *Server) assertComplete() error {
 	if s.index != len(s.expectations) {
 		nextExpected := s.expectations[s.index]
 		return fmt.Errorf("expected %d requests, received %d. Next expected: [%s %s]",

@@ -11,15 +11,15 @@ import (
 	"go.jetify.com/pkg/fileutil"
 )
 
-func Extract(ctx context.Context, src string, dest string) error {
+func Extract(ctx context.Context, src, dest string) error {
 	tmpDest := src + ".contents"
-	defer os.RemoveAll(tmpDest)
+	defer func() { _ = os.RemoveAll(tmpDest) }()
 
 	reader, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	err = extract.Archive(ctx, reader, tmpDest, nil /* no renaming of files */)
 	if err != nil {

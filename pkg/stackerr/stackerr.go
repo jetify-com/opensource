@@ -105,7 +105,7 @@ func (e *wrapErrors) Unwrap() []error               { return e.errs }
 func (e *wrapErrors) Format(f fmt.State, verb rune) { format(f, verb, e) }
 
 func format(f fmt.State, verb rune, err error) {
-	fmt.Fprintf(f, fmt.FormatString(f, verb), err.Error())
+	_, _ = fmt.Fprintf(f, fmt.FormatString(f, verb), err.Error())
 	if f.Flag('+') {
 		_, _ = io.WriteString(f, "\n")
 		printChain(f, err, "")
@@ -133,7 +133,7 @@ func printChain(w io.Writer, err error, indent string) {
 				if err == nil {
 					continue
 				}
-				fmt.Fprintf(w, "\n\t[%*d] ", width, i)
+				_, _ = fmt.Fprintf(w, "\n\t[%*d] ", width, i)
 				printChain(w, err, indent)
 			}
 			return

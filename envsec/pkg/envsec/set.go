@@ -11,7 +11,7 @@ import (
 	"go.jetify.com/envsec/internal/tux"
 )
 
-func (e *Envsec) Set(ctx context.Context, name string, value string) error {
+func (e *Envsec) Set(ctx context.Context, name, value string) error {
 	return e.SetMap(ctx, map[string]string{name: value})
 }
 
@@ -85,7 +85,7 @@ func parseSetArgs(args []string) (map[string]string, error) {
 	return envMap, nil
 }
 
-const nameRegexStr = "^[a-zA-Z_][a-zA-Z0-9_]*"
+const nameRegexStr = "^[a-zA-Z_][a-zA-Z0-9_]*$"
 
 var nameRegex = regexp.MustCompile(nameRegexStr)
 

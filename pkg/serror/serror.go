@@ -111,7 +111,7 @@ func (e Error) format(w io.Writer) {
 	}
 
 	// Create a tint handler that writes to our writer
-	handler := tint.NewHandler(w, &tint.Options{
+	handler := tint.NewTextHandler(w, &tint.Options{
 		Level:   slog.LevelError,
 		NoColor: true,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {

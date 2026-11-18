@@ -35,8 +35,9 @@ func UploadCmd() *cobra.Command {
 	}
 
 	command.Flags().StringVarP(
-		&flags.format, "format", "f", "", "File format: dotenv or json")
-	flags.configFlags.register(command)
+		&flags.format, "format", "f", "", "File format: dotenv or json",
+	)
+	flags.register(command)
 
 	return command
 }

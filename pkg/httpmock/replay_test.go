@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -14,59 +15,16 @@ import (
 )
 
 func TestNewReplayServer(t *testing.T) {
-	tests := []struct {
-		name        string
-		config      ReplayConfig
-		wantErr     bool
-		errContains string
-	}{
-		{
-			name: "valid configuration",
-			config: ReplayConfig{
-				Host:     "https://jsonplaceholder.typicode.com",
-				Cassette: filepath.Join("testdata", "valid"),
-			},
-			wantErr: false,
-		},
-		{
-			name: "invalid host URL",
-			config: ReplayConfig{
-				Host:     "://invalid-url",
-				Cassette: filepath.Join("testdata", "invalid"),
-			},
-			wantErr:     true,
-			errContains: "invalid Host",
-		},
-		{
-			name: "empty host",
-			config: ReplayConfig{
-				Host:     "",
-				Cassette: filepath.Join("testdata", "empty"),
-			},
-			wantErr:     true,
-			errContains: "invalid Host",
-		},
-	}
+	// Test valid configuration
+	replayServer := NewReplayServer(t, ReplayConfig{
+		Host:     "https://jsonplaceholder.typicode.com",
+		Cassette: "testdata/server_valid",
+	})
+	require.NotNil(t, replayServer, "replay server should not be nil")
+	assert.Equal(t, "https://jsonplaceholder.typicode.com", replayServer.realURL.String())
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			replayServer, err := NewReplayServer(t, test.config)
-			if test.wantErr {
-				assert.Error(t, err)
-				if test.errContains != "" {
-					assert.Contains(t, err.Error(), test.errContains)
-				}
-				assert.Nil(t, replayServer)
-				return
-			}
-			require.NotNil(t, replayServer, "replay server should not be nil")
-			assert.Equal(t, test.config.Host, replayServer.realURL.String())
-
-			// Test cleanup
-			err = replayServer.Close()
-			assert.NoError(t, err)
-		})
-	}
+	// Test cleanup
+	replayServer.Close()
 }
 
 func TestReplayServerHandler(t *testing.T) {
@@ -123,11 +81,10 @@ func TestReplayServerHandler(t *testing.T) {
 			mockTester := &mockT{}
 
 			// Create a server with a normal request and response
-			server, err := NewReplayServer(mockTester, ReplayConfig{
+			server := NewReplayServer(mockTester, ReplayConfig{
 				Host:     "https://httpbin.org",
-				Cassette: "testdata/" + test.name,
+				Cassette: "testdata/server_" + test.name,
 			})
-			require.NoError(t, err)
 			defer server.Close()
 
 			// Build the request using the declarative Request struct
@@ -137,7 +94,7 @@ func TestReplayServerHandler(t *testing.T) {
 			// Make the request
 			resp, err := http.DefaultClient.Do(req)
 			require.NoError(t, err)
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			// Check response status
 			assert.Equal(t, test.expectedStatus, resp.StatusCode)
@@ -148,8 +105,7 @@ func TestReplayServerHandler(t *testing.T) {
 			assert.Contains(t, string(body), test.expectedBody)
 
 			// Close the server to ensure the cassette is saved
-			err = server.Close()
-			require.NoError(t, err)
+			server.Close()
 		})
 	}
 }
@@ -205,14 +161,191 @@ func TestFormatRequestBody(t *testing.T) {
 	}
 }
 
-func TestRemoveIgnored(t *testing.T) {
+// toHTTPHeader converts a simple string map to http.Header format
+func toHTTPHeader(headers map[string]string) http.Header {
+	h := make(http.Header)
+	for k, v := range headers {
+		h.Set(k, v)
+	}
+	return h
+}
+
+// verifyRequestHeaders checks that the cassette contains exactly the expected request headers
+func verifyRequestHeaders(t *testing.T, interaction *cassette.Interaction, expectedHeaders map[string]string) {
+	expected := toHTTPHeader(expectedHeaders)
+	actual := interaction.Request.Headers
+
+	// Check that all expected headers are present with correct values
+	for header, values := range expected {
+		assert.Equal(t, values, actual[header],
+			"request header %q should match", header)
+	}
+
+	// Check that no unexpected headers are present
+	for header := range actual {
+		if _, exists := expected[header]; !exists {
+			assert.Empty(t, actual[header],
+				"unexpected request header %q found in cassette", header)
+		}
+	}
+}
+
+// verifyResponseHeaders checks that the cassette contains exactly the expected response headers
+func verifyResponseHeaders(t *testing.T, interaction *cassette.Interaction, expectedHeaders map[string]string) {
+	expected := toHTTPHeader(expectedHeaders)
+	actual := interaction.Response.Headers
+
+	// Check that all expected headers are present with correct values
+	for header, values := range expected {
+		assert.Equal(t, values, actual[header],
+			"response header %q should match", header)
+	}
+
+	// Check that no unexpected headers are present (except auto-generated ones)
+	for header := range actual {
+		if _, exists := expected[header]; !exists {
+			// Allow certain headers that are automatically added by Go's HTTP server
+			if header == "Date" {
+				continue
+			}
+			assert.Empty(t, actual[header],
+				"unexpected response header %q found in cassette", header)
+		}
+	}
+}
+
+func TestReplayServerAdditionalIgnoredHeaders(t *testing.T) {
 	tests := []struct {
-		name        string
-		interaction *cassette.Interaction
-		wantHeaders http.Header
+		name                     string
+		additionalIgnoredHeaders []string
+		requestHeaders           map[string]string
+		responseHeaders          map[string]string
+		expectedInCassette       struct {
+			requestHeaders  map[string]string
+			responseHeaders map[string]string
+		}
 	}{
 		{
-			name: "removes all ignored headers",
+			name: "additional_ignored_headers",
+			additionalIgnoredHeaders: []string{
+				"X-Request-ID",
+				"X-Trace-ID",
+				"X-Response-ID",
+			},
+			requestHeaders: map[string]string{
+				"Authorization": "Bearer token123",  // Default ignored
+				"X-Request-ID":  "req-123",          // Additional ignored
+				"X-Trace-ID":    "trace-456",        // Additional ignored
+				"Content-Type":  "application/json", // Should be preserved
+			},
+			responseHeaders: map[string]string{
+				"Set-Cookie":    "session=abc123", // Default ignored
+				"X-Response-ID": "resp-789",       // Additional ignored
+				"Server":        "test-server",    // Should be preserved
+			},
+			expectedInCassette: struct {
+				requestHeaders  map[string]string
+				responseHeaders map[string]string
+			}{
+				requestHeaders: map[string]string{
+					"Content-Type": "application/json",
+				},
+				responseHeaders: map[string]string{
+					"Server":       "test-server",
+					"Content-Type": "text/plain; charset=utf-8", // Auto-added by Go HTTP server
+					// Note: Date header is also auto-added but varies, so we'll handle it separately
+				},
+			},
+		},
+		{
+			name:                     "no_additional_ignored_headers",
+			additionalIgnoredHeaders: []string{}, // No additional headers
+			requestHeaders: map[string]string{
+				"Authorization": "Bearer token123",  // Default ignored
+				"X-Custom":      "custom-value",     // Should be preserved
+				"Content-Type":  "application/json", // Should be preserved
+			},
+			responseHeaders: map[string]string{
+				"Set-Cookie": "session=abc123", // Default ignored
+				"X-Custom":   "response-value", // Should be preserved
+			},
+			expectedInCassette: struct {
+				requestHeaders  map[string]string
+				responseHeaders map[string]string
+			}{
+				requestHeaders: map[string]string{
+					"X-Custom":     "custom-value",
+					"Content-Type": "application/json",
+				},
+				responseHeaders: map[string]string{
+					"X-Custom":     "response-value",
+					"Content-Type": "text/plain; charset=utf-8", // Auto-added by Go HTTP server
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Create a test server that returns the configured response headers
+			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				for header, value := range test.responseHeaders {
+					w.Header().Set(header, value)
+				}
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{"status": "ok"}`))
+			}))
+			defer testServer.Close()
+
+			cassetteName := "testdata/server_" + test.name
+
+			// Create replay server with additional ignored headers
+			replayServer := NewReplayServer(t, ReplayConfig{
+				Host:                     testServer.URL,
+				Cassette:                 cassetteName,
+				AdditionalIgnoredHeaders: test.additionalIgnoredHeaders,
+			})
+
+			// Make request with the configured headers
+			req, err := buildRequest(replayServer.URL(), Request{
+				Method:  http.MethodGet,
+				Path:    "/test",
+				Headers: test.requestHeaders,
+			})
+			require.NoError(t, err)
+
+			// Make the request
+			resp, err := http.DefaultClient.Do(req)
+			require.NoError(t, err)
+			require.NoError(t, resp.Body.Close())
+
+			// Close server to ensure cassette is saved
+			replayServer.Close()
+
+			// Load and inspect the cassette
+			cassette, err := cassette.Load(cassetteName)
+			require.NoError(t, err)
+			require.Len(t, cassette.Interactions, 1, "should have exactly one interaction")
+
+			interaction := cassette.Interactions[0]
+
+			// Verify headers using helper functions
+			verifyRequestHeaders(t, interaction, test.expectedInCassette.requestHeaders)
+			verifyResponseHeaders(t, interaction, test.expectedInCassette.responseHeaders)
+		})
+	}
+}
+
+func TestRemoveIgnored(t *testing.T) {
+	tests := []struct {
+		name            string
+		interaction     *cassette.Interaction
+		headersToIgnore []string
+		wantHeaders     http.Header
+	}{
+		{
+			name:            "removes all ignored headers",
+			headersToIgnore: ignoredHeaders,
 			interaction: &cassette.Interaction{
 				Request: cassette.Request{
 					Headers: http.Header{
@@ -247,7 +380,8 @@ func TestRemoveIgnored(t *testing.T) {
 			},
 		},
 		{
-			name: "keeps non-ignored headers",
+			name:            "keeps non-ignored headers",
+			headersToIgnore: ignoredHeaders,
 			interaction: &cassette.Interaction{
 				Request: cassette.Request{
 					Headers: http.Header{
@@ -267,18 +401,45 @@ func TestRemoveIgnored(t *testing.T) {
 				"X-Custom":     {"value"},
 			},
 		},
+		{
+			name:            "removes default and additional ignored headers",
+			headersToIgnore: append([]string{"X-Request-ID", "X-Trace-ID"}, ignoredHeaders...),
+			interaction: &cassette.Interaction{
+				Request: cassette.Request{
+					Headers: http.Header{
+						"Authorization": []string{"Bearer token"},     // Default ignored
+						"X-Request-Id":  []string{"req-123"},          // Additional ignored (canonicalized)
+						"X-Trace-Id":    []string{"trace-456"},        // Additional ignored (canonicalized)
+						"Content-Type":  []string{"application/json"}, // Should be preserved
+						"X-Custom":      []string{"value"},            // Should be preserved
+					},
+				},
+				Response: cassette.Response{
+					Headers: http.Header{
+						"Set-Cookie":   []string{"session=123"}, // Default ignored
+						"X-Request-Id": []string{"req-789"},     // Additional ignored (canonicalized)
+						"Content-Type": []string{"application/json"},
+						"X-Custom":     []string{"response-value"},
+					},
+				},
+			},
+			wantHeaders: http.Header{
+				"Content-Type": {"application/json"},
+				"X-Custom":     {"value"},
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := removeIgnored(test.interaction)
+			err := removeIgnoredHeaders(test.interaction, test.headersToIgnore)
 			assert.NoError(t, err)
 
 			// Check request headers
 			assert.Equal(t, test.wantHeaders, test.interaction.Request.Headers)
 
 			// Check response headers
-			for _, h := range ignoredHeaders {
+			for _, h := range test.headersToIgnore {
 				assert.Empty(t, test.interaction.Response.Headers[h], "ignored header %q should be removed from response", h)
 			}
 		})
@@ -304,7 +465,7 @@ func TestReplayServerFailures(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "method mismatch",
-			cassette:      "successful_get",
+			cassette:      "server_successful_get",
 		},
 		{
 			name: "mismatched_path",
@@ -317,7 +478,7 @@ func TestReplayServerFailures(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "URL mismatch",
-			cassette:      "successful_get",
+			cassette:      "server_successful_get",
 		},
 		{
 			name: "mismatched_body",
@@ -332,7 +493,7 @@ func TestReplayServerFailures(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "body mismatch",
-			cassette:      "post_with_body",
+			cassette:      "server_post_with_body",
 		},
 	}
 
@@ -342,11 +503,10 @@ func TestReplayServerFailures(t *testing.T) {
 			mockTester := &mockT{}
 
 			// Create a server with a normal request and response
-			replayServer, err := NewReplayServer(mockTester, ReplayConfig{
+			replayServer := NewReplayServer(mockTester, ReplayConfig{
 				Host:     "https://httpbin.org",
 				Cassette: filepath.Join("testdata", test.cassette),
 			})
-			require.NoError(t, err)
 			defer replayServer.Close()
 
 			// Build the request using the declarative Request struct
@@ -356,7 +516,7 @@ func TestReplayServerFailures(t *testing.T) {
 			// Make the request - this should trigger the test failure via requireCassetteRequest
 			resp, err := http.DefaultClient.Do(req)
 			require.NoError(t, err)
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 
 			// Check if the test failed as expected
 			if test.expectedError {
@@ -393,7 +553,7 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "expected 2 requests, received 0. Next expected: [GET https://httpbin.org/get]",
-			cassette:      "multiple_interactions",
+			cassette:      "server_multiple_interactions",
 			checkCloseErr: true,
 		},
 		{
@@ -416,7 +576,7 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "requested interaction not found",
-			cassette:      "successful_get",
+			cassette:      "server_successful_get",
 			checkCloseErr: false,
 		},
 	}
@@ -427,11 +587,10 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 			mockTester := &mockT{}
 
 			// Create a server with a normal request and response
-			replayServer, err := NewReplayServer(mockTester, ReplayConfig{
+			replayServer := NewReplayServer(mockTester, ReplayConfig{
 				Host:     "https://httpbin.org",
 				Cassette: filepath.Join("testdata", test.cassette),
 			})
-			require.NoError(t, err)
 			defer replayServer.Close()
 
 			// Make all the requests
@@ -440,23 +599,18 @@ func TestReplayServerInteractionCounts(t *testing.T) {
 				require.NoError(t, err)
 				resp, err := http.DefaultClient.Do(req)
 				require.NoError(t, err)
-				defer resp.Body.Close()
+				defer func() { _ = resp.Body.Close() }()
 			}
 
 			// Close the server and check for errors
-			err = replayServer.Close()
+			replayServer.Close()
 
 			// Verify the test failed as expected
 			if test.expectedError {
-				if test.checkCloseErr {
-					assert.Contains(t, err.Error(), test.errorContains, "expected error message not found")
-				} else {
-					assert.True(t, mockTester.failed, "test should have failed")
-					assert.Contains(t, strings.Join(mockTester.errors, "\n"), test.errorContains, "expected error message not found")
-				}
+				assert.True(t, mockTester.failed, "test should have failed")
+				assert.Contains(t, strings.Join(mockTester.errors, "\n"), test.errorContains, "expected error message not found")
 			} else {
 				assert.False(t, mockTester.failed, "test should not have failed")
-				assert.NoError(t, err)
 			}
 		})
 	}

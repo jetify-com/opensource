@@ -1,13 +1,11 @@
 package ids
 
 import (
-	"go.jetify.com/typeid"
+	"go.jetify.com/typeid/v2"
 )
 
-type APITokenPrefix struct{}
-
-func (APITokenPrefix) Prefix() string { return "api_token" }
+const APITokenPrefix = "api_token"
 
 type APIToken struct {
-	typeid.TypeID[APITokenPrefix]
+	typeid.TypeID
 }

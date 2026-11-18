@@ -2,6 +2,15 @@
   "name": "typeid-sql",
   "version": "0.1.0",
   "devDependencies": {
-    "supabase": "^1.153.4"
+    "supabase": "^3.1.0"
+  },
+  "scripts": {
+    "test": "supabase start && supabase test db && supabase stop",
+    "test:start": "supabase start && supabase test db",
+    "test:stop": "supabase stop",
+    "test:reset": "supabase db reset"
+  },
+  "resolutions": {
+    "tar": "^7.5.21"
   }
 }

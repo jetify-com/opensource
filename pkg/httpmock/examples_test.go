@@ -114,7 +114,7 @@ func ExampleServer_sequence() {
 		fmt.Println("decode error:", err)
 		return
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	// Get profile using token
 	req, _ := http.NewRequest(http.MethodGet, testServer.Path("/profile"), nil)
@@ -182,7 +182,7 @@ func ExampleServer_delay() {
 		fmt.Println("request error:", err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Output:
 	// Configured delay: 1s
@@ -194,11 +194,10 @@ func ExampleReplayServer_basic() {
 	mockT := &t{} // In a real test, this would be the actual testing.T instance
 
 	// Create a new replay server that will record interactions with httpbin.org
-	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
+	replayServer := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
 		Host:     "https://httpbin.org",
-		Cassette: "testdata/successful_get",
+		Cassette: "testdata/server_successful_get",
 	})
-	require.NoError(mockT, err)
 	defer replayServer.Close()
 
 	// Make a request that will be recorded or replayed
@@ -208,7 +207,7 @@ func ExampleReplayServer_basic() {
 	req.Header.Set("Accept-Encoding", "gzip")
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(mockT, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Read and print the response status and body
 	body, err := io.ReadAll(resp.Body)
@@ -231,11 +230,10 @@ func ExampleReplayServer_basic() {
 func ExampleReplayServer_headers() {
 	mockT := &t{} // In a real test, this would be the actual testing.T instance
 
-	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
+	replayServer := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
 		Host:     "https://httpbin.org",
-		Cassette: "testdata/get_with_header",
+		Cassette: "testdata/server_get_with_header",
 	})
-	require.NoError(mockT, err)
 	defer replayServer.Close()
 
 	// Create a request with custom headers
@@ -248,7 +246,7 @@ func ExampleReplayServer_headers() {
 	// Make the request
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(mockT, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Print response status
 	fmt.Printf("Status: %d\n", resp.StatusCode)
@@ -261,11 +259,10 @@ func ExampleReplayServer_headers() {
 func ExampleReplayServer_jsonRequest() {
 	mockT := &t{} // In a real test, this would be the actual testing.T instance
 
-	replayServer, err := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
+	replayServer := httpmock.NewReplayServer(mockT, httpmock.ReplayConfig{
 		Host:     "https://httpbin.org",
-		Cassette: "testdata/post_with_body",
+		Cassette: "testdata/server_post_with_body",
 	})
-	require.NoError(mockT, err)
 	defer replayServer.Close()
 
 	// Create a JSON request
@@ -280,7 +277,7 @@ func ExampleReplayServer_jsonRequest() {
 	// Make the request
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(mockT, err)
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Print response status
 	fmt.Printf("Status: %d\n", resp.StatusCode)

@@ -169,7 +169,8 @@ func TestErrorString(t *testing.T) {
 					"load failed",
 					"type", "config"),
 				"init failed",
-				"service", "api"),
+				"service", "api",
+			),
 			want: "init failed service=api cause=\"load failed type=config cause=\\\"root file=config.json\\\"\"",
 		},
 		{

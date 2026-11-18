@@ -27,9 +27,6 @@ func getRawIDToken(otok *oauth2.Token) string {
 		return ""
 	}
 
-	rawIDTok := otok.Extra("id_token")
-	if rawIDTok == nil {
-		return ""
-	}
-	return otok.Extra("id_token").(string)
+	rawIDTok, _ := otok.Extra("id_token").(string)
+	return rawIDTok
 }

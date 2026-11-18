@@ -31,7 +31,7 @@ func New(rootDir string) (*Store, error) {
 	}, nil
 }
 
-func (s *Store) ReadTokens(issuer string, clientID string) ([]*session.Token, error) {
+func (s *Store) ReadTokens(issuer, clientID string) ([]*session.Token, error) {
 	data, err := s.readData(issuer, clientID)
 	if err != nil {
 		return nil, err
@@ -46,6 +46,11 @@ func (s *Store) WriteToken(
 ) error {
 	if tok == nil {
 		return errors.New("token is nil")
+	}
+	// Stored tokens are keyed by the subject of their ID token, so a token we
+	// can't identify can't be stored.
+	if subject(tok) == "" {
+		return errors.New("token has no ID token subject")
 	}
 	data, err := s.readData(issuer, clientID)
 	if err != nil {
@@ -65,7 +70,7 @@ func (s *Store) WriteToken(
 	)
 }
 
-func (s *Store) DeleteToken(issuer string, clientID string) error {
+func (s *Store) DeleteToken(issuer, clientID string) error {
 	path := s.path(issuer, clientID)
 
 	_, err := os.Stat(path)
@@ -89,22 +94,46 @@ func (s *Store) readData(issuer, clientID string) (storeData, error) {
 	return data, nil
 }
 
+// subject returns the subject claim of the token's ID token, or "" if the token
+// has no ID token or it can't be parsed.
+func subject(tok *session.Token) string {
+	claims := tok.IDClaims()
+	if claims == nil {
+		return ""
+	}
+	return claims.Subject
+}
+
+// addDefaultToken puts tok at the front of the list, replacing any stored token
+// with the same subject. Stored tokens without a subject can't be matched to a
+// user, so they are dropped.
 func (sd *storeData) addDefaultToken(tok *session.Token) {
+	sub := subject(tok)
 	tokens := []*session.Token{tok}
 	for _, t := range sd.Tokens {
-		if t.IDClaims().Subject != tok.IDClaims().Subject {
+		if s := subject(t); s != "" && s != sub {
 			tokens = append(tokens, t)
 		}
 	}
 	sd.Tokens = tokens
 }
 
+// replaceToken replaces the stored token with the same subject as tok, keeping
+// its position. Stored tokens without a subject are dropped.
 func (sd *storeData) replaceToken(tok *session.Token) {
-	for idx, t := range sd.Tokens {
-		if t.IDClaims().Subject == tok.IDClaims().Subject {
-			sd.Tokens[idx] = tok
+	sub := subject(tok)
+	tokens := make([]*session.Token, 0, len(sd.Tokens))
+	for _, t := range sd.Tokens {
+		switch subject(t) {
+		case "":
+			continue
+		case sub:
+			tokens = append(tokens, tok)
+		default:
+			tokens = append(tokens, t)
 		}
 	}
 	// If we didn't find a match, should we add to end of list?
 	// It likely means the token file was modified concurrently.
+	sd.Tokens = tokens
 }

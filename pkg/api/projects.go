@@ -5,12 +5,12 @@ import (
 
 	"connectrpc.com/connect"
 	projectsv1alpha1 "go.jetify.com/pkg/api/gen/priv/projects/v1alpha1"
-	"go.jetify.com/pkg/id"
+	"go.jetify.com/pkg/ids"
 )
 
 func (c *Client) ListProjects(
 	ctx context.Context,
-	orgID id.OrgID,
+	orgID ids.OrgID,
 ) ([]*projectsv1alpha1.Project, error) {
 	memberResponse, err := c.ProjectsClient().ListProjects(
 		ctx, connect.NewRequest(
@@ -27,7 +27,7 @@ func (c *Client) ListProjects(
 
 func (c *Client) CreateProject(
 	ctx context.Context,
-	orgID id.OrgID,
+	orgID ids.OrgID,
 	repoURL string,
 	directory string,
 	name string,

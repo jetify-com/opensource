@@ -19,7 +19,7 @@ func NewClient(accessToken string) *Client {
 	}
 }
 
-func (c *Client) DownloadOnce(url string, dest string) error {
+func (c *Client) DownloadOnce(url, dest string) error {
 	dir := filepath.Dir(dest)
 	if err := fileutil.EnsureDir(dir); err != nil {
 		return err
@@ -33,7 +33,7 @@ func (c *Client) DownloadOnce(url string, dest string) error {
 	return c.Download(url, dest)
 }
 
-func (c *Client) Download(url string, dest string) error {
+func (c *Client) Download(url, dest string) error {
 	if fileutil.IsDir(dest) {
 		return errors.New("destination is a directory")
 	}

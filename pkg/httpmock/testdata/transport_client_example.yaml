@@ -1,0 +1,32 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: httpbin.org
+        url: https://httpbin.org/get
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 273
+        body: "{\n  \"args\": {}, \n  \"headers\": {\n    \"Accept-Encoding\": \"gzip\", \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\": \"Go-http-client/2.0\", \n    \"X-Amzn-Trace-Id\": \"Root=1-689f9d59-566250c31a0153ad16b0306b\"\n  }, \n  \"origin\": \"173.172.24.115\", \n  \"url\": \"https://httpbin.org/get\"\n}\n"
+        headers:
+            Access-Control-Allow-Credentials:
+                - "true"
+            Access-Control-Allow-Origin:
+                - '*'
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 15 Aug 2025 20:49:29 GMT
+            Server:
+                - gunicorn/19.9.0
+        status: 200 OK
+        code: 200
+        duration: 300.336833ms

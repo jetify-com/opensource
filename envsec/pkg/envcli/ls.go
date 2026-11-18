@@ -37,7 +37,8 @@ func ListCmd() *cobra.Command {
 			}
 
 			return envsec.PrintEnvVar(
-				cmd.OutOrStdout(), cmdCfg.envsec.EnvID, secrets, flags.ShowValues, flags.Format)
+				cmd.OutOrStdout(), cmdCfg.envsec.EnvID, secrets, flags.ShowValues, flags.Format,
+			)
 		},
 	}
 
@@ -55,7 +56,7 @@ func ListCmd() *cobra.Command {
 		"table",
 		"format to use for displaying keys and values, one of: table, dotenv, json",
 	)
-	flags.configFlags.register(command)
+	flags.register(command)
 
 	return command
 }
